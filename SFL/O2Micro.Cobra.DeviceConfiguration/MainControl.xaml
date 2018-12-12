@@ -1,0 +1,157 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:local="clr-namespace:O2Micro.Cobra.DeviceConfigurationPanel"
+	xmlns:controls="clr-namespace:O2Micro.Cobra.ControlLibrary;assembly=O2Micro.Cobra.ControlLibrary"
+	mc:Ignorable="d"
+	x:Class="O2Micro.Cobra.DeviceConfigurationPanel.MainControl"
+	x:Name="UserControl"
+	d:DesignWidth="640" d:DesignHeight="480">
+
+    <UserControl.Resources>
+        <local:Bool2BrushConverter x:Key="Bool2BrushConverter"/>
+        <local:Error2BrushConverter x:Key="Error2BrushConverter"/>
+        <local:Bool2VisibilityConverter x:Key="Bool2VisibilityConverter" />
+        <local:SliderDigitConverter x:Key="SliderDigitConverter" />
+        <SolidColorBrush x:Key="DisabledForegroundBrush" Color="Black" />
+        <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="Gray" />
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Name="Bd" BorderThickness="{TemplateBinding BorderThickness}" 
+                                             BorderBrush="{TemplateBinding BorderBrush}" 
+                                             Background="{TemplateBinding Background}" 
+                                             SnapsToDevicePixels="true">
+                            <ScrollViewer Name="PART_ContentHost" Background="{TemplateBinding Background}" 
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Value="{StaticResource DisabledBackgroundBrush}" Property="Background" />
+                                <Setter Value="{StaticResource DisabledForegroundBrush}" Property="Foreground" />
+                                <Setter TargetName="PART_ContentHost" Property="Background" Value="Gray"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="Disabled">
+            <Style.Triggers>
+                <Trigger Property="Control.IsEnabled" Value="False">
+                    <Setter Property="Control.Background" Value="Gray"></Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <ContextMenu x:Key="ConfigConteMenuKey" Cursor="Hand" StaysOpen="True" Visibility="{Binding bsubmenu,Converter={StaticResource Bool2VisibilityConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+            <MenuItem Header="Read One Parameter"   Click="ReadBtn_Click"  FontFamily="Arial" FontSize="12" Visibility="{Binding brone,Converter={StaticResource Bool2VisibilityConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}"/>
+            <MenuItem Header="Write One Parameter"  Click="WriteBtn_Click" FontFamily="Arial" FontSize="12" Visibility="{Binding bwone,Converter={StaticResource Bool2VisibilityConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}"/>
+        </ContextMenu>
+        
+        <DataTemplate x:Key="textBox" >
+            <StackPanel Orientation="Vertical" IsEnabled="{Binding bedit,Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Disabled}">
+                <TextBox x:Name="textBox" BorderThickness="0" TextAlignment="Center"
+                    Foreground="{Binding berror, Converter={StaticResource Error2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}"
+				    Text="{Binding sphydata,Mode=TwoWay, UpdateSourceTrigger= LostFocus}" ContextMenu="{StaticResource ConfigConteMenuKey}" Uid="{Binding guid}">
+                </TextBox>
+                <Grid Style="{StaticResource Disabled}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"></ColumnDefinition>
+                        <ColumnDefinition Width="50*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" HorizontalContentAlignment="Left" FontSize="11"
+                           Content="{Binding minvalue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource SliderDigitConverter}}"
+                        >
+                    </Label>
+                    <Label Grid.Column="1" FontSize="11" HorizontalContentAlignment="Right"
+                           Content="{Binding maxvalue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource SliderDigitConverter}}">
+                    </Label>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="comboBox">
+            <ComboBox x:Name="comboBox" SelectedIndex="{Binding listindex,Mode=TwoWay, UpdateSourceTrigger = PropertyChanged}" 
+                IsEnabled="{Binding bedit,Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding itemlist,Mode= OneWay}"
+				Foreground="{Binding berror, Converter={StaticResource Error2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}"
+				BorderThickness="0" HorizontalContentAlignment="Right" ContextMenu="{StaticResource ConfigConteMenuKey}" Uid="{Binding guid}">
+            </ComboBox>
+        </DataTemplate>
+        <DataTemplate x:Key="checkBox">
+            <CheckBox x:Name="checkBox" IsChecked="{Binding bcheck,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                IsEnabled="{Binding bedit, UpdateSourceTrigger=PropertyChanged,Mode=OneWay}"
+                Foreground="{Binding berror, Converter={StaticResource Error2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}"
+				Content="{Binding IsChecked,ElementName=checkBox}"  Margin="1,5,1,1" HorizontalAlignment="Right" ContextMenu="{StaticResource ConfigConteMenuKey}" Uid="{Binding guid}">
+            </CheckBox>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid x:Name="LayoutRoot">
+        <Grid x:Name="TopPanel" Margin="0,0,0,72">
+            <DataGrid x:Name="mDataGrid" ItemsSource="{Binding}" Style="{DynamicResource dataGrid-deviceConfiguration}" VirtualizingStackPanel.IsVirtualizing="True">
+                <DataGrid.GroupStyle>
+                    <GroupStyle ContainerStyle="{StaticResource GroupHeaderStyle}" />
+                </DataGrid.GroupStyle>
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="ID" IsReadOnly="True" CanUserResize="False" Width="32">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock x:Name="IDTextBlock" Style="{DynamicResource textBlk-deviceConfiguration}"  Text="{Binding Path= order, Mode = OneTime}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Name" IsReadOnly="True" CanUserResize="False" Width="0.25*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock x:Name="NameTextBlock" Style="{DynamicResource textBlk-deviceConfiguration}" Text="{Binding Path= nickname, Mode = OneTime}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Value" CanUserResize="False" Width="0.22*">
+                        <DataGridTemplateColumn.CellTemplateSelector>
+            				<local:DataTypeTemplateSelector TextBoxTemplate="{StaticResource textBox}"
+                                            	ComboBoxTemplate="{StaticResource comboBox}"
+                                            	CheckBoxTemplate="{StaticResource checkBox}">	
+							</local:DataTypeTemplateSelector>
+        				</DataGridTemplateColumn.CellTemplateSelector>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Description" CanUserResize="False" Width="0.50*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock x:Name="DescriptionTextBlock" Style="{DynamicResource textBlk-deviceConfiguration}" Text="{Binding Path= description, Mode = OneTime}" ToolTip="{Binding Path= description, Mode = OneTime}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+		</Grid>
+		<Grid x:Name="BottomPanel" Height="40" VerticalAlignment="Bottom">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="0.18*"/>
+				<ColumnDefinition Width="0.18*"/>
+				<ColumnDefinition Width="0.23*"/>
+				<ColumnDefinition Width="0.23*"/>
+				<ColumnDefinition Width="0.18*"/>
+			</Grid.ColumnDefinitions>
+            <Button x:Name="LoadBtn" Content="Load From File" Style="{DynamicResource btn-deviceConfiguration}"  Click="LoadBtn_Click" />
+            <Button x:Name="SaveBtn" Content="Save To File" Style="{DynamicResource btn-deviceConfiguration}" Grid.Column="1" Click="SaveBtn_Click" />
+            <Button x:Name="ReadBtn" Content="Read From Device" Style="{DynamicResource btn-deviceConfiguration}" Grid.Column="2" Click="ReadBtn_Click"
+                    IsEnabled="{Binding benable}" ContextMenu="{Binding btn_menu_control}"/>
+            <Button x:Name="WriteBtn" Content="Write To Device" Style="{DynamicResource btn-deviceConfiguration}" Grid.Column="3"  Click="WriteBtn_Click"
+                    IsEnabled="{Binding benable}" ContextMenu="{Binding btn_menu_control}"/>
+            <Button x:Name="EraseBtn" Content="Erase " Style="{DynamicResource btn-deviceConfiguration}" Grid.Column="4" Click="EraseBtn_Click" IsEnabled="{Binding benable}" Visibility="{Binding visi}"/>
+        </Grid>
+		<Grid x:Name="MiddlePanel" Height="32" Margin="0,0,0,40" VerticalAlignment="Bottom">
+            <Label x:Name="StatusLabel" Content="Default" Style="{DynamicResource label-deviceConfiguration}"/>
+		</Grid>
+
+        <controls:WaitControl x:Name="WaitPopControl"/>
+        <controls:WarningControl x:Name="WarningPopControl"/>
+        <controls:PasswordControl x:Name="PasswordPopControl"/>
+        <controls:SelectControl x:Name="SelectPopControl"/>
+	</Grid>
+</UserControl>

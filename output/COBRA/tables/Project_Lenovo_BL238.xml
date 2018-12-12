@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Root chip="KillerWhale" date ="20140328">
+  <Section Name ="Parameter Setting" Flag ="0x0200" >
+    <Element ID="0x0201">
+      <Name>Design Capacity (mAhr)</Name>
+      <Value>2400</Value>
+      <Description>Design Capacity, in mAhr format</Description>
+    </Element>
+    <Element ID="0x0202">
+      <Name>Rsense (mOhm)</Name>
+      <Value>20</Value>
+      <Description>Sense Resistor of current, in mOhm format</Description>
+    </Element>
+    <Element ID="0x0203">
+      <Name>ExtTemp PullupR (Ohm)</Name>
+      <Value>120000</Value>
+      <Description>External Temperature Pullup Resistor, in Ohm format</Description>
+    </Element>
+    <Element ID="0x0204">
+      <Name>ExtTemp PullupV (mV)</Name>
+      <Value>1800</Value>
+      <Description>External Temperature Pullup Voltage, in mV format</Description>
+    </Element>
+    <Element ID="0x0205">
+      <Name>Charge CV  (mV)</Name>
+      <Value>4100</Value>
+      <Description>Charge CV mode voltage, in mV format</Description>
+    </Element>
+    <Element ID="0x0206">
+      <Name>Charge End Current (mA)</Name>
+      <Value>150</Value>
+      <Description>Charge End Current, in mA format</Description>
+    </Element>
+    <Element ID="0x0207">
+      <Name>Discharge End Volt (mV)</Name>
+      <Value>3300</Value>
+      <Description>Discharge End voltage, in mV format</Description>
+    </Element>
+  </Section>
+</Root>
+

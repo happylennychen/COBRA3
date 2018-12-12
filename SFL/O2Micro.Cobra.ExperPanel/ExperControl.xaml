@@ -1,0 +1,1025 @@
+﻿<UserControl 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+	xmlns:local="clr-namespace:O2Micro.Cobra.ExperPanel"
+	xmlns:controls="clr-namespace:O2Micro.Cobra.ControlLibrary;assembly=O2Micro.Cobra.ControlLibrary"
+	mc:Ignorable="d"
+    x:Class="O2Micro.Cobra.ExperPanel.ExperControl"
+	x:Name="UserControl"
+    d:DesignHeight="480" d:DesignWidth="640">
+    
+    <UserControl.Resources>
+        <local:byte2VisibilityConvert x:Key="byte2VisibilityConvert" />
+        <local:Multi16Bits2Width x:Key="Multi16Bits2Width" />
+        <local:Multi08Bits2Width x:Key="Multi08Bits2Width" />
+        <local:Bool2BrushConverter x:Key="Bool2BrushConverter" />
+        <local:DataComponentSelector x:Key="DataComponentSelector" />
+        <local:Bool2BrushBackground x:Key="Bool2BrushBackground" />
+        <!--        <local:bool2BrushConverter x:Key="bool2BrushConverter" />-->
+        <SolidColorBrush x:Key="ExperBkgrndColor" Color="WhiteSmoke" />
+        <SolidColorBrush x:Key="DisableColor" Color="Lavender" />
+        <SolidColorBrush x:Key="ReadOnlyColor" Color="Gainsboro" />
+        <Style TargetType="{x:Type Border}">
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="BorderBrush" Value="Gray" />
+            <Setter Property="CornerRadius" Value="5" />
+        </Style>    <!--Border Style, BorderThickness=2, BorderBrush=Gray, CornerRadius=5-->
+        <Style TargetType="{x:Type TextBox}">
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="{StaticResource ExperBkgrndColor}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <DataTemplate x:Key="DtTmpltReg16Bits">
+            <Grid x:Name="grdRegOne" Height="125" 
+                  Background="{Binding Path=bMarkReg, Converter={StaticResource Bool2BrushBackground},Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" >
+                  <!--Background="{StaticResource ExperBkgrndColor}"-->
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid x:Name="grdRegister" Grid.Row="0" Grid.Column="0" MinWidth="80" Height="115" VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Style="{DynamicResource label-exper1}"
+                           Background="{StaticResource ReadOnlyColor}" Content="{Binding Path=strRegNum, Mode=OneTime}"  /> <!-- Display Index 0x00-->
+                    <Label Grid.Row="1" Style="{DynamicResource label-exper1}"
+                           Content="{Binding Path=strRegName, Mode=OneWay}"
+                           Background="{StaticResource DisableColor}"
+                           MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave"/> <!-- Display register name-->
+                    <TextBox Grid.Row="2" MinWidth="80" 
+                            BorderBrush="Black" BorderThickness="1" 
+                            HorizontalAlignment="Center" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" 
+                            Text="{Binding Path=strRegVal, Mode=TwoWay}" 
+                            Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}"
+                            Background="{StaticResource ExperBkgrndColor}"
+                            KeyDown="TextBox_KeyDown"
+                            LostFocus="TextBox_LostFocus"
+                            IsEnabled="{Binding Path=bWrite, Mode=OneTime}"
+                             InputMethod.PreferredImeState="Off"
+                           />   <!-- Display hex value of register-->
+                    <Border Grid.Row="3" BorderBrush="Black" BorderThickness="1" CornerRadius="0" >
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.5*" />
+                                <ColumnDefinition Width="0.5*" />
+                            </Grid.ColumnDefinitions>
+                            <Button Name="btnWrite" Grid.Column="0" Content="Write" Style="{DynamicResource btn-exper}" 
+                                    Click="btnWrite_Click" Tag="{Binding Path=u16RegNum, Mode=OneWay}" 
+                                    IsEnabled="{Binding Path=bWrite, Mode=TwoWay}" />
+                            <Button Name="btnRead" Grid.Column="1" Content="Read" Style="{DynamicResource btn-exper}" 
+                                    Click="btnRead_Click" Tag="{Binding Path=u16RegNum, Mode=OneWay}"
+                                    IsEnabled="{Binding Path=bRead, Mode=TwoWay}"/>
+                        </Grid>
+                    </Border>   <!-- Read/Write button for register-->
+                </Grid> <!--Content Col_0: 3 Rows, Row_0 is Index 0xXX, Row_1 is Value xx, and Row_2 is Write/Read 2 buttons-->
+                <Grid x:Name="grdRegEmpty" Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                    <CheckBox x:Name="grdRegHigh" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="3,50,3,50" 
+                                  IsChecked="{Binding Path=bMarkReg,Mode=TwoWay}" 
+                                  Click="grdRegHigh_Click"/>
+                </Grid> <!--Content Col_1: blank-->
+                <Grid x:Name="grdRegBits" Grid.Row="0" Grid.Column="2" Height="115" VerticalAlignment="Center"
+                      Width="{Binding ElementName=grdRegBitOperate, Path=Width}">
+                    <!--Background="{StaticResource ExperBkgrndColor}" -->
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid x:Name="grdRegBitIndex" Grid.Row="0" Background="{StaticResource ReadOnlyColor}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBitF.strBit}" />
+                        <Label Grid.Column="1" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBitE.strBit}" />
+                        <Label Grid.Column="2" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBitD.strBit}" />
+                        <Label Grid.Column="3" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBitC.strBit}" />
+                        <Label Grid.Column="4" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBitB.strBit}" />
+                        <Label Grid.Column="5" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBitA.strBit}" />
+                        <Label Grid.Column="6" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit9.strBit}" />
+                        <Label Grid.Column="7" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit8.strBit}" />
+                        <Label Grid.Column="8" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit7.strBit}" />
+                        <Label Grid.Column="9" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit6.strBit}" />
+                        <Label Grid.Column="10" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit5.strBit}" />
+                        <Label Grid.Column="11" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit4.strBit}" />
+                        <Label Grid.Column="12" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit3.strBit}" />
+                        <Label Grid.Column="13" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit2.strBit}" />
+                        <Label Grid.Column="14" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit1.strBit}" />
+                        <Label Grid.Column="15" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit0.strBit}" />
+                    </Grid> <!--Grid for bit index string, 16-->
+                    <Grid x:Name="grdRegBitOperate" Grid.Row="3" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                            <ColumnDefinition Width="0.0625*" MinWidth="40" />
+                        </Grid.ColumnDefinitions>
+                        <ToggleButton Grid.Column="0" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBitF.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBitF.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBitF.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="1" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBitE.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBitE.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBitE.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="2" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBitD.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBitD.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBitD.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="3" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBitC.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBitC.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBitC.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="4" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBitB.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBitB.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBitB.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="5" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBitA.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBitA.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBitA.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="6" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit9.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit9.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit9.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="7" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit8.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit8.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit8.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="8" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit7.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit7.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit7.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="9" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit6.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit6.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit6.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="10" Style="{DynamicResource tglbtn-exper}" 
+                               Content="{Binding Path=ebcBit5.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit5.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit5.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="11" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit4.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit4.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit4.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="12" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit3.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit3.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit3.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="13" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit2.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit2.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit2.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="14" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit1.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit1.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit1.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="15" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit0.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit0.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit0.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                    </Grid> <!--Grid for bit operation button, 16-->
+                    <StackPanel x:Name="stkpnlRegBitDescrip" Grid.Row="1" Grid.Column="0" Orientation="Horizontal" 
+                                Width="{Binding ElementName=grdRegBitOperate, Path=Width}" Background="{StaticResource DisableColor}" >
+                        <Label Style="{DynamicResource label-exper}"  Content="{Binding Path=ebcBitF.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBitF.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBitF.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBitE.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBitE.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBitE.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBitD.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBitD.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBitD.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBitC.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBitC.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBitC.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBitB.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBitB.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBitB.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBitA.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBitA.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBitA.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit9.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit9.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit9.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit8.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit8.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit8.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit7.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit7.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit7.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit6.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit6.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit6.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit5.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit5.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit5.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit4.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit4.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit4.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit3.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit3.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit3.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit2.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit2.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit2.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit1.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit1.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit1.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit0.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit0.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit0.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                    </StackPanel>   <!--Including each bit desription-->
+                    <StackPanel x:Name="stkpnlRegBitPhyValue" Grid.Row="2" Grid.Column="0" Orientation="Horizontal" 
+                                Width="{Binding ElementName=grdRegBitOperate, Path=Width}" >
+                        <!--Background="{StaticResource ExperBkgrndColor}" -->
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBitF.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBitF.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave"
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBitF.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBitE.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBitE.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave"
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBitE.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBitD.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBitD.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBitD.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBitC.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBitC.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBitC.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBitB.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBitB.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBitB.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBitA.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBitA.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBitA.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit9.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit9.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit9.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit8.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit8.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit8.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit7.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit7.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit7.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit6.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit6.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit6.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit5.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit5.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit5.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit4.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit4.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit4.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit3.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit3.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit3.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit2.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit2.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit2.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit1.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit1.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit1.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit0.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit0.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi16Bits2Width}">
+                                    <Binding Path="ebcBit0.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                    </StackPanel>   <!--physical value display -->
+                    <!--Including each bit desription-->
+                </Grid> <!--Content Col_2: all bits operation-->
+            </Grid>
+        </DataTemplate> <!--Template for 16-bits Register, including Col_0=Reg_Ind/Reg_Val/WriRead and Col_1=blank and Col_2=8 or 16 bit_operation-->
+        <DataTemplate x:Key="DtTmpltReg08Bits">
+            <Grid x:Name="grdRegOne" Height="125" 
+                  Background="{Binding Path=bMarkReg, Converter={StaticResource Bool2BrushBackground},Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" >
+                  <!--Background="{StaticResource ExperBkgrndColor}"-->
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" MaxWidth="640"/>
+                </Grid.ColumnDefinitions>
+                <Grid x:Name="grdReg08" Grid.Row="0" Grid.Column="0" MinWidth="80" Height="115" VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Style="{DynamicResource label-exper1}"
+                           Background="{StaticResource ReadOnlyColor}" Content="{Binding Path=strRegNum, Mode=OneTime}"  /> <!-- Display Index 0x00-->
+                    <Label Grid.Row="1" Style="{DynamicResource label-exper}"
+                           Content="{Binding Path=strRegName, Mode=OneWay}"
+                           Background="{StaticResource DisableColor}"
+                           MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave"/> <!-- Display register name-->
+                    <!--<Label Grid.Row="2" MinWidth="80" -->
+                     <TextBox Grid.Row="2" MinWidth="80" 
+                              BorderBrush="Black" BorderThickness="1" 
+                              HorizontalAlignment="Center" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" 
+                              Text="{Binding Path=strRegVal, Mode=TwoWay}" 
+                              Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}"
+                              Background="{StaticResource ExperBkgrndColor}"
+                              KeyDown="TextBox_KeyDown"
+                              LostFocus="TextBox_LostFocus"
+                              IsEnabled="{Binding Path=bWrite, Mode=OneTime}"
+                              InputMethod.PreferredImeState="Off"
+                           />  <!-- Display hex value of register-->
+                    <!-- Content="{Binding Path=strRegVal, Mode=OneWay}" -->
+                    <Border Grid.Row="3" BorderBrush="Black" BorderThickness="1" CornerRadius="0" >
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.5*" />
+                                <ColumnDefinition Width="0.5*" />
+                            </Grid.ColumnDefinitions>
+                            <Button Name="btnWrite" Grid.Column="0" Content="Write" Style="{DynamicResource btn-exper}" 
+                                    Click="btnWrite_Click" Tag="{Binding Path=u16RegNum, Mode=OneWay}" 
+                                    IsEnabled="{Binding Path=bWrite, Mode=TwoWay}" />
+                            <Button Name="btnRead" Grid.Column="1" Content="Read" Style="{DynamicResource btn-exper}" 
+                                    Click="btnRead_Click" Tag="{Binding Path=u16RegNum, Mode=OneWay}"
+                                    IsEnabled="{Binding Path=bRead, Mode=TwoWay}"/>
+                        </Grid>
+                    </Border>
+                </Grid> <!--Content Col_0: 3 Rows, Row_0 is Index 0xXX, Row_1 is Value xx, and Row_2 is Write/Read 2 buttons-->
+                <Grid x:Name="grdRegEmpty08" Grid.Row="0" Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                    <CheckBox x:Name="grdRegHigh" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="3,50,3,50" 
+                                  IsChecked="{Binding Path=bMarkReg,Mode=TwoWay}" 
+                                  Click="grdRegHigh_Click"/>
+                </Grid> <!--Content Col_1: blank-->
+                <Grid x:Name="grdRegBits08" Grid.Row="0" Grid.Column="2" Height="115" VerticalAlignment="Center"
+                      Width="{Binding ElementName=grdRegBitOperate08, Path=Width}"> 
+                    <!-- Background="{StaticResource ExperBkgrndColor}" -->
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="30" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid x:Name="grdRegBitIndex08" Grid.Row="0" Background="{StaticResource ReadOnlyColor}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit7.strBit}" />
+                        <Label Grid.Column="1" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit6.strBit}" />
+                        <Label Grid.Column="2" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit5.strBit}" />
+                        <Label Grid.Column="3" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit4.strBit}" />
+                        <Label Grid.Column="4" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit3.strBit}" />
+                        <Label Grid.Column="5" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit2.strBit}" />
+                        <Label Grid.Column="6" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit1.strBit}" />
+                        <Label Grid.Column="7" Style="{DynamicResource label-exper2}" Content="{Binding Path=ebcBit0.strBit}" />
+                    </Grid> <!--Grid for bit index string, 08-->
+                    <Grid x:Name="grdRegBitOperate08" Grid.Row="3" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                            <ColumnDefinition Width="0.125*" MinWidth="40" />
+                        </Grid.ColumnDefinitions>
+                        <ToggleButton Grid.Column="0" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit7.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit7.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit7.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="1" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit6.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit6.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit6.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="2" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit5.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit5.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit5.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="3" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit4.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit4.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit4.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="4" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit3.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit3.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit3.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="5" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit2.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit2.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit2.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="6" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit1.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit1.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit1.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                        <ToggleButton Grid.Column="7" Style="{DynamicResource tglbtn-exper}"
+                               Content="{Binding Path=ebcBit0.yBitValue, Mode=TwoWay}" IsChecked="{Binding Path=ebcBit0.yBitValue, Mode=TwoWay}" 
+                               IsEnabled="{Binding Path=ebcBit0.bWrite, Mode=TwoWay}" 
+                               Click="ToggleButton_Click" />
+                    </Grid> <!--Grid for bit operation button, 08-->
+                    <StackPanel x:Name="stkpnlRegBitDescrip08" Grid.Row="1" Grid.Column="0" Orientation="Horizontal" 
+                                Width="{Binding ElementName=grdRegBitOperate08, Path=Width}" Background="{StaticResource DisableColor}" >
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit7.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit7.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit7.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                     <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit6.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit6.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit6.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit5.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit5.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit5.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit4.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit4.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit4.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit3.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit3.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit3.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit2.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit2.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit2.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit1.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit1.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit1.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit0.strBitDescrip}" 
+                               IsEnabled="{Binding Path=ebcBit0.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" >
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit0.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                    </StackPanel>   <!--Including each bit desription-->
+                    <StackPanel x:Name="stkpnlRegBitPhyValue" Grid.Row="2" Grid.Column="0" Orientation="Horizontal" 
+                                Width="{Binding ElementName=grdRegBitOperate08, Path=Width}" Background="{StaticResource ExperBkgrndColor}" >
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit7.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit7.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit7.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit6.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit6.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit6.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit5.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit5.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit5.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit4.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit4.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit4.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit3.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit3.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit3.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit2.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit2.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit2.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit1.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit1.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit1.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                        <Label Style="{DynamicResource label-exper}" Content="{Binding Path=ebcBit0.strPhysicalValue}" 
+                               IsEnabled="{Binding Path=ebcBit0.bBitEnable, Mode=TwoWay}" 
+                               MouseMove="Label_MouseMove" MouseLeave="Label_MouseLeave" 
+                               Foreground="{Binding Path=bValueChange, Converter={StaticResource Bool2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                            <Label.Width>
+                                <MultiBinding Converter="{StaticResource Multi08Bits2Width}">
+                                    <Binding Path="ebcBit0.yDescripVisiLgth" />
+                                    <Binding ElementName="grdRegBitOperate08" Path="ActualWidth" />
+                                </MultiBinding>
+                            </Label.Width>
+                        </Label>
+                    </StackPanel>   <!--physical value display -->
+                </Grid> <!--Content Col_2: all bits operation-->
+            </Grid>
+        </DataTemplate> <!--Template for 8-bits Register, including Col_0=Reg_Ind/Reg_Val/WriRead and Col_1=blank and Col_2=8 or 16 bit_operation-->
+    </UserControl.Resources>
+
+    <Grid x:Name="grdExperParent">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.2*" MinWidth="120" MaxWidth="200"/>
+            <ColumnDefinition Width="0.8*" />
+        </Grid.ColumnDefinitions>
+        <Grid x:Name="grdLeftPanel" Grid.Row="0" Grid.Column="0" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0" Grid.Column="0">
+                <Grid x:Name="grdRWButtonPanel">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="40" />
+                    </Grid.RowDefinitions>
+                    <Button x:Name="btnReadAll" FontFamily="Arial" Content="Read All" Grid.Row="0" Margin="5,5,5,5"
+                            Click="btnReadAll_Click" />
+                    <Button x:Name="btnWriteAll" FontFamily="Arial" Content="Write All" Grid.Row="1" Margin="5,5,5,5"
+                            Click="btnWriteAll_Click" />
+                    <Grid Grid.Row="2" Margin="5,5,5,5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="0.6*" />
+                            <ColumnDefinition Width="0.4*" />
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="btnGoto" FontFamily="Arial" Grid.Column="0" Content="Go Reg" Click="btnGoto_Click"/>
+                        <TextBox x:Name="txtGoto" FontFamily="Arial" Grid.Column="1" Margin="2,2,5,2" MaxLength="2"
+                                 BorderThickness="2" BorderBrush="Black" KeyDown="txtGoto_KeyDown" 
+                                 InputMethod.PreferredImeState="Off"/>
+                    </Grid>
+<!--                            IsEnabled="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=bBtnExper, Mode=OneWay}" /> -->
+                    <Button Name="btnExperPro" FontFamily="Arial" Content="Pro" Grid.Row="3" Margin="5,5,5,5"
+                            Visibility="Visible" Click="btnExperPro_Click"  />
+<!--                            IsEnabled="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=bBtnExper, Mode=OneWay}"/>-->
+                </Grid>
+            </Border>
+            <Border Grid.Row="1" >
+                <ListBox x:Name="dtgTestMode" 
+                         FontFamily="Arial" BorderBrush="White" BorderThickness="0" 
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                         HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" 
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" 
+                         Background="{StaticResource ExperBkgrndColor}" >
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Button Name="btnTest" IsEnabled="{Binding Path=bTestBtnEnable, Mode= OneWay}" Margin="5,10,5,5" 
+                                    Tag="{Binding Path=ySubValue, Mode= OneWay}" Visibility="Visible"
+                                    Click="btnTest_Click">
+                                <TextBlock TextWrapping="Wrap" Text="{Binding Path=strTestTrim,  Mode=TwoWay}" />
+                            </Button>
+<!--                            
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Path=bTestBtnVisible, Mode=OneTime}" Value="false" >
+                                    <DataTrigger.Setters>
+                                        <Setter Property="Visibility" Value="Collapsed" TargetName="btnTest" />
+                                    </DataTrigger.Setters>
+                                </DataTrigger>
+<!-                                
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=bBtnExper, Mode=OneWay}" Value="false" >
+                                    <DataTrigger.Setters>
+                                        <Setter Property="IsEnabled" Value="false" TargetName="btnTest" />
+                                    </DataTrigger.Setters>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+-->
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                            <Setter Property="MinHeight" Value="50" />
+                            <Setter Property="Focusable" Value="False" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=bTestBtnVisible, Mode=OneTime}" Value="false">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </Border>
+        </Grid>     <!-- Left Panel -->
+        <Border Grid.Row="0" Grid.Column="1" >
+            <ListBox x:Name="dtgRegistersPresent" Margin="5,5,5,5" 
+                     FontFamily="Arial" BorderBrush="White" BorderThickness="0" 
+                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" 
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" 
+                     ScrollViewer.IsDeferredScrollingEnabled="True"
+                     Background="{StaticResource ExperBkgrndColor}"
+                     ItemTemplateSelector="{DynamicResource DataComponentSelector}"  
+                     VirtualizingStackPanel.IsVirtualizing="True"
+                     >
+<!--                     IsEnabled="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, Path=bBtnExper, Mode=OneWay}" > -->
+<!--                             ItemTemplate="{DynamicResource DtTmpltReg16Bits}" > -->
+<!--                             Background="{Binding ElementName=grdRighPanel, Path=Background}" > -->
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Focusable" Value="False"/>
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Path=bXprRegShow}" Value="false">
+                                <DataTrigger.Setters>
+                                    <Setter Property="Visibility" Value="Collapsed"  />
+                                </DataTrigger.Setters>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.ContainerStyle>
+                            <Style TargetType="{x:Type GroupItem}">
+                                <Setter Property="Margin" Value="0,0,0,5"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type GroupItem}">
+                                            <Expander IsExpanded="True" BorderBrush="#FFA4B97F" Background="#FFCACBCC" BorderThickness="0,0,0,1">
+                                                <Expander.Header>
+                                                    <DockPanel>
+                                                        <TextBlock FontWeight="Bold" FontFamily="Arial" FontSize="16" Text="{Binding Path=Name}" Margin="5,0,0,0"/>
+                                                    </DockPanel>
+                                                </Expander.Header>
+                                                <Expander.Content>
+                                                    <ItemsPresenter />
+                                                </Expander.Content>
+                                            </Expander>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </GroupStyle.ContainerStyle>
+                    </GroupStyle>
+                </ListBox.GroupStyle>
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+            </ListBox>
+        </Border>   <!--Right Panel -->
+        <Popup x:Name="popTip" Placement="Top" PlacementTarget="{Binding}" IsOpen="False" >
+            <Border BorderBrush="Black" BorderThickness="1" CornerRadius="0" Background="LemonChiffon" >
+                <TextBlock x:Name="popText" Foreground="Black" Margin="2,0,2,0">This is tip.</TextBlock>
+            </Border>
+        </Popup>
+        <controls:WaitControl x:Name="ExperWaitControl" Margin="0,0,0,0" Grid.ColumnSpan="2" />
+        <controls:WarningControl x:Name="ExperWarnMsg" Margin="0,0,0,0" Grid.ColumnSpan="2" />
+    </Grid>
+    
+</UserControl>

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Root>
+  <Part Name="SkipDelete">
+    <Folders>
+      <Folder Name="Upgrade"  />
+      <Folder Name="Extensions"  />
+    </Folders>
+  </Part>  
+  <Part Name="SkipCopy">
+    <Folders>
+      <Folder Name="Upgrade"  />
+    </Folders>
+  </Part>
+</Root>

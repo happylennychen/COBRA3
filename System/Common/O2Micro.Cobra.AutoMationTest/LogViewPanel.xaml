@@ -1,0 +1,86 @@
+﻿<Window x:Class="O2Micro.Cobra.AutoMationTest.LogViewPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="200" d:DesignWidth="200" Topmost="False" WindowStyle="ToolWindow" Width="515" Height="590" ResizeMode="NoResize" ShowInTaskbar="False">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100*"></RowDefinition>
+            <RowDefinition Height="40*"></RowDefinition>
+            <RowDefinition Height="60*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <DataGrid Name="loguidatagrid" ItemsSource="{Binding}"
+                  AutoGenerateColumns="True" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False"
+                  CanUserResizeRows="False" CanUserSortColumns="False" IsReadOnly="True" AreRowDetailsFrozen="False">
+        </DataGrid>
+        <Grid  Grid.Row="1" DataContext="{Binding}" Name="SummeryGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <Label Grid.Column="1" Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">PEC</Label>
+            <Label Grid.Column="2" Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">CRC</Label>
+            <Label Grid.Column="3" Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">HoMax</Label>
+            <Label Grid.Column="4" Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">HoMin</Label>
+            <Label Grid.Column="5" Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">PoMax</Label>
+            <Label Grid.Column="6" Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">PoMin</Label>
+            <Label Grid.Column="7" Grid.Row="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">Total</Label>
+            <Label Grid.Column="0" Grid.Row="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">Generated</Label>
+            <Label Grid.Column="0" Grid.Row="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">Caught</Label>
+            <Label Grid.Column="1" Grid.Row="1" Content="{Binding Path=GPEC, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Name="UIGPEC" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+            <Label Grid.Column="2" Grid.Row="1" Content="{Binding Path=GCRC, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Name="UIGCRC" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+            <Label Grid.Column="3" Grid.Row="1" Content="{Binding Path=GoMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Name="UIGOMax" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+            <Label Grid.Column="4" Grid.Row="1" Content="{Binding Path=GoMin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Name="UIGOMin" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+            <Label Grid.Column="5" Grid.Row="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">/</Label>
+            <Label Grid.Column="6" Grid.Row="1" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">/</Label>
+            <Label Grid.Column="7" Grid.Row="1" Content="{Binding Path=GTol, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Name="UIGTol" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+            <Label Grid.Column="1" Grid.Row="2" Content="{Binding Path=CPEC, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Name="UICPEC" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+            <Label Grid.Column="2" Grid.Row="2" Content="{Binding Path=CCRC, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Name="UICCRC" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+            <Label Grid.Column="3" Grid.Row="2" Content="{Binding Path=ChoMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Name="UICHOMax" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+            <Label Grid.Column="4" Grid.Row="2" Content="{Binding Path=ChoMin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Name="UICHOMin" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+            <Label Grid.Column="5" Grid.Row="2" Content="{Binding Path=CpoMax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Name="UICPOMax" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+            <Label Grid.Column="6" Grid.Row="2" Content="{Binding Path=CpoMin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Name="UICPOMin" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+            <Label Grid.Column="7" Grid.Row="2" Content="{Binding Path=CTol, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Name="UICTol" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+            <Label Grid.Column="0" Grid.Row="3" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">Rate:</Label>
+            <Label Grid.Column="1" Grid.Row="3" Content="{Binding Path=PECRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Name="UIPECRate" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" ToolTip="PEC Caught / PEC Generated"></Label>
+            <Label Grid.Column="2" Grid.Row="3" Content="{Binding Path=CRCRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" ToolTip="CRC Caught / CRC Generated"></Label>
+            <Label Grid.Column="3" Grid.Row="3" Content="{Binding Path=HomaxRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" ToolTip="HoMax Caught / HoMax Generated"></Label>
+            <Label Grid.Column="4" Grid.Row="3" Content="{Binding Path=HominRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" ToolTip="HoMin Caught / HoMin Generated"></Label>
+            <Label Grid.Column="5" Grid.Row="3" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">/</Label>
+            <Label Grid.Column="6" Grid.Row="3" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">/</Label>
+            <Label Grid.Column="7" Grid.Row="3" Content="{Binding Path=HominRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" ToolTip="Caught / Generated"></Label>
+        </Grid>
+        <GroupBox Header="Log File Manager" Width="auto" Grid.Row="2" Margin="2">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right">
+                    <Button Name="ViewFolderBtn" Click="ViewFolderBtn_Click">Folder</Button>
+                    <Button Name="DeleteBtn" Click="DeleteBtn_Click" Focusable="False">
+                        Delete
+                    </Button>
+                    <Button Name="LoadBtn" Click="LoadBtn_Click" Focusable="False">
+                        Load
+                    </Button>
+                </StackPanel>
+                <DataGrid Name="logfilelist" ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged}" Width="405"
+                                              AutoGeneratingColumn="logfilelist_AutoGeneratingColumn" 
+                                              CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False"
+                                              CanUserSortColumns="True" IsReadOnly="True" AreRowDetailsFrozen="False">
+                </DataGrid>
+            </DockPanel>
+        </GroupBox>
+    </Grid>
+</Window>

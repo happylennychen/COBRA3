@@ -1,0 +1,27 @@
+
+// Cell Self Discharge Capacity loss per day as a function of temperature)
+// for generic cell
+
+// This table is used to determine the cell self dischare rate, as a fraction of full capacity,
+// based on cell temperature. Cell voltage also affects the self discharge rate, but it is not
+// considered here, as cell temperature has a much larger effect
+
+// table header:
+
+5	//DO NOT CHANGE: word length of header (including this length)
+1	//DO NOT CHANGE: control & 1: if input out of table, return table min/max as appropriate
+1	//DO NOT CHANGE: number of axii
+8	//x axis points: maximum of 20 points
+1	//DO NOT CHANGE: 'y' axis entries per x axis
+	
+//x (independent) axis: temperature in 0.1C: must be in increasing order
+//must be in increasing order: need not be evenly spaced
+
+-50, 50, 150, 210, 330, 450, 550, 650 
+
+//y (dependent) axis: 10000 * percent capacity loss per day 10K = one percent full capacity)
+//500, 1000, 1500, 2142, 3100, 4107, 8200, 16400
+// New self-discharge rate modified based on Alex Kokorin's equation at 90% RSOC
+
+120, 250, 490, 750, 1723, 3959, 7917, 15834
+

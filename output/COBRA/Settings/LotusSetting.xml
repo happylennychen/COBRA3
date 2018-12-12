@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Root>
+  <I2CConfig>
+    <File>C:\Users\mac\Documents\COBRA Documents\LotusF\defaultI2C.xml</File>
+  </I2CConfig>
+  <RandomLog>
+    <Folder>C:\Users\mac\Documents\COBRA Documents\LotusF\Log</Folder>
+  </RandomLog>
+</Root>

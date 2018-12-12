@@ -1,0 +1,17 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "O2Micro.Cobra.ControlLibrary", "O2Micro.Cobra.ControlLibrary\O2Micro.Cobra.ControlLibrary.csproj", "{464e4ede-8e37-4dc3-b2ab-9742e702b58d}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{464E4EDE-8E37-4DC3-B2AB-9742E702B58D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{464E4EDE-8E37-4DC3-B2AB-9742E702B58D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{464E4EDE-8E37-4DC3-B2AB-9742E702B58D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{464E4EDE-8E37-4DC3-B2AB-9742E702B58D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

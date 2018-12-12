@@ -1,0 +1,16 @@
+﻿<UserControl x:Class="O2Micro.Cobra.SBS4Panel.ComboxTempControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" >
+    <Grid VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.65*"/>
+            <RowDefinition Height="0.35*" />
+        </Grid.RowDefinitions>
+
+        <ComboBox Grid.Row="0" x:Name="cb" VerticalAlignment="Top" HorizontalAlignment="Center" ItemsSource="{Binding Path=itemlist,Mode=OneWay}" SelectedIndex="{Binding Path=data}" Padding="5"/>
+        <TextBox Grid.Row="1" x:Name="tb" VerticalAlignment="Top" HorizontalAlignment="Center" Text="{Binding Path= nickname, Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" FontFamily="Arial" FontSize="13" BorderBrush="White" IsReadOnly="True" />
+    </Grid>
+</UserControl>

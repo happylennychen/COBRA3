@@ -1,0 +1,6 @@
+// cell capacity as a function of Open Circuit Voltage// for generic cell// This table is used at initial startup only to determine remaining cell capacity as// a fraction of full capacity, based on the open curcuit (no load, rested) cell voltage.// Please note that the cell must not have been charged or discharged for several// hours prior to this remaining capacity determination, or remaining capacity may// be considerabley in error
+//table header5        //DO NOT CHANGE: word length of header (including this length)1        //DO NOT CHANGE: control & 1: if input out of table, return table min/max as appropriate.1        //DO NOT CHANGE: number of axii21       //x axis points: maximum of 100 points1        //DO NOT CHANGE: 'y' axis entries per x axis
+//x (independent) axis: 10000 * full capacity (at .02C or less) for above voltages// (this is the cell voltage read after 24 hours rest: no charge or discharge)//must be in increasing order: need not be evenly spaced
+00000,00500,01000,01500,02000,02500,03000,03500,04000,04500,05000,05500,06000,06500,07000,07500,08000,08500,09000,09500,10000
+//y (dependent) axis: low cell open circuit millivolts:
+3000,3664,3685,3710,3741,3760,3771,3779,3789,3801,3818,3841,3879,3912,3943,3977,4014,4054,4099,4146,4200

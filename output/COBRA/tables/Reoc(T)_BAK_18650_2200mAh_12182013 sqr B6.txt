@@ -1,0 +1,27 @@
+// End of charge internal resistance in milliohms as function of temperaure
+// for 18650 BAK cell
+
+// This table is used as initial AgeFactor to determine relative aging of cell
+// and to use for RC table correction
+
+// 
+// 
+// 
+
+//table header
+
+5	//DO NOT CHANGE: word length of header (including this length)
+1	//DO NOT CHANGE: control & 1: if input out of table, return table min/max as appropriate.
+1	//DO NOT CHANGE: number of axii
+9 	//x axis points: maximum of 100 points
+1	//DO NOT CHANGE: 'y' axis entries per x axis
+
+//x (independent) axis: Temperature in degree C:
+// 
+//must be in increasing order: need not be evenly spaced
+
+5,10,15,20,25,30,35,40,45
+
+//y (dependent) axis in %:
+
+191,162,138,117,100,87,77,72,70

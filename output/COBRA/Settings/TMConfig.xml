@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Root>
+  <Config Type="OCV">
+    <Version>21</Version>
+  </Config>
+  <Config Type="RC">
+    <Version>29</Version>
+  </Config>
+  <Config Type="CHG">
+    <Version>8</Version>
+  </Config>
+  <Config Type="Table">
+    <Version>29</Version>
+  </Config>
+</Root>
