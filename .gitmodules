@@ -1,0 +1,18 @@
+[submodule "System/DEM/O2Micro.Cobra.Woodpecker8"]
+	path = System/DEM/O2Micro.Cobra.Woodpecker8
+	url = https://github.com/happylennychen/O2Micro.Cobra.Woodpecker8
+[submodule "System/DEM/O2Micro.Cobra.KALL8"]
+	path = System/DEM/O2Micro.Cobra.KALL8
+	url = https://github.com/happylennychen/O2Micro.Cobra.KALL8
+[submodule "System/DEM/O2Micro.Cobra.Azalea14"]
+	path = System/DEM/O2Micro.Cobra.Azalea14
+	url = https://github.com/happylennychen/O2Micro.Cobra.Azalea14
+[submodule "System/DEM/O2Micro.Cobra.KALL10"]
+	path = System/DEM/O2Micro.Cobra.KALL10
+	url = https://github.com/happylennychen/O2Micro.Cobra.KALL10
+[submodule "System/DEM/O2Micro.Cobra.KALL14"]
+	path = System/DEM/O2Micro.Cobra.KALL14
+	url = https://github.com/happylennychen/O2Micro.Cobra.KALL14
+[submodule "System/DEM/O2Micro.Cobra.OZ1C601"]
+	path = System/DEM/O2Micro.Cobra.OZ1C601
+	url = https://github.com/happylennychen/O2Micro.Cobra.OZ1C601
