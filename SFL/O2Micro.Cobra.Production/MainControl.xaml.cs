@@ -228,7 +228,13 @@ namespace O2Micro.Cobra.ProductionPanel
             if (ShowConfig.ToUpper() == "FALSE")
                 CFGContainer.Visibility = System.Windows.Visibility.Collapsed;
             else
+            {
                 CFGTab.Init(this, ProductionSFLName);
+
+                string ShowHEX = xe.GetAttribute("ShowHEX");
+                if (ShowHEX.ToUpper() == "FALSE")
+                    CFGTab.SaveHEXButton.Visibility = System.Windows.Visibility.Collapsed;
+            }
 
             string ShowVerify = xe.GetAttribute("ShowVerify");
             if (ShowVerify.ToUpper() == "FALSE")

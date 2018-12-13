@@ -211,7 +211,7 @@
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Button HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="100" Grid.Column="0" Click="SaveHexButton_Click"  IsEnabled="{Binding ElementName=SavePackButton, Path=IsEnabled, Mode=OneWay}" Content="Save HEX File"></Button>
+            <Button HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="100" Grid.Column="0" Click="SaveHexButton_Click"  IsEnabled="{Binding ElementName=SavePackButton, Path=IsEnabled, Mode=OneWay}" Content="Save HEX File" Name="SaveHEXButton"></Button>
             <Button HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="100" Grid.Column="1" Click="SavePackButton_Click" Content="Save Pack File" Name="SavePackButton">
                 <Button.IsEnabled>
                     <MultiBinding Converter="{StaticResource sbec}" UpdateSourceTrigger="PropertyChanged" Mode="OneWay">
