@@ -511,9 +511,6 @@ namespace O2Micro.Cobra.ProductionPanel
                         hash = xn.InnerText;
                         continue;
                     }
-                    //if (sflname == "BoardConfig")
-                    //if (name.Contains("NEG"))
-                    //name = name.Replace("NEG", "-");      //neg for negative
                     sb.Append(name);
                     if(vmt == ViewModelTypy.CFG)
                         model = cfgviewmodel.GetParameterByName(name);

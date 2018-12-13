@@ -605,9 +605,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     hash = xn.InnerText;
                     continue;
                 }
-                //if (sflname == "BoardConfig")
-                //if (name.Contains("NEG"))
-                //name = name.Replace("NEG", "-");      //neg for negative
                 model = viewmode.GetParameterByName(name);
                 if (model == null) continue;
 
@@ -734,9 +731,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     hash = xn.InnerText;
                     continue;
                 }
-                //if (sflname == "BoardConfig")
-                //if (name.Contains("NEG"))
-                //name = name.Replace("NEG", "-");      //neg for negative
                 model = viewmode.GetParameterByName(name);
                 if (model == null) continue;
 

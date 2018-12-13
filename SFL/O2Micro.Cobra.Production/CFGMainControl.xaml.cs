@@ -143,7 +143,7 @@ namespace O2Micro.Cobra.ProductionPanel
             #endregion
             #endregion
 
-            foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)  //根据ExtensionDescriptor中是否包含BoardConfig SFL来决定是否显示输入项
+            foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)  //根据ExtensionDescriptor中是否包含Board Config SFL来决定是否显示输入项
             {
                 if (btn.btnlabel == "BoardConfig" || btn.btnlabel == "Board Config")
                 {

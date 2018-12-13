@@ -29,13 +29,13 @@
                         <ColumnDefinition></ColumnDefinition>
                         <ColumnDefinition></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" ToolTip="This parameter can be changed in BoardConfig">Rsense(mOhm)</Label>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" ToolTip="This parameter can be changed in Board Config">Rsense(mOhm)</Label>
                     <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="1" ToolTip="{Binding Path=Imax_cal, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">Max Power(mW)</Label>
                     <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="2">Max Current(mA)</Label>
                     <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="3" Name="OVTHLabel">OVTH(mV)</Label>
                     <TextBox HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="0" Width="50" Name="RsenseInput" 
                              Text="{Binding Path=Rsense.phydata, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             IsReadOnly="True" ToolTip="This parameter can be changed in BoardConfig"></TextBox>
+                             IsReadOnly="True" ToolTip="This parameter can be changed in Board Config"></TextBox>
                     <TextBox HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="1" Width="50" Name="PmaxInput" Text="{Binding Path=Pmax_set, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
                     <TextBox HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="2" Width="50" Name="ImaxInput" Text="{Binding Path=Imax_set, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
                     <TextBox HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="3" Width="50" Name="OVTHInput" Text="{Binding Path=OVTH, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
