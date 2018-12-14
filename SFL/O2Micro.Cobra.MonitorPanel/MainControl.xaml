@@ -6,7 +6,7 @@
     xmlns:d3="http://research.microsoft.com/DynamicDataDisplay/1.0"
     xmlns:src="clr-namespace:O2Micro.Cobra.MonitorPanel"
 	xmlns:controls="clr-namespace:O2Micro.Cobra.ControlLibrary;assembly=O2Micro.Cobra.ControlLibrary"
-	mc:Ignorable="d"
+	mc:Ignorable="d" FontSize="12"
 	x:Class="O2Micro.Cobra.MonitorPanel.MainControl"
 	x:Name="UserControl" d:DesignHeight="480" d:DesignWidth="640">
     <UserControl.Resources>
@@ -108,6 +108,11 @@
                                               AutoGeneratingColumn="loglist_AutoGeneratingColumn" 
                                               CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False"
                                               CanUserSortColumns="True" IsReadOnly="True" AreRowDetailsFrozen="False">
+                                                    <DataGrid.ColumnHeaderStyle>
+                                                        <Style TargetType="DataGridColumnHeader">
+                                                            <Setter Property="FontSize" Value="12"/>
+                                                        </Style>
+                                                    </DataGrid.ColumnHeaderStyle>
                                                 </DataGrid>
                                             </DockPanel>
                                         </GroupBox>
@@ -210,6 +215,11 @@
                                           AutoGenerateColumns="True"
                                           CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False"
                                           CanUserSortColumns="False" IsReadOnly="True" AreRowDetailsFrozen="False">
+                                                <DataGrid.ColumnHeaderStyle>
+                                                    <Style TargetType="DataGridColumnHeader">
+                                                        <Setter Property="FontSize" Value="12"/>
+                                                    </Style>
+                                                </DataGrid.ColumnHeaderStyle>
                                             </DataGrid>
                                             <ToggleButton Name="switchGraph" Style="{StaticResource AutoHidding}" Canvas.Top="5" Canvas.Right="5" Panel.ZIndex="3" Click="switchGraph_Click">Curve</ToggleButton>
                                         </Canvas>

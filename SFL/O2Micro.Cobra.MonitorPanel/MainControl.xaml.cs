@@ -723,7 +723,7 @@ namespace O2Micro.Cobra.MonitorPanel
                 string str = GetHashTableValueByKey("LogName", param.sfllist[sflname].nodetable);
                 decimal num = 0;
                 //Issue 615
-                if (msg.sm.dic.Count != 0 && GetHashTableValueByKey("Group", param.sfllist[sflname].nodetable) == "0" && GetHashTableValueByKey("SubGroup", param.sfllist[sflname].nodetable) == "0")   //Issue1303
+                if (msg.sm.dic.Count != 0 && GetHashTableValueByKey("Group", param.sfllist[sflname].nodetable) == "0" && GetHashTableValueByKey("SubGroup", param.sfllist[sflname].nodetable) == "0")   //Issue 1303
                 {
                     uint i = Convert.ToUInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable)); //cell id == i+1
                     num = new decimal(voltagelist[i]);

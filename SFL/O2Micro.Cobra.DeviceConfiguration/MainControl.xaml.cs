@@ -534,6 +534,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 else
                     model.sphydata = tmp;
             }
+            Apply();
         }
 
         public void BoardConfigAutoLoadFile(string fullpath)
@@ -886,7 +887,8 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         }
         private void Reset()
         {
-            StatusLabel.Content = "";
+            LoadBoardConfigFromInternalMemory();
+            /*StatusLabel.Content = "";
             if (parent.bBusy)
             {
                 gm.level = 1;
@@ -927,7 +929,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 return;
             }
 
-            parent.bBusy = false;
+            parent.bBusy = false;*/
         }
         private void Read()
         {
