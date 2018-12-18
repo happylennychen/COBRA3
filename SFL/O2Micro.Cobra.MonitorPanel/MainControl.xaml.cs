@@ -65,7 +65,7 @@ namespace O2Micro.Cobra.MonitorPanel
                 PropertyChanged(this, new PropertyChangedEventArgs(propName));
         }
 
-        private string m_DeviceNum;
+        private string m_DeviceNum;//Issue1428 Leon
         public string DeviceNum
         {
             get { return m_DeviceNum; }
@@ -1703,7 +1703,7 @@ namespace O2Micro.Cobra.MonitorPanel
         private void UpdateLogDataList()
         {
             List<List<String>> records = new List<List<string>>();
-            if (DBManager.GetLogsInforV2(sflname, ref records) != -1)
+            if (DBManager.GetLogsInforV2(sflname, ref records) != -1)//Issue1428 Leon
             {
                 logdatalist.Clear();
                 foreach (var record in records)
@@ -1711,7 +1711,7 @@ namespace O2Micro.Cobra.MonitorPanel
                     LogData ld = new LogData();
                     ld.Timestamp = record[0];
                     ld.RecordNumber = Convert.ToInt64(record[1]);
-                    ld.DeviceNum = record[2];
+                    ld.DeviceNum = record[2];//Issue1428 Leon
                     logdatalist.Add(ld);
                 }
             }
@@ -1764,7 +1764,7 @@ namespace O2Micro.Cobra.MonitorPanel
                     {
                         string timestamp = DateTime.Now.ToString();
                         int log_id = -1;
-                        int ret = DBManager.NewLog(sflname, "Scan Log", timestamp, parent.name, ref log_id);
+                        int ret = DBManager.NewLog(sflname, "Scan Log", timestamp, parent.name, ref log_id);//Issue1428 Leon
                         if (ret != 0)
                             MessageBox.Show("Create Scan Log Failed!");
 
@@ -1908,7 +1908,7 @@ namespace O2Micro.Cobra.MonitorPanel
             {
                 Dictionary<string, string> records = SnapShot.TimerCallbackPool[(long)TimerCounter].LogRow;   //取出快照
                 //DBManager.NewRow(sflname, records);
-                int ret = DBManager.BeginNewRow(sflname, parent.name, records);
+                int ret = DBManager.BeginNewRow(sflname, parent.name, records);//Issue1428 Leon
                 if (ret == -1)
                 {
                     MessageBox.Show("Begin New Row Failed!");
@@ -2146,7 +2146,7 @@ namespace O2Micro.Cobra.MonitorPanel
             {
                 tmp = tmp.Replace(s, '_');
             }
-            tmp = ld.DeviceNum + "_Scan_" + tmp;
+            tmp = ld.DeviceNum + "_Scan_" + tmp;//Issue1428 Leon
             //tmp.Remove(tmp.Length - 4);
             saveFileDialog.FileName = tmp;
             saveFileDialog.FilterIndex = 1;

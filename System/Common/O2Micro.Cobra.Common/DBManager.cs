@@ -21,7 +21,7 @@ namespace O2Micro.Cobra.Common
 
         public static bool supportdb = false;       //目前只有部分oce支持db，通过此变量来兼容不支持的oce。当所有oce都支持db后，可以去掉
         public static bool DebugMode = false;       //为true时，每次启动都会在CobraDocument/Database/DebugDB创建新的临时DB
-        private static string DBName = "CobraDBv1.1.db3";
+        private static string DBName = "CobraDBv1.1.db3";//Issue1406 Leon
         private static string DBpath = "";
         private static object DB_Lock = new object();
         //From Guo.zhu
@@ -307,7 +307,7 @@ namespace O2Micro.Cobra.Common
                     sqls.Add("CREATE TABLE IF NOT EXISTS Projects(project_id INTEGER PRIMARY KEY, product_id INTEGER NOT NULL, user_type TEXT NOT NULL, date TEXT NOT NULL, bus_type TEXT NOT NULL, UNIQUE(product_id, user_type, date));");
                     sqls.Add("CREATE TABLE IF NOT EXISTS Modules(module_id INTEGER PRIMARY KEY, module_name VARCHAR(30) NOT NULL, UNIQUE(module_name));");
                     sqls.Add("CREATE TABLE IF NOT EXISTS TableTypes(table_type INTEGER PRIMARY KEY, project_id INTEGER NOT NULL, module_id INTEGER NOT NULL, UNIQUE(project_id, module_id));");
-                    sqls.Add("CREATE TABLE IF NOT EXISTS Logs(log_id INTEGER PRIMARY KEY, table_type INTEGER NOT NULL, log_info VARCHAR(30), timestamp VARCHAR(17) NOT NULL, device_num VARCHAR(10));");
+                    sqls.Add("CREATE TABLE IF NOT EXISTS Logs(log_id INTEGER PRIMARY KEY, table_type INTEGER NOT NULL, log_info VARCHAR(30), timestamp VARCHAR(17) NOT NULL, device_num VARCHAR(10));");//Issue1406 Leon
                     sqls.Add("CREATE TABLE IF NOT EXISTS Bus_I2C(project_id INTEGER, device_id INTEGER, frequency INTEGER NOT NULL, address INTEGER NOT NULL, pec_enable BOOLEAN NOT NULL, UNIQUE(project_id, device_id));");
                     //todo: Bus_SPI Bus_I2C2 Bus_???
                     SQLiteResult sret = SQLiteDriver.ExecuteNonQueryTransaction(sqls);
@@ -857,7 +857,7 @@ namespace O2Micro.Cobra.Common
             }
         }
 
-        #region support multiple device
+        #region support multiple device//Issue1406 Leon
         public static int NewLog(string module_name, string log_info, string timestamp, string device_num, ref int log_id)
         {
             lock (DB_Lock)

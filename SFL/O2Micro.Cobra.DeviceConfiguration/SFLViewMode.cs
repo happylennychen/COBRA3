@@ -239,7 +239,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         break;
                 }
             }
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.
+            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
                 model.bsubmenu = false;
             else
                 model.bsubmenu = (model.brone | model.bwone);

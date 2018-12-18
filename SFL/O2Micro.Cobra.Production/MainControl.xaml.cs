@@ -38,7 +38,7 @@ namespace O2Micro.Cobra.ProductionPanel
     public partial class MainControl
     {
         #region 变量定义
-        private string ProductionSFLName = "";
+        private string ProductionSFLName = "";//Issue1426 Leon
         private static class ProductionRecord
         {
             public static Dictionary<string, string> DBRecord = new Dictionary<string, string>();
@@ -157,7 +157,7 @@ namespace O2Micro.Cobra.ProductionPanel
             parent = (Device)pParent;
             if (parent == null) return;
 
-            ProductionSFLName = name;
+            ProductionSFLName = name;//Issue1426 Leon
             ProductionSFLDBName = "Production";
             if (String.IsNullOrEmpty(ProductionSFLDBName)) return;
 
@@ -181,7 +181,7 @@ namespace O2Micro.Cobra.ProductionPanel
 
             #region 初始化Password
             string str_option = String.Empty;
-            XmlNodeList nodelist = parent.GetUINodeList(ProductionSFLName);
+            XmlNodeList nodelist = parent.GetUINodeList(ProductionSFLName);//Issue1426 Leon
             string password = String.Empty;
             foreach (XmlNode node in nodelist)
             {
@@ -211,7 +211,7 @@ namespace O2Micro.Cobra.ProductionPanel
                 columns.Add("TestResult", DBManager.DataType.TEXT);
                 columns.Add("Time", DBManager.DataType.TEXT);
                 ProductionRecord.Init(columns);
-                int ret = DBManager.CreateTableN(ProductionSFLDBName, columns);
+                int ret = DBManager.CreateTableN(ProductionSFLDBName, columns);//Issue1426 Leon
                 if (ret != 0)
                     System.Windows.MessageBox.Show("Create Production Table Failed!");
             }
@@ -219,7 +219,7 @@ namespace O2Micro.Cobra.ProductionPanel
 
             InitialUI();
 
-            #region Hide or Show Configuration Tab
+            #region Hide or Show Configuration Tab//Issue1272 Leon
             XmlElement root = EMExtensionManage.m_extDescrip_xmlDoc.DocumentElement;
             if (root == null) return;
             XmlNode ProductionNode = root.SelectSingleNode("descendant::Button[@DBModuleName = '"+ProductionSFLDBName+"']");
@@ -231,7 +231,7 @@ namespace O2Micro.Cobra.ProductionPanel
             {
                 CFGTab.Init(this, ProductionSFLName);
 
-                string ShowHEX = xe.GetAttribute("ShowHEX");
+                string ShowHEX = xe.GetAttribute("ShowHEX");//Issue1418 Leon
                 if (ShowHEX.ToUpper() == "FALSE")
                     CFGTab.SaveHEXButton.Visibility = System.Windows.Visibility.Collapsed;
             }
@@ -761,7 +761,7 @@ namespace O2Micro.Cobra.ProductionPanel
         {
             msg.task_parameterlist.parameterlist = cfgviewmodel.dm_parameterlist.parameterlist;
             msg.owner = this;
-            msg.gm.sflname = ProductionSFLName;
+            msg.gm.sflname = ProductionSFLName;//Issue1426 Leon
             UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
 
             #region Database New Log
@@ -831,7 +831,7 @@ namespace O2Micro.Cobra.ProductionPanel
         {
             UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
             msg.owner = this;
-            msg.gm.sflname = ProductionSFLName;
+            msg.gm.sflname = ProductionSFLName;//Issue1426 Leon
             msg.task = TM.TM_BLOCK_MAP;
             parent.AccessDevice(ref m_Msg);
             while (msg.bgworker.IsBusy)
@@ -846,7 +846,7 @@ namespace O2Micro.Cobra.ProductionPanel
         {
             UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
             msg.owner = this;
-            msg.gm.sflname = ProductionSFLName;
+            msg.gm.sflname = ProductionSFLName;//Issue1426 Leon
             msg.task = TM.TM_COMMAND;
             msg.sub_task = sub_task;
             parent.AccessDevice(ref m_Msg);
@@ -906,7 +906,7 @@ namespace O2Micro.Cobra.ProductionPanel
         }
         private UInt32 SendTestCommand()
         {
-            scanlist = parent.GetParamLists(ProductionSFLName).parameterlist;
+            scanlist = parent.GetParamLists(ProductionSFLName).parameterlist;//Issue1426 Leon
             msg.task_parameterlist.parameterlist = scanlist;
             msg.task = TM.TM_READ;
             parent.AccessDevice(ref m_Msg);
@@ -1232,7 +1232,7 @@ namespace O2Micro.Cobra.ProductionPanel
                 {
                     string timestamp = DateTime.Now.ToString();
                     int log_id = -1;
-                    int r = DBManager.NewLog(ProductionSFLDBName, "Production Log", timestamp, ref log_id);
+                    int r = DBManager.NewLog(ProductionSFLDBName, "Production Log", timestamp, ref log_id);//Issue1426 Leon
                     if (r != 0)
                         System.Windows.MessageBox.Show("New Production Log Failed!");
                 }
@@ -1242,7 +1242,7 @@ namespace O2Micro.Cobra.ProductionPanel
                 ProductionRecord.DBRecord["ProcessResult"] = prLstring;
                 ProductionRecord.DBRecord["TestResult"] = trLstring;
                 ProductionRecord.DBRecord["Time"] = DateTime.Now.ToString("yyyy-MM-dd:hh-mm-ss");
-                ProductionRecord.Save(ProductionSFLDBName);
+                ProductionRecord.Save(ProductionSFLDBName);//Issue1426 Leon
                 #endregion
                 #endregion
                 #region Show Success Message

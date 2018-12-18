@@ -96,7 +96,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         #region C-HFile
         private List<string> lineList = new List<string>();
         #endregion
-        private Dictionary<string, string> BCImg = new System.Collections.Generic.Dictionary<string, string>();
+        private Dictionary<string, string> BCImg = new System.Collections.Generic.Dictionary<string, string>();//Issue 1426 Leon
 
         public MainControl(object pParent, string name)
         {
@@ -117,9 +117,9 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             viewmode = new SFLViewMode(pParent, this);
 
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.
+            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
             {
-                SaveBoardConfigToInternalMemory();
+                SaveBoardConfigToInternalMemory();//Issue1378 Leon
             }
 
             PasswordPopControl.SetParent(mDataGrid);
@@ -242,7 +242,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         }
                 }
             }
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.	//Issue686
+            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.	//Issue686//Issue 1426 Leon
             {
                 WriteBtn.Content = "Apply";
                 ReadBtn.Content = "Reset";
@@ -304,7 +304,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         {
             string fullpath = "";
             Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.
+            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
             {
                 openFileDialog.Title = "Load Board Config file";			//Support Production SFL, Leon
                 openFileDialog.Filter = "Board Config file (*.board)|*.board||";
@@ -331,13 +331,13 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             else
                 return;
 
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.    //Issue1373
+            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.    //Issue1373//Issue 1426 Leon
             {
-                SaveBoardConfigFilePath(fullpath);
+                SaveBoardConfigFilePath(fullpath);//Issue1378 Leon
             }
         }
 
-        private string GetChipName()
+        private string GetChipName()//Issue1373 Leon
         { 
             XmlElement root = EMExtensionManage.m_extDescrip_xmlDoc.DocumentElement;
             return root.GetAttribute("chip");
@@ -406,20 +406,20 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         {
             string fullpath = "";
             string chipname = GetChipName();    //Issue1373
-            string MD5Code = GetMD5Code();
+            string MD5Code = GetMD5Code();//Issue1373 Leon
             Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();
             saveFileDialog.FilterIndex = 1;
             saveFileDialog.RestoreDirectory = true;
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.
+            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
             {
-                saveFileDialog.FileName = chipname+"-"+MD5Code;
+                saveFileDialog.FileName = chipname+"-"+MD5Code;//Issue1373 Leon
                 saveFileDialog.Title = "Save Board Config file";
                 saveFileDialog.Filter = "Board Config file (*.board)|*.board||";
                 saveFileDialog.DefaultExt = "board";
             }
             else
             {
-                saveFileDialog.FileName = chipname + "-" + MD5Code;
+                saveFileDialog.FileName = chipname + "-" + MD5Code;//Issue1373 Leon
                 saveFileDialog.Title = "Save Configuration File";
                 saveFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg|c file (*.c)|*.c|h file (*.h)|*.h||";
                 saveFileDialog.DefaultExt = "cfg";
@@ -437,12 +437,12 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             else return;
 
             StatusLabel.Content = fullpath;
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.    //Issue1373
+            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.    //Issue1373//Issue 1426 Leon
             {
                 SaveBoardConfigFilePath(fullpath);
             }
         }
-        private void SaveBoardConfigToInternalMemory()
+        private void SaveBoardConfigToInternalMemory()//Issue1378 Leon
         {
             foreach (SFLModel model in viewmode.sfl_parameterlist)
             {
@@ -470,7 +470,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
         }
 
-        public void LoadBoardConfigFromInternalMemory()
+        public void LoadBoardConfigFromInternalMemory()//Issue1378 Leon
         {
             double dval = 0.0;
             string tmp;
@@ -880,12 +880,12 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             //string timestamp = DateTime.Now.ToString();
             //int log_id = -1;
             //DBManager.NewLog("Com", "Com Log", timestamp, ref log_id);
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.
-                Reset();
+            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+                Reset();//Issue1381 Leon
             else
                 Read();
         }
-        private void Reset()
+        private void Reset()//Issue1373 Leon
         {
             LoadBoardConfigFromInternalMemory();
             /*StatusLabel.Content = "";
@@ -1064,8 +1064,8 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     msg.task_parameterlist = viewmode.dm_part_parameterlist;
                     break;
                 case "Button":
-                    if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.
-                    {
+                    if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+                    {//Issue1381 Leon
                     }
                     else
                     {
@@ -1086,12 +1086,12 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     btn_ctrl.btn_cm.IsOpen = true;
                     return;
             }
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.
-                Apply();
+            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+                Apply();//Issue1381 Leon
             else
                 write();
         }
-        private void Apply()
+        private void Apply()//Issue1381 Leon
         {
             UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
             if (parent.bBusy)

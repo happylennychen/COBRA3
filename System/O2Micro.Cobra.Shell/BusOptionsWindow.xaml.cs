@@ -28,7 +28,7 @@ namespace O2Micro.Cobra.Shell
 	/// </summary>
 	public partial class BusOptionsWindow : Window
     {
-        public string BoardConfigsflname; 
+        public string BoardConfigsflname; //Issue1374 Leon
         //父对象保存
         private MainWindow m_parent;
         public MainWindow parent
@@ -69,8 +69,8 @@ namespace O2Micro.Cobra.Shell
 			Hide();
             Close();
 		}
-        private O2Micro.Cobra.DeviceConfigurationPanel.MainControl BoardConfigSFL;
-        private bool hasBoardConfigSFL()
+        private O2Micro.Cobra.DeviceConfigurationPanel.MainControl BoardConfigSFL;//Issue1374 Leon
+        private bool hasBoardConfigSFL()//Issue1374 Leon
         {
             foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
             {
@@ -83,7 +83,7 @@ namespace O2Micro.Cobra.Shell
             return false;
         }
 
-        private int GetBoardConfigIndex()
+        private int GetBoardConfigIndex()//Issue1374 Leon
         {
             foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
             {
@@ -97,7 +97,7 @@ namespace O2Micro.Cobra.Shell
         private void SwitchToBoardConfig()
         {
             int index = GetBoardConfigIndex();
-            if (index > 0)
+            if (index >= 0)
                 parent.FeatureBtnList.SelectedIndex = index;
         }
         private string GetPreviousSettingsFilePath()
@@ -160,7 +160,7 @@ namespace O2Micro.Cobra.Shell
                 MessageBox.Show("Please check board settings first.");
                 SwitchToBoardConfig();
 
-                List<WorkPanelItem> tabs = EMExtensionManage.m_EM_DevicesManage.GetWorkPanelTabItemsByBtnName(BoardConfigsflname);
+                List<WorkPanelItem> tabs = EMExtensionManage.m_EM_DevicesManage.GetWorkPanelTabItemsByBtnLabel(BoardConfigsflname);
                 for (int i = 0; i < tabs.Count; i++)
                 {
                     WorkPanelItem wpi = tabs[i];
