@@ -543,6 +543,7 @@ namespace O2Micro.Cobra.Communication
             DataTable dtTable = ldTmp.logbuf;
             DataRow drRow = dtTable.NewRow();
             string strdbg = string.Empty;
+            UInt16 wTempLength = 0;
 
 //			if (true)
 //			{
@@ -557,42 +558,169 @@ namespace O2Micro.Cobra.Communication
 					record[CommunicationLog.strColHeader[0]] = strTmp;
 					record[CommunicationLog.strColHeader[1]] = string.Format("0x{0:X8}", u32RandId);
 					record[CommunicationLog.strColHeader[2]] = string.Format("0x{0:X8}", ErrorCode);
-					if (yRW == 0)
-					{
-						record[CommunicationLog.strColHeader[3]] = "Write".ToString();
-						strdbg = "Write".ToString();
-					}
-					else
-					{
-						record[CommunicationLog.strColHeader[3]] = "Read".ToString();
-						strdbg = "Read".ToString();
-					}
-					if ((m_busopDev.BusType == BUS_TYPE.BUS_TYPE_I2C) || (m_busopDev.BusType == BUS_TYPE.BUS_TYPE_I2C2))
-					{
+                    if ((m_busopDev.BusType == BUS_TYPE.BUS_TYPE_I2C) || (m_busopDev.BusType == BUS_TYPE.BUS_TYPE_I2C2))
+                    {
+                        if (yRW == 0)
+					    {
+						    record[CommunicationLog.strColHeader[3]] = "Write".ToString();
+						    strdbg = "Write".ToString();
+					    }
+					    else
+					    {
+						    record[CommunicationLog.strColHeader[3]] = "Read".ToString();
+						    strdbg = "Read".ToString();
+					    }
 						record[CommunicationLog.strColHeader[4]] = string.Format("0x{0:X2}", yDataFromDEM[0]);
 						record[CommunicationLog.strColHeader[5]] = string.Format("0x{0:X2}", yDataFromDEM[1]);
 						strdbg += string.Format(" 0x{0:X2}, 0x{1:X2}, counter={2:d}", yDataFromDEM[0], yDataFromDEM[1], AutoMationTest.AutoMationTest.wTotalRun);
-					}
-					if (yRW == 0)
-					{
-						for (int i = 0; i < wLengthDEM; i++)
-						{
-							record[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromDEM[i + 2]);
-							if (i >= 2) break;
-						}
-					}
-					else
-					{
-						for (int i = 0; i < wLengthChip; i++)
-						{
-							record[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromChip[i]);
-							if (i >= 2) break;
-						}
-					}
-					record[CommunicationLog.strColHeader[9]] = AutoMationTest.AutoMationTest.strATMErrDescrip;
 
-					//DBManager.NewRow("Com", record);
-					CommunicationDBLog.WriteDatatoDBLog(record);
+                        if (yRW == 0)
+                        {
+                            //if (wLengthDEM <= 3)
+                            //{
+                            //    for (int i = 0; i < wLengthDEM; i++)
+                            //    {
+                            //        record[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromDEM[i + 2]);
+                            //        //if (i >= 2) break;
+                            //    }
+                            //}
+                            //else
+                            {
+                                strTmp = string.Empty;
+                                for (int i = 0; i < wLengthDEM; i++)
+                                {
+                                    strTmp += string.Format("0x{0:X2}, ", yDataFromDEM[i + 2]);
+                                }
+                                record[CommunicationLog.strColHeader[6]] = strTmp;
+                            }
+                        }
+                        else
+                        {
+                            //if (wLengthChip <= 3)
+                            //{
+                            //    for (int i = 0; i < wLengthChip; i++)
+                            //    {
+                            //        record[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromChip[i]);
+                            //        //if (i >= 2) break;
+                            //    }
+                            //}
+                            //else
+                            {
+                                strTmp = string.Empty;
+                                for (int i = 0; i < wLengthChip; i++)
+                                {
+                                    strTmp += string.Format("0x{0:X2}, ", yDataFromChip[i]);
+                                }
+                                record[CommunicationLog.strColHeader[6]] = strTmp;
+                            }
+                        }
+                        record[CommunicationLog.strColHeader[9]] = AutoMationTest.AutoMationTest.strATMErrDescrip;
+
+                        //DBManager.NewRow("Com", record);
+                        CommunicationDBLog.WriteDatatoDBLog(record);
+                    }
+                    //if (yRW == 0)
+                    //{
+                    //    for (int i = 0; i < wLengthDEM; i++)
+                    //    {
+                    //        record[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromDEM[i + 2]);
+                    //        if (i >= 2) break;
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    for (int i = 0; i < wLengthChip; i++)
+                    //    {
+                    //        record[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromChip[i]);
+                    //        if (i >= 2) break;
+                    //    }
+                    //}
+                    else
+                    {
+                        if (yRW == 0)
+                        {
+                            record[CommunicationLog.strColHeader[3]] = "Write".ToString();
+                            strdbg = "Write".ToString();
+                            //if (wLengthDEM <= 3)
+                            //{
+                            //    for (int i = 0; i < wLengthDEM; i++)
+                            //    {
+                            //        record[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromDEM[i + 2]);
+                            //        //if (i >= 2) break;
+                            //    }
+                            //}
+                            //else
+                            {
+                                strTmp = string.Empty;
+                                for (int i = 0; i < wLengthDEM; i++)
+                                {
+                                    strTmp += string.Format("0x{0:X2}, ", yDataFromDEM[i]);
+                                }
+                                record[CommunicationLog.strColHeader[6]] = strTmp;
+                            }
+                            record[CommunicationLog.strColHeader[9]] = AutoMationTest.AutoMationTest.strATMErrDescrip;
+
+                            //DBManager.NewRow("Com", record);
+                            CommunicationDBLog.WriteDatatoDBLog(record);
+                        }
+                        else
+                        {
+                            Dictionary<string, string> recordwr = new Dictionary<string, string>();
+                            //string[] strColHeader = { "DayTime", "CID", "ErrCode", "R/W", "I2CAddr", "RegIndex", "Data1", "Data2", "Data3", "ErrComments" };
+                            AutoMationTest.AutoMationTest.AnalyzeATMUID(u32RandId, ref strTmp, ref yRW);
+                            recordwr[CommunicationLog.strColHeader[0]] = strTmp;
+                            recordwr[CommunicationLog.strColHeader[1]] = string.Format("0x{0:X8}", u32RandId);
+                            recordwr[CommunicationLog.strColHeader[2]] = string.Format("0x{0:X8}", ErrorCode);
+                            recordwr[CommunicationLog.strColHeader[3]] = "Write".ToString();
+                            strdbg = "Write".ToString();
+                            //if (wLengthDEM <= 3)
+                            //{
+                            //    for (int i = 0; i < wLengthDEM; i++)
+                            //    {
+                            //        record[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromDEM[i + 2]);
+                            //        //if (i >= 2) break;
+                            //    }
+                            //}
+                            //else
+                            {
+                                strTmp = string.Empty;
+                                for (int i = 0; i < wLengthDEM; i++)
+                                {  
+                                    strTmp += string.Format("0x{0:X2}, ", yDataFromDEM[i]);
+                                }
+                                recordwr[CommunicationLog.strColHeader[6]] = strTmp;
+                            }
+                            recordwr[CommunicationLog.strColHeader[9]] = AutoMationTest.AutoMationTest.strATMErrDescrip;
+
+                            //DBManager.NewRow("Com", record);
+                            CommunicationDBLog.WriteDatatoDBLog(recordwr);
+
+                            record[CommunicationLog.strColHeader[3]] = "Read".ToString();
+                            strdbg = "Read".ToString();
+
+                            //if (wLengthChip <= 3)
+                            //{
+                            //    for (int i = 0; i < wLengthChip; i++)
+                            //    {
+                            //        record[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromChip[i]);
+                            //        //if (i >= 2) break;
+                            //    }
+                            //}
+                            //else
+                            {
+                                strTmp = string.Empty;
+                                for (int i = 0; i < wLengthChip; i++)
+                                {
+                                    strTmp += string.Format("0x{0:X2}, ", yDataFromChip[i]);
+                                }
+                                record[CommunicationLog.strColHeader[6]] = strTmp;
+                            }
+                            record[CommunicationLog.strColHeader[9]] = AutoMationTest.AutoMationTest.strATMErrDescrip;
+
+                            //DBManager.NewRow("Com", record);
+                            CommunicationDBLog.WriteDatatoDBLog(record);
+                        }
+                    }
 
 					//dtTable.Rows.Add(record);
 					//if (dtTable.Rows.Count >= CommunicationLog.clCommLog.logbuflen)
@@ -630,23 +758,63 @@ namespace O2Micro.Cobra.Communication
 						drRow[CommunicationLog.strColHeader[5]] = string.Format("0x{0:X2}", yDataFromDEM[1]);
 						strdbg += string.Format(" 0x{0:X2}, 0x{1:X2}, counter={2:d}", yDataFromDEM[0], yDataFromDEM[1], AutoMationTest.AutoMationTest.wTotalRun);
 					}
-					if (yRW == 0)
-					{
-						for (int i = 0; i < wLengthDEM; i++)
-						{
-							drRow[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromDEM[i + 2]);
-							if (i >= 2) break;
-						}
-					}
-					else
-					{
-						for (int i = 0; i < wLengthChip; i++)
-						{
-							drRow[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromChip[i]);
-							if (i >= 2) break;
-						}
-					}
-					drRow[CommunicationLog.strColHeader[9]] = AutoMationTest.AutoMationTest.strATMErrDescrip;
+                    //if (yRW == 0)
+                    //{
+                    //    for (int i = 0; i < wLengthDEM; i++)
+                    //    {
+                    //        drRow[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromDEM[i + 2]);
+                    //        if (i >= 2) break;
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    for (int i = 0; i < wLengthChip; i++)
+                    //    {
+                    //        drRow[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromChip[i]);
+                    //        if (i >= 2) break;
+                    //    }
+                    //}
+                    if (yRW == 0)
+                    {
+                        if (wLengthDEM <= 3)
+                        {
+                            for (int i = 0; i < wLengthDEM; i++)
+                            {
+                                drRow[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromDEM[i + 2]);
+                                //if (i >= 2) break;
+                            }
+                        }
+                        else
+                        {
+                            strTmp = string.Empty;
+                            for (int i = 0; i < wLengthDEM; i++)
+                            {
+                                strTmp += string.Format("0x{0:X2}, ", yDataFromDEM[i + 2]);
+                            }
+                            drRow[CommunicationLog.strColHeader[6]] = strTmp;
+                        }
+                    }
+                    else
+                    {
+                        if (wLengthChip <= 3)
+                        {
+                            for (int i = 0; i < wLengthChip; i++)
+                            {
+                                drRow[CommunicationLog.strColHeader[6 + i]] = string.Format("0x{0:X2}", yDataFromChip[i]);
+                                //if (i >= 2) break;
+                            }
+                        }
+                        else
+                        {
+                            strTmp = string.Empty;
+                            for (int i = 0; i < wLengthChip; i++)
+                            {
+                                strTmp += string.Format("0x{0:X2}, ", yDataFromChip[i]);
+                            }
+                            drRow[CommunicationLog.strColHeader[6]] = strTmp;
+                        }
+                    }
+                    drRow[CommunicationLog.strColHeader[9]] = AutoMationTest.AutoMationTest.strATMErrDescrip;
 
 					dtTable.Rows.Add(drRow);
 					if (dtTable.Rows.Count >= CommunicationLog.clCommLog.logbuflen)

@@ -182,6 +182,7 @@
     <ProjectReference Include="..\..\SFL\O2Micro.Cobra.DeviceConfiguration\O2Micro.Cobra.DeviceConfigurationPanel.csproj">
       <Project>{3608FC2B-CE79-4403-87EB-85E25EA32C55}</Project>
       <Name>O2Micro.Cobra.DeviceConfigurationPanel</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Common\O2Micro.Cobra.AutoMationTest\O2Micro.Cobra.AutoMationTest.csproj">
       <Project>{0FBD7494-ACFD-4D20-8698-99CECB165A05}</Project>

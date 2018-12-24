@@ -450,7 +450,8 @@ namespace O2Micro.Cobra.ExperPanel
 				}	//if (bAdd)
 				else
 				{
-					mdltemp.strRegName = ExperBitComponent.RegDescrpDefault;
+                    if (mdltemp.strRegName.Length == 0)
+    					mdltemp.strRegName = ExperBitComponent.RegDescrpDefault;
 				}
 				yBitStartLoc = 0;	//after resigning to ArrRegComponet[], yBitStartLoc start from 0 if threshold length is bigger than total length
 			}	//for (j = 0; j <= iLoopParse; j++)
@@ -1542,6 +1543,7 @@ namespace O2Micro.Cobra.ExperPanel
 			ParamContainer pmCtntmp = new ParamContainer();
 			AsyncObservableCollection<ExperModel> explisttmp = new AsyncObservableCollection<ExperModel>();
 			ParamContainer pmPhytmp = new ParamContainer();
+            UInt16 uMask = 0, uTempM = 1;
 
 			//devParent.bBusy = true;
 
@@ -1555,6 +1557,20 @@ namespace O2Micro.Cobra.ExperPanel
 					tskmsgExper.errorcode = LibErrorCode.IDS_ERR_EXPSFL_OPREG_NOT_FOUND;
 					return bReturn;
 				}
+                foreach (ExperBitComponent ebcArr in expmIn.ArrRegComponet)
+                {
+                    if ((ebcArr.bWrite) && (ebcArr.expXMLdataParent != null))
+                    {
+                        uTempM = 0;
+                        for (Byte jk = 0; jk<ebcArr.expXMLdataParent.yLength; jk++)
+                        {
+                            uTempM |= (UInt16)(1 << (jk+ebcArr.expXMLdataParent.yBitStart));
+                        }
+                        uMask |= uTempM;
+                    }
+                }
+                expmIn.u16RegVal &= uMask;
+                expmIn.SeperateRegValueToBit();
 				pmrtmp.phydata = (double)expmIn.u16RegVal;	//assign phydata as Summerized value
 				pmCtntmp.parameterlist.Add(pmrtmp);
 				explisttmp.Add(expmIn);

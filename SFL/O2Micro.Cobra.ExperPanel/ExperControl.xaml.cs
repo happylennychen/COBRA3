@@ -161,6 +161,7 @@ namespace O2Micro.Cobra.ExperPanel
 						case COMMON_CONTROL.COMMON_CONTROL_WARNING:
 							{
 								//WarningControlPInvoke(gnlmsgProduct);
+                                ExperWarnMsgInvoke(tskmsgSend.gm.message);
 								break;
 							}
 

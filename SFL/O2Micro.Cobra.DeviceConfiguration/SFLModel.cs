@@ -32,7 +32,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         }
 
         private string m_Name;
-        public string name
+        public string name  //Used by SaveCFile and SaveHFile
         {
             get { return m_Name; }
             set { m_Name = value; }
@@ -124,7 +124,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         }
 
         private bool m_bEdit;
-        public bool bedit
+        public bool bedit       //Binding to IsEnable
         {
             get { return m_bEdit; }
             set
@@ -135,7 +135,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         }
 
         private bool m_bError;
-        public bool berror
+        public bool berror      //Binding to Foreground Color
         {
             get { return m_bError; }
             set
@@ -146,7 +146,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         }
 
         private bool m_bRange;
-        public bool brange
+        public bool brange      //Using phydata or sphydata
         {
             get { return m_bRange; }
             set
@@ -171,7 +171,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         }
 
         private UInt16 m_EventMode;
-        public UInt16 eventmode
+        public UInt16 eventmode     //Used only by UpdateParam function
         {
             get { return m_EventMode; }
             set
@@ -213,7 +213,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         }
 
         private bool m_bROne;
-        public bool brone
+        public bool brone       //Binding to Read One Parameter option visibility
         {
             get { return m_bROne; }
             set
@@ -227,7 +227,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         }
 
         private bool m_bWOne;
-        public bool bwone
+        public bool bwone       //Binding to Write One Parameter option visibility
         {
             get { return m_bWOne; }
             set
@@ -241,7 +241,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         }
 
         private bool m_bSubMenu;
-        public bool bsubmenu
+        public bool bsubmenu    //Binding to submenue visibility
         {
             get { return m_bSubMenu; }
             set

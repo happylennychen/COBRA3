@@ -1,4 +1,4 @@
-//#define debug
+#define debug
 using System;
 using System.Text;
 using System.IO;
@@ -99,6 +99,7 @@ namespace O2Micro.Cobra.EM
 
         private void ClearExtTemp()
         {
+#if !debug
             //Clear temp folder
             DirectoryInfo directory = new DirectoryInfo(FolderMap.m_extension_work_folder);
             if (!directory.Exists)
@@ -106,6 +107,7 @@ namespace O2Micro.Cobra.EM
             else
                 foreach (FileInfo files in directory.GetFiles(FolderMap.m_extension_common_name))
                     files.Delete();
+#endif
         }
 
         private bool UnZipExtension()
@@ -113,6 +115,7 @@ namespace O2Micro.Cobra.EM
             if (Registry.GetCurExtensionFileName().Length == 0) return false;
             FolderMap.m_curextensionfile_name = Registry.GetCurExtensionFileName();
 
+#if !debug
             string fullname = Registry.GetCurExtensionFileName() + FolderMap.m_extension_ext;
             string fullpath = FolderMap.m_extension_work_folder;
 
@@ -124,7 +127,6 @@ namespace O2Micro.Cobra.EM
                 else
                     GZip.Decompress(FolderMap.m_extensions_folder, fullpath, fullname);
             }
-#if !debug
             //复制Dll文件到主目录下
             foreach (string path in Directory.GetFiles(FolderMap.m_extension_work_folder, "*.dll"))
             {

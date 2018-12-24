@@ -32,7 +32,7 @@ namespace O2Micro.Cobra.Communication.RS232
         private IntPtr ptrUART = System.IntPtr.Zero;
         private string strPortName = string.Empty;      //"COM4"
         private const int ReadDelay = 100;
-        private const int ReadTimeout = 40; //10
+        private const int ReadTimeout = 100;//40; //10
         private NativeMethods.DCB dcbCommPort = new NativeMethods.DCB();
         private NativeMethods.COMMTIMEOUTS ctoCommPort = new NativeMethods.COMMTIMEOUTS();
 

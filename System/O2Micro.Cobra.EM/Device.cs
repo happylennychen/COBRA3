@@ -339,7 +339,7 @@ namespace O2Micro.Cobra.EM
         #region 设备工作线程定义
         private void bgworker_DoWork(object sender, DoWorkEventArgs e)
         {
-            msg.gm.controls = name + ": " + "Device Thread";
+            //msg.gm.controls = name + ": " + "Device Thread";
             msg.gm.deviceindex = index + 1;
             UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
             switch (msg.task)

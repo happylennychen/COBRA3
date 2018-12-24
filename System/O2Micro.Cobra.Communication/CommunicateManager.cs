@@ -70,7 +70,7 @@ namespace O2Micro.Cobra.Communication
 		// </summary>
 		private const byte m_MajorVer = 0x02;
 		private const byte m_MiddleVer = 0x00;
-		private const byte m_MinorVer = 0x02;
+		private const byte m_MinorVer = 0x03;
 		private const byte m_TestVer = 0x00;
 
 		private string[] m_supported = new string[] {"O2USB".ToString(), "Aadvark".ToString()};
@@ -1229,7 +1229,7 @@ namespace O2Micro.Cobra.Communication
             Options opPort = null;
             bool bReturn = false;
 
-			//(M171122)Francis, id=617, in order to export DLL, we make Connect Port and disalbe hook
+			//(M171122)Francis, id=617, in order to export DLL, we make Connect Port and disable hook
             if (m_DevBus.optionsList.Count == 0)
             {
 				MakeFakeBusOptions();

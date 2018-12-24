@@ -777,7 +777,8 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                             model.berror = true;
                         else
                             model.berror = false;
-                            
+
+                        model.itemlist = p.itemlist;        //Issue1438 Leon
                         model.listindex = model.listindex; //触发Combobox选择
                         model.errorcode = p.errorcode;
                         break;
