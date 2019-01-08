@@ -53,11 +53,18 @@ namespace O2Micro.Cobra.Shell
                 string fullname = FolderMap.m_extension_common_name + FolderMap.m_extension_ext;
                 foreach (FileInfo file in directory.GetFiles(fullname))
                 {
-                    if (file.Extension != ".oce")
-                        continue;
-                    ExtensionFile ef = new ExtensionFile();
-                    if (ef.Init(System.IO.Path.GetFileName(file.Name)) == LibErrorCode.IDS_ERR_SUCCESSFUL)
-                        ExtensionFiles.Add(ef);
+                    ExtensionFile ef = new ExtensionFile(); //Issue1289
+                    UInt32 ret = ef.Init(System.IO.Path.GetFileName(file.Name));
+                    if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                    {
+                        ef.IsLegal = false;
+                        ef.Info = LibErrorCode.GetErrorDescription(ret);
+                    }
+                    else
+                    {
+                        ef.IsLegal = true;
+                    }
+                    ExtensionFiles.Add(ef);
                 }
                 UpdateExtensionsLegality();
             }
@@ -65,7 +72,7 @@ namespace O2Micro.Cobra.Shell
 
         private void UpdateExtensionsLegality()
         {
-            int number = ExtensionFiles.Count;
+            /*int number = ExtensionFiles.Count;
             for (int i = 0; i < number; i++)
             {
                 ExtensionFiles[i].IsLegal = true;
@@ -86,6 +93,16 @@ namespace O2Micro.Cobra.Shell
                         ExtensionFiles[j].IsLegal = false;
                     }
                 }
+            }*/
+            int number = ExtensionFiles.Count;  //Issue1289
+            for (int i = 0; i < number; i++)
+            {
+                if (IsInDebugMode)
+                    ExtensionFiles[i].IsHighLighted = false;
+                else if (ExtensionFiles[i].IsLegal == false)
+                    ExtensionFiles[i].IsHighLighted = true;
+                else
+                    ExtensionFiles[i].IsHighLighted = false;
             }
         }
 
@@ -100,7 +117,7 @@ namespace O2Micro.Cobra.Shell
         private void SelectBtn_Click(object sender, RoutedEventArgs e)
         {
             ExtensionFile ef = (ExtensionFile)ExManager.SelectedItem;
-            if (ef.IsLegal == false)
+            if (ef.IsLegal == false && IsInDebugMode == false)
             {
                 MessageBox.Show("This OCE is illegal and cannot be loaded!");
                 return;
@@ -135,11 +152,6 @@ namespace O2Micro.Cobra.Shell
                         MessageBox.Show("The files in this folder have already been loaded, please choose another folder.");
                         return;
                     }
-                    if (System.IO.Path.GetExtension(filename) == ".OCE")
-                    {
-                        MessageBox.Show("The capital extension is not acceptable.");
-                        return;
-                    }
                     if (filenames.Contains(System.IO.Path.GetFileName(filename)))
                     {
                         dupfiles.Add(filename);
@@ -151,12 +163,16 @@ namespace O2Micro.Cobra.Shell
                         ExtensionFile ef = new ExtensionFile();
                         UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
                         ret = ef.Init(System.IO.Path.GetFileName(filename));
-                        if (ret == LibErrorCode.IDS_ERR_SUCCESSFUL)
-                            ExtensionFiles.Add(ef);
+                        if (ret == LibErrorCode.IDS_ERR_SUCCESSFUL) //Issue1289
+                        {
+                            ef.IsLegal = true;
+                        }
                         else
                         {
-                            MessageBox.Show(filename + " is illegal.\n\r" + "Error: "+LibErrorCode.GetErrorDescription(ret));
+                            ef.IsLegal = false;
+                            ef.Info = LibErrorCode.GetErrorDescription(ret);
                         }
+                        ExtensionFiles.Add(ef);
                     }
                 } 
                 UpdateExtensionsLegality();
@@ -205,7 +221,7 @@ namespace O2Micro.Cobra.Shell
                 {
                     ExtensionFiles.Remove(ef);
                 }
-                UpdateExtensionsLegality();
+                //UpdateExtensionsLegality();
             }
         }
 
@@ -217,25 +233,37 @@ namespace O2Micro.Cobra.Shell
             if (headername == "FileName")
             {
                 //e.Cancel = true;
-                e.Column.Width = new DataGridLength(60, DataGridLengthUnitType.Star);
+                e.Column.Width = new DataGridLength(50, DataGridLengthUnitType.Star);
             }
             if (headername == "Chip")
             {
-                e.Column.Width = new DataGridLength(30, DataGridLengthUnitType.Star);
+                e.Cancel = true;
+                //e.Column.Width = new DataGridLength(30, DataGridLengthUnitType.Star);
             }
             if (headername == "Version")
             {
-                e.Column.Width = new DataGridLength(30, DataGridLengthUnitType.Star);
+                e.Cancel = true;
+                //e.Column.Width = new DataGridLength(30, DataGridLengthUnitType.Star);
             }
             if (headername == "Type")
             {
-                e.Column.Width = new DataGridLength(10, DataGridLengthUnitType.Star);
+                e.Cancel = true;
+                //e.Column.Width = new DataGridLength(10, DataGridLengthUnitType.Star);
             }
             if (headername == "Date")
             {
-                e.Column.Width = new DataGridLength(20, DataGridLengthUnitType.Star);
+                e.Cancel = true;
+                //e.Column.Width = new DataGridLength(20, DataGridLengthUnitType.Star);
             }
             if (headername == "IsLegal")
+            {
+                e.Cancel = true;
+            }
+            if (headername == "Info")
+            {
+                e.Column.Width = new DataGridLength(50, DataGridLengthUnitType.Star);
+            }
+            if (headername == "IsHighLighted")
             {
                 e.Cancel = true;
             }
@@ -280,6 +308,17 @@ namespace O2Micro.Cobra.Shell
             {
                 m_IsLegal = value;
                 OnPropertyChanged("IsLegal");
+            }
+        }
+
+        private bool m_IsHighLighted = false;
+        public bool IsHighLighted
+        {
+            get { return m_IsHighLighted; }
+            set
+            {
+                m_IsHighLighted = value;
+                OnPropertyChanged("IsHighLighted");
             }
         }
 
@@ -337,20 +376,39 @@ namespace O2Micro.Cobra.Shell
             }
         }
 
+        private string m_Info;
+        public string Info
+        {
+            get { return m_Info; }
+            set
+            {
+                m_Info = value;
+                OnPropertyChanged("Info");
+            }
+        }
+
         public UInt32 Init(string filename)
         {
             UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
             ClearMonitorTemp();
+            FileName = filename;
+            if (filename.Remove(0, filename.Length - 4) != ".oce")
+            {
+                return LibErrorCode.IDS_ERR_SECTION_OCE_NOT_LOWER;
+            }
             GZipResult res = GZip.Decompress(FolderMap.m_extensions_folder, FolderMap.m_extension_monitor_folder, filename);
             if (res.Errors == true)
                 return LibErrorCode.IDS_ERR_SECTION_OCE_UNZIP;
-            FileName = filename;
-            string extxmlfullname = FolderMap.m_extension_monitor_folder + FolderMap.m_ext_descrip_xml_name + FolderMap.m_extension_work_ext;
-            if (!File.Exists(extxmlfullname))
+            string extxmlfullname1 = FolderMap.m_extension_monitor_folder + FolderMap.m_ext_descrip_xml_name + FolderMap.m_extension_work_ext;
+            string extxmlfullname2 = FolderMap.m_extension_monitor_folder + FolderMap.m_dev_descrip_xml_name + FolderMap.m_extension_work_ext;
+            if (!File.Exists(extxmlfullname1) || !File.Exists(extxmlfullname2))
             {
-                return LibErrorCode.IDS_ERR_SECTION_OCE_UNZIP;
+                return LibErrorCode.IDS_ERR_SECTION_OCE_LOSE_FILE;
             }
-            ret = LoadExtensionInfo(extxmlfullname);
+            ret = LoadExtensionInfo(extxmlfullname1);
+            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                return ret;
+            ret = LoadExtensionInfo(extxmlfullname2);
             if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
                 return ret;
             return ret;
@@ -377,7 +435,7 @@ namespace O2Micro.Cobra.Shell
                 m_extDescrip_xmlDoc.Load(filenmae);
                 XmlElement root = m_extDescrip_xmlDoc.DocumentElement;
                 if (root == null) return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE;
-                XmlNode DBConfigNode = root.SelectSingleNode("descendant::Part[@Name = 'DBConfig']");
+                /*XmlNode DBConfigNode = root.SelectSingleNode("descendant::Part[@Name = 'DBConfig']");
                 if (DBConfigNode == null)
                     return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE;
                 XmlNodeList nodeList = DBConfigNode.ChildNodes;
@@ -401,7 +459,7 @@ namespace O2Micro.Cobra.Shell
                             Date = xe.InnerText;
                             break;
                     }
-                }
+                }*/
             }
             catch (System.Exception ex)
             {

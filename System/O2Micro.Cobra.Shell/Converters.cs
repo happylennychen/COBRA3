@@ -271,11 +271,11 @@ namespace O2Micro.Cobra.Shell
     {
         public Object Convert(Object value, Type targetType, Object parameter, CultureInfo culture)
         {
-            bool islegal = (bool)value;
-            if (islegal)
-                return Brushes.Black;
-            else
+            bool isHighLighted = (bool)value;
+            if (isHighLighted)
                 return Brushes.Red;
+            else
+                return Brushes.Black;
         }
         public object ConvertBack(object value, Type typetarget, object param, CultureInfo culture)
         {

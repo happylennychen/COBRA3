@@ -190,6 +190,7 @@ namespace O2Micro.Cobra.Common
         public const UInt32 IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE      = IDS_ERR_SECTION_OCE + 03;
         public const UInt32 IDS_ERR_SECTION_OCE_UNZIP                   = IDS_ERR_SECTION_OCE + 04;
         public const UInt32 IDS_ERR_SECTION_OCE_NOT_EXIST               = IDS_ERR_SECTION_OCE + 05;
+        public const UInt32 IDS_ERR_SECTION_OCE_NOT_LOWER               = IDS_ERR_SECTION_OCE + 06; //Issue1289 Leon
         #endregion
 
         #region Cobra Center SFL Error code definition, IDS_ERR_SECTION_COBRACENTER = 0x00050000;
@@ -903,6 +904,9 @@ namespace O2Micro.Cobra.Common
                     break;
                 case IDS_ERR_SECTION_OCE_NOT_EXIST:
                     strErr = "OCE Not Found";
+                    break;
+                case IDS_ERR_SECTION_OCE_NOT_LOWER:
+                    strErr = "The file extension is not lower case.";
                     break;
                 #endregion
 
