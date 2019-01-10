@@ -98,6 +98,20 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         #endregion
         private Dictionary<string, string> BCImg = new System.Collections.Generic.Dictionary<string, string>();//Issue 1426 Leon
 
+
+        public ushort m_readsubtask = 0;
+        public ushort ReadSubTask
+        {
+            set { m_readsubtask = value; }
+            get { return m_readsubtask; }
+        }
+        public ushort m_writesubtask = 0;
+        public ushort WriteSubTask
+        {
+            set { m_writesubtask = value; }
+            get { return m_writesubtask; }
+        }
+
         public MainControl(object pParent, string name)
         {
             this.InitializeComponent();
@@ -136,6 +150,28 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 NoMapping = true;
             #endregion
 
+            #region 初始化SubTask
+            string str_option = String.Empty;
+            XmlNodeList nodelist = parent.GetUINodeList(sflname);
+            foreach (XmlNode node in nodelist)
+            {
+                str_option = node.Name;
+                switch (str_option)
+                {
+                    case "SubTask":
+                        {
+                            foreach (XmlNode sub in node)
+                            {
+                                if (sub.Name == "Read")
+                                    ReadSubTask = Convert.ToUInt16(sub.InnerText);
+                                else if (sub.Name == "Write")
+                                    WriteSubTask = Convert.ToUInt16(sub.InnerText);
+                            }
+                            break;
+                        }
+                }
+            }
+            #endregion
             if (border)
             {
                 var queryResults = viewmode.sfl_parameterlist.OrderBy(model => model.order).ThenBy(model => model.guid).Select(model => model);
@@ -882,6 +918,8 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             //DBManager.NewLog("Com", "Com Log", timestamp, ref log_id);
             if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
                 Reset();//Issue1381 Leon
+            else if (ReadSubTask != 0)     //当前oce支持subtask特性
+                ReadCommand(ReadSubTask);
             else
                 Read();
         }
@@ -930,6 +968,42 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
 
             parent.bBusy = false;*/
+        }
+        private void ReadCommand(ushort subtask)
+        {
+            //if(parent.bSimulation)
+
+            msg.funName = MethodBase.GetCurrentMethod().Name;
+
+            StatusLabel.Content = "Device Content";
+            if (parent.bBusy)
+            {
+                gm.level = 1;
+                gm.controls = "Read From Device button";
+                gm.message = LibErrorCode.GetErrorDescription(LibErrorCode.IDS_ERR_EM_THREAD_BKWORKER_BUSY);
+                gm.bupdate = true;
+                CallWarningControl(gm);
+                return;
+            }
+            else
+                parent.bBusy = true;
+
+            msg.brw = true;
+            msg.task = TM.TM_COMMAND;
+            msg.sub_task = subtask;
+            parent.AccessDevice(ref m_Msg);
+            while (msg.bgworker.IsBusy)
+                System.Windows.Forms.Application.DoEvents();
+            if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+            {
+                gm.level = 2;
+                gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
+                CallWarningControl(gm);
+                parent.bBusy = false;
+                return;
+            }
+            parent.bBusy = false;
+            return;
         }
         private void Read()
         {
@@ -1088,6 +1162,8 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
             if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
                 Apply();//Issue1381 Leon
+            else if (WriteSubTask != 0)
+                WriteCommand(WriteSubTask);
             else
                 write();
         }
@@ -1125,6 +1201,49 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             msg.percent = 70;
             msg.task = TM.TM_WRITE;
+            parent.AccessDevice(ref m_Msg);
+            while (msg.bgworker.IsBusy)
+                System.Windows.Forms.Application.DoEvents();
+            if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+            {
+                gm.level = 2;
+                gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
+                CallWarningControl(gm);
+                parent.bBusy = false;
+                return;
+            }
+
+            parent.bBusy = false;
+        }
+        private void WriteCommand(ushort subtask)
+        {
+            UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
+            if (parent.bBusy)
+            {
+                gm.level = 1;
+                gm.controls = "Write To Device button!";
+                gm.message = LibErrorCode.GetErrorDescription(LibErrorCode.IDS_ERR_EM_THREAD_BKWORKER_BUSY);
+                gm.bupdate = true;
+                CallWarningControl(gm);
+                return;
+            }
+            else
+                parent.bBusy = true;
+
+            ret = viewmode.WriteDevice();
+            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
+            {
+                gm.level = 2;
+                gm.message = LibErrorCode.GetErrorDescription(ret);
+                CallWarningControl(gm);
+                parent.bBusy = false;
+                return;
+            }
+            StatusLabel.Content = "Device Content";
+
+            msg.brw = false;
+            msg.task = TM.TM_COMMAND;
+            msg.sub_task = WriteSubTask;
             parent.AccessDevice(ref m_Msg);
             while (msg.bgworker.IsBusy)
                 System.Windows.Forms.Application.DoEvents();

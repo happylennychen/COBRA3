@@ -19,3 +19,6 @@
 [submodule "System/DEM/O2Micro.Cobra.KALL17"]
 	path = System/DEM/O2Micro.Cobra.KALL17
 	url = https://github.com/happylennychen/O2Micro.Cobra.KALL17
+[submodule "System/DEM/O2Micro.Cobra.HQG"]
+	path = System/DEM/O2Micro.Cobra.HQG
+	url = https://github.com/happylennychen/O2Micro.Cobra.HQG
