@@ -145,7 +145,7 @@ namespace O2Micro.Cobra.Common
             {
                 //Do any logging operation here if necessary
                 //MessageBox.Show(e.Message);
-                return new SQLiteResult(-1, e.Message);;
+                return new SQLiteResult(-1, e.Message);
             }
             return new SQLiteResult(0);
         }

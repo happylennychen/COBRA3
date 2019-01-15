@@ -95,6 +95,12 @@ namespace O2Micro.Cobra.Shell
                     MessageBox.Show("DB Init Failed!");
                 //DB Design by Leon
 
+                //DB Design by Leon
+                ret = DBManager2.CobraDBInit(FolderMap.m_projects_folder);
+                if (ret != 0)
+                    MessageBox.Show("DB Init Failed!");
+                //DB Design by Leon
+
                 #endregion
 
                 #region EM初始化操作

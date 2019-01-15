@@ -815,7 +815,6 @@ namespace O2Micro.Cobra.Common
                     return 0;
             }
         }
-
         public static Int32 ClearLog(string module_name, string timestamp)
         {
             lock (DB_Lock)

@@ -153,7 +153,7 @@ namespace O2Micro.Cobra.ScanPanel
 #if SupportThreadMonitor
         private ThreadMonitorWindow tm = new ThreadMonitorWindow();
 #endif
-
+        string session_establish_time = "";
         #endregion
 
         #region 函数定义
@@ -1731,7 +1731,8 @@ namespace O2Micro.Cobra.ScanPanel
         private void UpdateLogDataList()
         {
             List<List<String>> records = new List<List<string>>();
-            if (DBManager.GetLogsInforV2(sflname, ref records) != -1)//Issue1428 Leon
+            //if (DBManager.GetLogsInforV2(sflname, ref records) != -1)//Issue1428 Leon
+            if (DBManager2.ScanSFLGetSessionsInfor(sflname, ref records) != -1)
             {
                 logdatalist.Clear();
                 foreach (var record in records)
@@ -1798,6 +1799,7 @@ namespace O2Micro.Cobra.ScanPanel
 
                         //CommunicationDBLog.NewLog(timestamp);
                     }
+                    session_establish_time = DateTime.Now.ToString();
                     #endregion
                     /*
                     #region new logdata
@@ -1955,6 +1957,12 @@ namespace O2Micro.Cobra.ScanPanel
                 if (ret == -1)
                 {
                     MessageBox.Show("Begin New Row Failed!");
+                    return;
+                } 
+                ret = DBManager2.BeginNewRow(sflname, records, parent.name, session_establish_time);
+                if (ret == -1)
+                {
+                    MessageBox.Show("DB2 Begin New Row Failed!");
                     return;
                 }
                 SnapShot.TimerCallbackPool[(long)TimerCounter].DBAccessed = true;
@@ -2153,28 +2161,13 @@ namespace O2Micro.Cobra.ScanPanel
         }
         private void ViewFolderBtn_Click(object sender, RoutedEventArgs e)
         {
-#if SupportCobraLog
-            //parent.scanlog.logdatalist
-            //LogData lg = (LogData)loglist.SelectedItem;
-            //lg.Save();
-            string str = scanlog.folder;
-            System.Diagnostics.Process.Start("explorer.exe", str);
-#else
-#endif
         }
 
         private void DeleteBtn_Click(object sender, RoutedEventArgs e)
         {
-#if SupportCobraLog
-            int count = loglist.SelectedItems.Count;
-            for (int i = count; i > 0; i--)
-            {
-                LogData lg = (LogData)loglist.SelectedItems[i - 1];
-                lg.Delete();
-            }
-#else
-#endif
-
+            LogData ld = (LogData)loglist.SelectedItem;
+            DBManager2.ScanSFLDeleteOneSession(sflname, ld.Timestamp);
+            logdatalist.Remove(ld);
         }
 
         private void ExportBtn_Click(object sender, RoutedEventArgs e)
@@ -2201,7 +2194,8 @@ namespace O2Micro.Cobra.ScanPanel
             if (saveFileDialog.ShowDialog() == true)
             {
                 DataTable dt = new DataTable();
-                DBManager.GetLog(sflname, ld.Timestamp, ref dt);
+                //DBManager.GetLog(sflname, ld.Timestamp, ref dt);
+                DBManager2.ScanSFLGetOneSession(sflname, ld.Timestamp, ref dt);
                 fullpath = saveFileDialog.FileName;
                 ExportDB(fullpath, dt);
             }

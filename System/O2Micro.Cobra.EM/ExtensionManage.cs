@@ -1,4 +1,4 @@
-#define debug
+//#define debug
 using System;
 using System.Text;
 using System.IO;
@@ -245,7 +245,7 @@ namespace O2Micro.Cobra.EM
                 //MessageBox.Show("Extension Register Failed!");
                 DBManager.supportdb = false;
             }
-
+            DBManager2.ExtensionRegister(Registry.GetCurExtensionFileName());
             if (!m_EM_DevicesManage.Build()) return false;
 
 
