@@ -153,7 +153,7 @@ namespace O2Micro.Cobra.ScanPanel
 #if SupportThreadMonitor
         private ThreadMonitorWindow tm = new ThreadMonitorWindow();
 #endif
-        string session_establish_time = "";
+        int session_id = -1;
         #endregion
 
         #region 函数定义
@@ -1799,7 +1799,9 @@ namespace O2Micro.Cobra.ScanPanel
 
                         //CommunicationDBLog.NewLog(timestamp);
                     }
-                    session_establish_time = DateTime.Now.ToString();
+                    string session_establish_time = DateTime.Now.ToString();
+                    if (DBManager2.NewSession(sflname, ref session_id, parent.name, session_establish_time) != 0)
+                        MessageBox.Show("Create Scan Log Failed!");
                     #endregion
                     /*
                     #region new logdata
@@ -1959,7 +1961,7 @@ namespace O2Micro.Cobra.ScanPanel
                     MessageBox.Show("Begin New Row Failed!");
                     return;
                 } 
-                ret = DBManager2.BeginNewRow(sflname, records, parent.name, session_establish_time);
+                ret = DBManager2.BeginNewRow(session_id, records);
                 if (ret == -1)
                 {
                     MessageBox.Show("DB2 Begin New Row Failed!");

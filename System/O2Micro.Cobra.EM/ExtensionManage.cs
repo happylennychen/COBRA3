@@ -1,4 +1,4 @@
-//#define debug
+#define debug
 using System;
 using System.Text;
 using System.IO;
@@ -115,7 +115,6 @@ namespace O2Micro.Cobra.EM
             if (Registry.GetCurExtensionFileName().Length == 0) return false;
             FolderMap.m_curextensionfile_name = Registry.GetCurExtensionFileName();
 
-#if !debug
             string fullname = Registry.GetCurExtensionFileName() + FolderMap.m_extension_ext;
             string fullpath = FolderMap.m_extension_work_folder;
 
@@ -128,6 +127,7 @@ namespace O2Micro.Cobra.EM
                     GZip.Decompress(FolderMap.m_extensions_folder, fullpath, fullname);
             }
             //复制Dll文件到主目录下
+#if !debug
             foreach (string path in Directory.GetFiles(FolderMap.m_extension_work_folder, "*.dll"))
             {
                 string destPath = Path.Combine(FolderMap.m_dem_library_folder, Path.GetFileName(path));

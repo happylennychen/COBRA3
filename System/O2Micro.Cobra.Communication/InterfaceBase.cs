@@ -61,6 +61,8 @@ namespace O2Micro.Cobra.Communication
 			set	{	m_I2CPortFS = value;}
 		}
 
+        public int session_id=-1;
+
 		// <summary>
 		// Link name of connected device
 		// </summary>
@@ -428,6 +430,10 @@ namespace O2Micro.Cobra.Communication
             u16Sensor = 10;
             */
             m_busopDev = null;
+            if (DBManager2.NewSession("COM", ref session_id, "", DateTime.Now.ToString()) != 0)
+            {
+                ;//handle the error here
+            }
         }
 
         public void SetSVIDAccessI2C()
@@ -825,7 +831,108 @@ namespace O2Micro.Cobra.Communication
 					bReturn = false;
 				}
 				#endregion
-			}
+            }
+
+            #region support DBManager2
+            AutoMationTest.AutoMationTest.AnalyzeATMUID(u32RandId, ref strTmp, ref yRW);
+            //string[] strColHeader = { "DayTime", "CID", "ErrCode", "R/W", "I2CAddr", "RegIndex", "Data1", "Data2", "Data3", "ErrComments" };
+            strdbg = "DayTime|" + strTmp + ", ";
+            strdbg += "CID|" + string.Format("0x{0:X8}, ", u32RandId);
+            strdbg += "ErrCode|" + string.Format("0x{0:X8}, ", ErrorCode);
+            if ((m_busopDev.BusType == BUS_TYPE.BUS_TYPE_I2C) || (m_busopDev.BusType == BUS_TYPE.BUS_TYPE_I2C2))
+            {
+                if (yRW == 0)
+                {
+                    //strTmp = "Write".ToString();
+                    strdbg += "R/W|Write, ";
+                }
+                else
+                {
+                    //strTmp = "Read".ToString();
+                    strdbg += "R/W|Read, ";
+                }
+                strdbg += string.Format("I2CAddr|0x{0:X2}, ", yDataFromDEM[0]);
+                strdbg += string.Format("RegIndex|0x{0:X2}, ", yDataFromDEM[1]);
+                //strdbg += string.Format(" 0x{0:X2}, 0x{1:X2}, counter={2:d}", yDataFromDEM[0], yDataFromDEM[1], AutoMationTest.AutoMationTest.wTotalRun);
+
+                if (yRW == 0)
+                {
+                    {
+                        strTmp = string.Empty;
+                        for (int i = 0; i < wLengthDEM; i++)
+                        {
+                            strTmp += string.Format("Data|0x{0:X2}, ", yDataFromDEM[i + 2]);
+                        }
+                        strdbg += strTmp;
+                    }
+                }
+                else
+                {
+                    strTmp = string.Empty;
+                    for (int i = 0; i < wLengthChip; i++)
+                    {
+                        strTmp += string.Format("Data|0x{0:X2}, ", yDataFromChip[i]);
+                    }
+                    strdbg += strTmp;
+                }
+                strdbg += "ErrComments|" + AutoMationTest.AutoMationTest.strATMErrDescrip;
+
+                //DBManager.NewRow("Com", record);
+            }
+            else
+            {
+                if (yRW == 0)
+                {
+                    strdbg += "R/W|Write, ";
+                    {
+                        strTmp = string.Empty;
+                        for (int i = 0; i < wLengthDEM; i++)
+                        {
+                            strTmp += string.Format("Data|0x{0:X2}, ", yDataFromDEM[i]);
+                        }
+                        strdbg += strTmp;
+                    }
+                    strdbg += "ErrComments|" + AutoMationTest.AutoMationTest.strATMErrDescrip;
+
+                    //DBManager.NewRow("Com", record);
+                }
+                else
+                {
+                    //Dictionary<string, string> recordwr = new Dictionary<string, string>();
+                    //string[] strColHeader = { "DayTime", "CID", "ErrCode", "R/W", "I2CAddr", "RegIndex", "Data1", "Data2", "Data3", "ErrComments" };
+                    //AutoMationTest.AutoMationTest.AnalyzeATMUID(u32RandId, ref strTmp, ref yRW);
+                    strdbg = "DayTime|" + strTmp + ", ";
+                    strdbg += "CID|" + string.Format("0x{0:X8}, ", u32RandId);
+                    strdbg += "ErrCode|" + string.Format("0x{0:X8}, ", ErrorCode);
+                    strdbg += "R/W|Write, ";
+                    {
+                        strTmp = string.Empty;
+                        for (int i = 0; i < wLengthDEM; i++)
+                        {
+                            strTmp += string.Format("Data|0x{0:X2}, ", yDataFromDEM[i]);
+                        }
+                        strdbg += strTmp;
+                    }
+                    strdbg += "ErrComments|" + AutoMationTest.AutoMationTest.strATMErrDescrip;
+
+                    //DBManager.NewRow("Com", record);
+                    DBManager2.BeginNewRow(session_id, strdbg);
+
+                    strdbg += "R/W|Read, ";
+                    {
+                        strTmp = string.Empty;
+                        for (int i = 0; i < wLengthChip; i++)
+                        {
+                            strTmp += string.Format("Data|0x{0:X2}, ", yDataFromChip[i]);
+                        }
+                        strdbg += strTmp;
+                    }
+
+                    //DBManager.NewRow("Com", record);
+                }
+            }
+            DBManager2.BeginNewRow(session_id, strdbg);
+            #endregion
 
             //Debug.WriteLine(strdbg);
             strdbg = string.Format("wErrOutMaxCounter={0:d}, wErrOutMinCounter={1:d}, wErrPECCounter={2:d}, wErrCRCCounter={3:d}, TotalError={4:d}, TotalRun={5:d}", 
