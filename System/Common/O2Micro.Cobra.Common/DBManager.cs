@@ -47,26 +47,29 @@ namespace O2Micro.Cobra.Common
 
         private static void t_Elapsed(object sender, EventArgs e)
         {
-            if (sqls.Count == 0)
+            lock (DB_Lock)
             {
-                if (idle_cnt >= 3)
+                if (sqls.Count == 0)
                 {
-                    t.Stop();
-                    idle_cnt = 0;
+                    if (idle_cnt >= 3)
+                    {
+                        t.Stop();
+                        idle_cnt = 0;
+                    }
+                    else
+                        idle_cnt++;
                 }
                 else
-                    idle_cnt++;
-            }
-            else
-            {
-                SQLiteResult sret = SQLiteDriver.ExecuteNonQueryTransaction(sqls);
-                if (sret.I == -1)
                 {
-                    //todo: add warning here
-                    MessageBox.Show(sret.Str);
+                    SQLiteResult sret = SQLiteDriver.ExecuteNonQueryTransaction(sqls);
+                    if (sret.I == -1)
+                    {
+                        //todo: add warning here
+                        MessageBox.Show(sret.Str);
+                    }
+                    else
+                        sqls.Clear();
                 }
-                else
-                    sqls.Clear();
             }
         }
 

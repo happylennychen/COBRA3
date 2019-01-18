@@ -430,10 +430,7 @@ namespace O2Micro.Cobra.Communication
             u16Sensor = 10;
             */
             m_busopDev = null;
-            if (DBManager2.NewSession("COM", ref session_id, "", DateTime.Now.ToString()) != 0)
-            {
-                ;//handle the error here
-            }
+            DBManager2.NewSession("COM", ref session_id, "", DateTime.Now.ToString());
         }
 
         public void SetSVIDAccessI2C()

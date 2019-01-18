@@ -1732,20 +1732,16 @@ namespace O2Micro.Cobra.ScanPanel
         {
             List<List<String>> records = new List<List<string>>();
             //if (DBManager.GetLogsInforV2(sflname, ref records) != -1)//Issue1428 Leon
-            if (DBManager2.ScanSFLGetSessionsInfor(sflname, ref records) != -1)
+            DBManager2.ScanSFLGetSessionsInfor(sflname, ref records);
+            logdatalist.Clear();
+            foreach (var record in records)
             {
-                logdatalist.Clear();
-                foreach (var record in records)
-                {
-                    LogData ld = new LogData();
-                    ld.Timestamp = record[0];
-                    ld.RecordNumber = Convert.ToInt64(record[1]);
-                    ld.DeviceNum = record[2];//Issue1428 Leon
-                    logdatalist.Add(ld);
-                }
+                LogData ld = new LogData();
+                ld.Timestamp = record[0];
+                ld.RecordNumber = Convert.ToInt64(record[1]);
+                ld.DeviceNum = record[2];//Issue1428 Leon
+                logdatalist.Add(ld);
             }
-            else
-                MessageBox.Show("Get Logs Infor Failed!");
         }
 
         private void runBtn_Click(object sender, RoutedEventArgs e)
@@ -1800,8 +1796,7 @@ namespace O2Micro.Cobra.ScanPanel
                         //CommunicationDBLog.NewLog(timestamp);
                     }
                     string session_establish_time = DateTime.Now.ToString();
-                    if (DBManager2.NewSession(sflname, ref session_id, parent.name, session_establish_time) != 0)
-                        MessageBox.Show("Create Scan Log Failed!");
+                    DBManager2.NewSession(sflname, ref session_id, parent.name, session_establish_time);
                     #endregion
                     /*
                     #region new logdata
@@ -1961,12 +1956,7 @@ namespace O2Micro.Cobra.ScanPanel
                     MessageBox.Show("Begin New Row Failed!");
                     return;
                 } 
-                ret = DBManager2.BeginNewRow(session_id, records);
-                if (ret == -1)
-                {
-                    MessageBox.Show("DB2 Begin New Row Failed!");
-                    return;
-                }
+                DBManager2.BeginNewRow(session_id, records);
                 SnapShot.TimerCallbackPool[(long)TimerCounter].DBAccessed = true;
                 if (SnapShot.TimerCallbackPool[(long)TimerCounter].UIAccessed)  //如果这一帧数据已经被使用完了，就将其移除出快照池
                     SnapShot.TimerCallbackPool.Remove((long)TimerCounter);

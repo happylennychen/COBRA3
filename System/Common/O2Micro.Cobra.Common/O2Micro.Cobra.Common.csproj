@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="AsyncObservableCollection.cs" />
     <Compile Include="Compress.cs" />
+    <Compile Include="SQLiteDriver2.cs" />
     <Compile Include="DBManager2.cs" />
     <Compile Include="DBManager.cs" />
     <Compile Include="GasGaugeInterface.cs" />

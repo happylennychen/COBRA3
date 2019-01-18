@@ -39,35 +39,36 @@ namespace O2Micro.Cobra.Common
         private static byte idle_cnt = 0;
         #endregion
 
-        private static void t_Elapsed(object sender, EventArgs e)
+        private static void tFlushDB_Elapsed(object sender, EventArgs e)
         {
-            lock (DB_Lock)
+            try
             {
-                if (sqls.Count == 0)
+                lock (DB_Lock)
                 {
-                    if (idle_cnt >= FlushIdleCount)
+                    if (sqls.Count == 0)
                     {
-                        t.Stop();
-                        idle_cnt = 0;
+                        if (idle_cnt >= FlushIdleCount)
+                        {
+                            t.Stop();
+                            idle_cnt = 0;
+                        }
+                        else
+                            idle_cnt++;
                     }
                     else
-                        idle_cnt++;
-                }
-                else
-                {
-                    SQLiteResult sret = SQLiteDriver.ExecuteNonQueryTransaction(sqls);
-                    if (sret.I == -1)
                     {
-                        //todo: add warning here
-                        MessageBox.Show(sret.Str);
-                    }
-                    else
+                        SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
                         sqls.Clear();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Flush DB failed\n" + ex.Message);
             }
         }
 
-        private static int GetSessionIDFromSessionTable(string module_name, ref int session_id, string device_index = "", string session_establish_time = "")
+        private static void GetSessionIDFromSessionTable(string module_name, ref int session_id, string device_index = "", string session_establish_time = "")
         {
             List<string> datacolumns = new List<string>();
             datacolumns.Add("session_id");
@@ -81,188 +82,126 @@ namespace O2Micro.Cobra.Common
                 conditions.Add("device_index", device_index);
             DataTable dt = new DataTable();
             int row = -1;
-            SQLiteResult sret = SQLiteDriver.DBSelect(SessionTableName, conditions, datacolumns, ref dt, ref row);
-            if (sret.I != 0)
+            SQLiteDriver2.DBSelect(SessionTableName, conditions, datacolumns, ref dt, ref row);
+            if (dt.Rows.Count == 0)
             {
-                //todo: add warning here
-                //MessageBox.Show(sret.Str);
-                return -1;
-            }
-            else if (dt.Rows.Count == 0)
-            {
-                //todo: add warning here
-                //MessageBox.Show("No such Log ID");
-                return -1;
+                session_id = -1;
+                throw new Exception("Get Session ID failed!\n");
             }
             else
             {
                 session_id = Convert.ToInt32(dt.Rows[0]["session_id"]);
-                return 0;
             }
         }
-        private static int CreateSessionIDToSessionTable(string module_name, ref int session_id, string device_index = "", string session_establish_time = "")
+        private static void GetSessionSize(int session_id, ref int session_size)
         {
-            SQLiteResult sret;
-            Dictionary<string, string> record = new Dictionary<string, string>();
-            record.Add("project_name", Project_Name);
-            record.Add("module_name", module_name);
-            if (device_index != "")
-                record.Add("device_index", device_index);
-            if (session_establish_time != "")
-                record.Add("session_establish_time", session_establish_time);
-
-            int row = -1;
-            sret = SQLiteDriver.DBInsertInto(SessionTableName, record, ref row);
-            if (sret.I == -1)
-                return sret.I;
-
-            List<string> datacolumns = new List<string>();
-            datacolumns.Add("session_id");
-
-            Dictionary<string, string> conditions = new Dictionary<string, string>();
-            conditions.Add("project_name", Project_Name);
-            conditions.Add("module_name", module_name);
-            conditions.Add("session_establish_time", session_establish_time);
-            conditions.Add("device_index", device_index);
+            string sql = "select count(*) from " + DataTableName + " where session_id = " + session_id.ToString() + ";";
             DataTable dt = new DataTable();
-            sret = SQLiteDriver.DBSelect(SessionTableName, conditions, datacolumns, ref dt, ref row);
-            if (sret.I != 0)
-            {
-                //todo: add warning here
-                //MessageBox.Show(sret.Str);
-                return -1;
-            }
-            else if (dt.Rows.Count == 0)
-            {
-                //todo: add warning here
-                //MessageBox.Show("No such Log ID");
-                return -1;
-            }
-            else
-            {
-                session_id = Convert.ToInt32(dt.Rows[0]["session_id"]);
-                return 0;
-            }
+            int row = -1;
+            SQLiteDriver2.ExecuteSelect(sql, ref dt, ref row);
+            session_size = Convert.ToInt32(dt.Rows[0]["count(*)"]);
         }
+
         #region API
-        //return: succuss 0, failed -1
-        public static Int32 CobraDBInit(string folder)
+        public static void CobraDBInit(string folder)
         {
-            lock (DB_Lock)
+            try
             {
-                if (!isTimerBooked)
+                lock (DB_Lock)
                 {
-                    t.Elapsed += new System.Timers.ElapsedEventHandler(t_Elapsed);
-                    isTimerBooked = true;
-                }
-                //UInt32 errorcode = LibErrorCode.IDS_ERR_SUCCESSFUL;
-                if (!Directory.Exists(folder + "Database"))
-                    Directory.CreateDirectory(folder + "Database");
-                if (DebugMode)
-                {
-                    if (!Directory.Exists(folder + "Database\\DebugDB"))
-                        Directory.CreateDirectory(folder + "Database\\DebugDB");
-                    string[] strlist = DBName.Split('.');
-                    string DebugDBName = strlist[0] + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + "." + strlist[1];
+                    if (!isTimerBooked)
+                    {
+                        t.Elapsed += new System.Timers.ElapsedEventHandler(tFlushDB_Elapsed);
+                        isTimerBooked = true;
+                    }
+                    if (!Directory.Exists(folder + "Database"))
+                        Directory.CreateDirectory(folder + "Database");
+                    if (DebugMode)
+                    {
+                        if (!Directory.Exists(folder + "Database\\DebugDB"))
+                            Directory.CreateDirectory(folder + "Database\\DebugDB");
+                        string[] strlist = DBName.Split('.');
+                        string DebugDBName = strlist[0] + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + "." + strlist[1];
 
-                    DBpath = folder + "Database\\DebugDB\\";   //DebugDB folder, name with timestamp
-                    DBName = DebugDBName;
-                    //MessageBox.Show("DebugMode for DB is enabled! Use DebugDB folder to save db files, add timestamp to file name.");
-                }
-                else
-                {
-                    DBpath = folder + "Database\\";
-                }
+                        DBpath = folder + "Database\\DebugDB\\";   //DebugDB folder, name with timestamp
+                        DBName = DebugDBName;
+                        //MessageBox.Show("DebugMode for DB is enabled! Use DebugDB folder to save db files, add timestamp to file name.");
+                    }
+                    else
+                    {
+                        DBpath = folder + "Database\\";
+                    }
 
-                SQLiteDriver.DB_Name = DBName;
-                SQLiteDriver.DB_Path = DBpath;
-                List<string> sqls = new List<string>();
-                //sqls.Add("CREATE TABLE IF NOT EXISTS Products(product_id INTEGER PRIMARY KEY, name VARCHAR(30) NOT NULL, version VARCHAR(30) NOT NULL, UNIQUE(name, version));");
-                //sqls.Add("CREATE TABLE IF NOT EXISTS NameAlias(orig_name VARCHAR(30) NOT NULL, name_alias VARCHAR(30) NOT NULL, UNIQUE(orig_name, name_alias));");
-                //sqls.Add("CREATE TABLE IF NOT EXISTS VersionAlias(product_id INTEGER NOT NULL, version_alias VARCHAR(30) NOT NULL, UNIQUE(product_id, version_alias));");
-                //sqls.Add("CREATE TABLE IF NOT EXISTS Projects(project_id INTEGER PRIMARY KEY, product_id INTEGER NOT NULL, user_type TEXT NOT NULL, date TEXT NOT NULL, bus_type TEXT NOT NULL, UNIQUE(product_id, user_type, date));");
-                //sqls.Add("CREATE TABLE IF NOT EXISTS Modules(module_id INTEGER PRIMARY KEY, module_name VARCHAR(30) NOT NULL, UNIQUE(module_name));");
-                //sqls.Add("CREATE TABLE IF NOT EXISTS TableTypes(table_type INTEGER PRIMARY KEY, project_id INTEGER NOT NULL, module_id INTEGER NOT NULL, UNIQUE(project_id, module_id));");
-                //sqls.Add("CREATE TABLE IF NOT EXISTS Logs(log_id INTEGER PRIMARY KEY, table_type INTEGER NOT NULL, log_info VARCHAR(30), timestamp VARCHAR(17) NOT NULL, device_num VARCHAR(10));");//Issue1406 Leon
-                //sqls.Add("CREATE TABLE IF NOT EXISTS Bus_I2C(project_id INTEGER, device_id INTEGER, frequency INTEGER NOT NULL, address INTEGER NOT NULL, pec_enable BOOLEAN NOT NULL, UNIQUE(project_id, device_id));");
-                sqls.Add("CREATE TABLE IF NOT EXISTS " + SessionTableName + " (session_id INTEGER PRIMARY KEY, project_name VARCHAR(30) NOT NULL, module_name VARCHAR(30) NOT NULL, session_establish_time VARCHAR(17) NOT NULL, device_index VARCHAR(10), UNIQUE(project_name, module_name, session_establish_time));");//Issue1406 Leon
-                sqls.Add("CREATE TABLE IF NOT EXISTS " + DataTableName + " (session_id INTEGER NOT NULL, data_set VARCHAR(500) NOT NULL);");
-                //todo: Bus_SPI Bus_I2C2 Bus_???
-                //int row = -1;
-                SQLiteResult sret = SQLiteDriver.ExecuteNonQueryTransaction(sqls);
-                if (sret.I != 0)
-                {
-                    //todo: add warning here
-                    //MessageBox.Show(sret.Str);
+                    SQLiteDriver2.DB_Name = DBName;
+                    SQLiteDriver2.DB_Path = DBpath;
+                    List<string> sqls = new List<string>();
+                    sqls.Add("CREATE TABLE IF NOT EXISTS " + SessionTableName + " (session_id INTEGER PRIMARY KEY, project_name VARCHAR(30) NOT NULL, module_name VARCHAR(30) NOT NULL, session_establish_time VARCHAR(17) NOT NULL, device_index VARCHAR(10), UNIQUE(project_name, module_name, session_establish_time));");//Issue1406 Leon
+                    sqls.Add("CREATE TABLE IF NOT EXISTS " + DataTableName + " (session_id INTEGER NOT NULL, data_set VARCHAR(500) NOT NULL);");
+                    //todo: Bus_SPI Bus_I2C2 Bus_???
+                    //int row = -1;
+                    SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
+
+                    #region import old db
+                    #region import CobraDB.db3
+                    DBName = "CobraDB.db3";
+                    sqls.Add("CREATE TABLE IF NOT EXISTS " + SessionTableName + " (session_id INTEGER PRIMARY KEY, project_name VARCHAR(30) NOT NULL, module_name VARCHAR(30) NOT NULL, session_establish_time VARCHAR(17) NOT NULL, device_index VARCHAR(10), UNIQUE(project_name, module_name, session_establish_time));");//Issue1406 Leon
+                    sqls.Add("CREATE TABLE IF NOT EXISTS " + DataTableName + " (id INTEGER PRIMARY KEY, session_id INTEGER NOT NULL, data_set VARCHAR(500) NOT NULL);");
+                    SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
+                    int row = -1;
+                    string sql = @"insert into SESSION_TABLE
+select Logs3.log_id, Products.name || '_' || Products.version || '_' || Logs3.user_type || '_' || Logs3.date, Logs3.module_name, Logs3.timestamp, ''
+from
+	(select Logs2.log_id, Projects.product_id, Projects.user_type, Projects.date, Modules.module_name, Logs2.timestamp 
+	from
+		(select Logs.log_id, TableTypes.project_id, TableTypes.module_id, Logs.timestamp From Logs, TableTypes where Logs.table_type = TableTypes.table_type) as Logs2,
+		Projects, Modules
+	where Logs2.project_id = Projects.project_id and Logs2.module_id = Modules.module_id) as Logs3,
+	Products
+where Logs3.product_id = Products.product_id";
+                    //SQLiteDriver2.ExecuteNonQuery(sql, ref row);
+                    #endregion
+                    #region import CobraDBv1.1.db3
+                    #endregion
+                    #endregion
                 }
-                return sret.I;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Create CobraDB failed\n" + ex.Message);
             }
         }
         public static void ExtensionRegister(string project_name)
         {
-            lock (DB_Lock)
-            {
                 Project_Name = project_name;
-            }
         }
-        public static Int32 NewSession(string module_name, ref int session_id, string device_index = "", string session_establish_time = "")
+        public static void NewSession(string module_name, ref int session_id, string device_index = "", string session_establish_time = "")
         {
-            lock (DB_Lock)
+            try
             {
-                Dictionary<string, string> record = new Dictionary<string, string>();
-                record.Add("project_name", Project_Name);
-                record.Add("module_name", module_name);
-                record.Add("device_index", device_index);
-                record.Add("session_establish_time", session_establish_time);
-                int row = -1;
-                SQLiteResult sret = SQLiteDriver.DBInsertInto(SessionTableName, record, ref row);
-                if (sret.I != 0)
+                lock (DB_Lock)
                 {
-                    //todo: add warning here
-                    //MessageBox.Show(sret.Str);
-                    return sret.I;
-                }
-                int ret = GetSessionIDFromSessionTable(module_name, ref session_id, device_index, session_establish_time);
-                if (ret == -1)
-                    return -1;
-                return sret.I;
-            }
-        }
-        /*public static Int32 NewRow(string module_name, Dictionary<string, string> data_dictionary, string device_index = "", string session_establish_time = "")
-        {
-            lock (DB_Lock)
-            {
-                Dictionary<string, string> record = new Dictionary<string, string>();
-                record.Add("project_name", Project_Name);
-                record.Add("module_name", module_name);
-                if (device_index != "")
+                    Dictionary<string, string> record = new Dictionary<string, string>();
+                    record.Add("project_name", Project_Name);
+                    record.Add("module_name", module_name);
                     record.Add("device_index", device_index);
-                if (session_establish_time != "")
                     record.Add("session_establish_time", session_establish_time);
-
-                string data_dictionary_string = "";
-                foreach (string key in data_dictionary.Keys)
-                {
-                    data_dictionary_string += (key +"|"+ data_dictionary[key]+",");
+                    int row = -1;
+                    SQLiteDriver2.DBInsertInto(SessionTableName, record, ref row);
+                    GetSessionIDFromSessionTable(module_name, ref session_id, device_index, session_establish_time);
                 }
-                record.Add("data_set", data_dictionary_string);
-                int row = -1;
-                SQLiteResult sret = SQLiteDriver.DBInsertInto(TableName, record, ref row);
-                if (sret.I != 0)
-                {
-                    //todo: add warning here
-                    //MessageBox.Show(sret.Str);
-                }
-                return sret.I;
             }
-        }*/
-        public static Int32 BeginNewRow(int session_id, Dictionary<string, string> data_dictionary)
+            catch (Exception ex)
+            {
+                MessageBox.Show("New session failed\n" + ex.Message);
+            }
+        }
+        public static void BeginNewRow(int session_id, Dictionary<string, string> data_dictionary)
         {
             lock (DB_Lock)
             {
                 if (!t.Enabled)
                 {
-                    t.Interval = 1000;
+                    t.Interval = FlushInterval;
                     t.Start();
                 }
                 Dictionary<string, string> record = new Dictionary<string, string>();
@@ -275,12 +214,11 @@ namespace O2Micro.Cobra.Common
                 }
                 record.Add("data_set", data_dictionary_string);
 
-                string sql = SQLiteDriver.SQLInsertInto(DataTableName, record);
+                string sql = SQLiteDriver2.SQLInsertInto(DataTableName, record);
                 sqls.Add(sql);
-                return 0;
             }
         }
-        public static Int32 BeginNewRow(int session_id, string data_normal)
+        public static void BeginNewRow(int session_id, string data_normal)
         {
             lock (DB_Lock)
             {
@@ -294,56 +232,35 @@ namespace O2Micro.Cobra.Common
                     record.Add("session_id", session_id.ToString());
                 record.Add("data_set", data_normal);
 
-                string sql = SQLiteDriver.SQLInsertInto(DataTableName, record);
+                string sql = SQLiteDriver2.SQLInsertInto(DataTableName, record);
                 sqls.Add(sql);
-                return 0;
             }
         }
-        public static Int32 ExecuteQuery(string sql, ref DataTable dt, ref int row)
+        public static void ExecuteQuery(string sql, ref DataTable dt, ref int row)
         {
-            lock (DB_Lock)
+            try
             {
-                SQLiteResult sret = SQLiteDriver.ExecuteSelect(sql, ref dt, ref row);
-                return sret.I;
+                lock (DB_Lock)
+                {
+                    SQLiteDriver2.ExecuteSelect(sql, ref dt, ref row);
+                }
             }
-        }
-        public static Int32 GetRows(int session_id, ref DataTable dt)
-        {
-            lock (DB_Lock)
+            catch (Exception ex)
             {
-                SQLiteResult sret;
-
-                Dictionary<string, string> conditions = new Dictionary<string, string>();
-                conditions.Add("session_id", session_id.ToString());
-
-                int row = -1;
-                sret = SQLiteDriver.DBSelect(DataTableName, conditions, null, ref dt, ref row);
-                return sret.I;
+                MessageBox.Show("Execute query failed\n" + ex.Message);
             }
         }
         
 #region For Scan SFL
-        private static Int32 GetSessionSize(int session_id, ref int session_size)
+        public static void ScanSFLGetSessionsInfor(string module_name, ref List<List<string>> records)
         {
-            string sql = "select count(*) from " + DataTableName + " where session_id = "+session_id.ToString()+";";
-            DataTable dt = new DataTable();
-            int row = -1;
-            SQLiteResult sret = SQLiteDriver.ExecuteSelect(sql, ref dt, ref row);
-            if (sret.I != 0)
-                return sret.I;
-            session_size = Convert.ToInt32(dt.Rows[0]["count(*)"]);
-            return sret.I;
-        }
-        public static Int32 ScanSFLGetSessionsInfor(string module_name, ref List<List<string>> records)
-        {
-            lock (DB_Lock)
+            try
             {
-                    SQLiteResult sret;
+                lock (DB_Lock)
+                {
                     if (sqls.Count != 0)
                     {
-                        sret = SQLiteDriver.ExecuteNonQueryTransaction(sqls);
-                        if (sret.I != 0)
-                            return sret.I;
+                        SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
                         sqls.Clear();
                     }
                     Dictionary<string, string> conditions = new Dictionary<string, string>();
@@ -356,103 +273,97 @@ namespace O2Micro.Cobra.Common
 
                     int row = -1;
                     List<List<string>> datavalues = new List<List<string>>();
-                    sret = SQLiteDriver.DBSelect(SessionTableName, conditions, datacolumns, ref datavalues, ref row);
-                    if (sret.I == 0 && datavalues.Count != 0)
+                    SQLiteDriver2.DBSelect(SessionTableName, conditions, datacolumns, ref datavalues, ref row);
+                    foreach (var datavalue in datavalues)
                     {
-                        foreach (var datavalue in datavalues)
-                        {
-                            int session_id = Convert.ToInt32(datavalue[0]);
-                            string timestamp = datavalue[1];
-                            string device_num = datavalue[2];
-                            int session_size = -1;
-                            int ret = GetSessionSize(session_id, ref session_size);
-                            List<string> item = new List<string>();
-                            item.Add(timestamp);
-                            item.Add(session_size.ToString());
-                            item.Add(device_num);
-                            records.Add(item);
-                        }
-                        return sret.I;
-                    }
-                    else
-                        return sret.I;
-            }
-        }
-        public static Int32 ScanSFLDeleteOneSession(string module_name, string session_establish_time)
-        {
-            lock (DB_Lock)
-            {
-                SQLiteResult sret;
-
-                Dictionary<string, string> conditions = new Dictionary<string, string>();
-                conditions.Add("project_name", Project_Name);
-                conditions.Add("module_name", module_name);
-                conditions.Add("session_establish_time", session_establish_time);
-
-                List<string> datacolumns = new List<string>();
-                datacolumns.Add("session_id");
-
-                int row = -1;
-                List<List<string>> datavalues = new List<List<string>>();
-                sret = SQLiteDriver.DBSelect(SessionTableName, conditions, datacolumns, ref datavalues, ref row);
-                int session_id = -1;
-                if (sret.I == 0 && datavalues.Count == 1)
-                {
-                    session_id = Convert.ToInt32(datavalues[0][0]);
-                }
-                conditions.Clear();
-                conditions.Add("session_id", session_id.ToString());
-                sret = SQLiteDriver.DBDelete(DataTableName, conditions, ref row);
-                sret = SQLiteDriver.DBDelete(SessionTableName, conditions, ref row);
-                return sret.I;
-            }
-        }
-        public static Int32 ScanSFLGetOneSession(string module_name, string session_establish_time, ref DataTable dt)
-        {
-            lock (DB_Lock)
-            {
-                int session_id = -1;
-                int ret = GetSessionIDFromSessionTable(module_name, ref session_id, "", session_establish_time);
-                SQLiteResult sret;
-
-                Dictionary<string, string> conditions = new Dictionary<string, string>();
-                conditions.Add("session_id", session_id.ToString());
-
-                List<string> datacolumns = new List<string>();
-                datacolumns.Add("data_set");
-                int row = -1;
-                DataTable dtTemp = new DataTable();
-                sret = SQLiteDriver.DBSelect(DataTableName, conditions, datacolumns, ref dtTemp, ref row);
-                if(sret.I!=0)
-                    return sret.I;
-                string dr0string = dtTemp.Rows[0]["data_set"].ToString();
-                string[] dr0items = dr0string.Split(',');
-                foreach (var dr0item in dr0items)
-                {
-                    if (dr0item != "")
-                    {
-                        string[] s = dr0item.Split('|');
-                        string col = s[0];
-                        dt.Columns.Add(col);
+                        int session_id = Convert.ToInt32(datavalue[0]);
+                        string timestamp = datavalue[1];
+                        string device_num = datavalue[2];
+                        int session_size = -1;
+                        GetSessionSize(session_id, ref session_size);
+                        List<string> item = new List<string>();
+                        item.Add(timestamp);
+                        item.Add(session_size.ToString());
+                        item.Add(device_num);
+                        records.Add(item);
                     }
                 }
-                foreach (DataRow dr in dtTemp.Rows)
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Scan SFL Get Sessions Infor failed\n" + ex.Message);
+            }
+        }
+        public static void ScanSFLDeleteOneSession(string module_name, string session_establish_time)
+        {
+            try
+            {
+                lock (DB_Lock)
                 {
-                    string drstring = dr["data_set"].ToString();
-                    string[] dritems = drstring.Split(',');
-                    DataRow newdr = dt.NewRow();
-                    foreach (var dritem in dritems)
+                    int session_id = -1;
+                    GetSessionIDFromSessionTable(module_name, ref session_id, "", session_establish_time);
+
+                    Dictionary<string, string> conditions = new Dictionary<string, string>();
+                    conditions.Add("session_id", session_id.ToString());
+                    int row = -1;
+                    SQLiteDriver2.DBDelete(DataTableName, conditions, ref row);
+                    SQLiteDriver2.DBDelete(SessionTableName, conditions, ref row);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Scan SFL Delete Session failed\n" + ex.Message);
+            }
+        }
+        public static void ScanSFLGetOneSession(string module_name, string session_establish_time, ref DataTable dt)
+        {
+            try
+            {
+                lock (DB_Lock)
+                {
+                    int session_id = -1;
+                    GetSessionIDFromSessionTable(module_name, ref session_id, "", session_establish_time);
+
+                    Dictionary<string, string> conditions = new Dictionary<string, string>();
+                    conditions.Add("session_id", session_id.ToString());
+
+                    List<string> datacolumns = new List<string>();
+                    datacolumns.Add("data_set");
+                    int row = -1;
+                    DataTable dtTemp = new DataTable();
+                    SQLiteDriver2.DBSelect(DataTableName, conditions, datacolumns, ref dtTemp, ref row);
+                    string dr0string = dtTemp.Rows[0]["data_set"].ToString();
+                    string[] dr0items = dr0string.Split(',');
+                    foreach (var dr0item in dr0items)
                     {
-                        if (dritem != "")
+                        if (dr0item != "")
                         {
-                            string[] s = dritem.Split('|');
+                            string[] s = dr0item.Split('|');
                             string col = s[0];
-                            newdr[s[0]] = s[1];
+                            dt.Columns.Add(col);
                         }
                     }
-                    dt.Rows.Add(newdr);
+                    foreach (DataRow dr in dtTemp.Rows)
+                    {
+                        string drstring = dr["data_set"].ToString();
+                        string[] dritems = drstring.Split(',');
+                        DataRow newdr = dt.NewRow();
+                        foreach (var dritem in dritems)
+                        {
+                            if (dritem != "")
+                            {
+                                string[] s = dritem.Split('|');
+                                string col = s[0];
+                                newdr[s[0]] = s[1];
+                            }
+                        }
+                        dt.Rows.Add(newdr);
+                    }
                 }
-                return 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Scan SFL Get One Session failed\n" + ex.Message);
             }
         }
 #endregion
