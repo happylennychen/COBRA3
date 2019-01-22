@@ -430,7 +430,14 @@ namespace O2Micro.Cobra.Communication
             u16Sensor = 10;
             */
             m_busopDev = null;
-            DBManager2.NewSession("COM", ref session_id, "", DateTime.Now.ToString());
+            try
+            {
+                DBManager2.NewSession("COM", ref session_id, "", DateTime.Now.ToString());
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(ex.Message);
+            }
         }
 
         public void SetSVIDAccessI2C()
@@ -913,7 +920,14 @@ namespace O2Micro.Cobra.Communication
                     strdbg += "ErrComments|" + AutoMationTest.AutoMationTest.strATMErrDescrip;
 
                     //DBManager.NewRow("Com", record);
-                    DBManager2.BeginNewRow(session_id, strdbg);
+                    try
+                    {
+                        DBManager2.BeginNewRow(session_id, strdbg);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Windows.MessageBox.Show(ex.Message);
+                    }
 
                     strdbg += "R/W|Read, ";
                     {
@@ -928,7 +942,14 @@ namespace O2Micro.Cobra.Communication
                     //DBManager.NewRow("Com", record);
                 }
             }
-            DBManager2.BeginNewRow(session_id, strdbg);
+            try
+            {
+                DBManager2.BeginNewRow(session_id, strdbg);
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(ex.Message);
+            }
             #endregion
 
             //Debug.WriteLine(strdbg);

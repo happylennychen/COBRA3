@@ -7,6 +7,7 @@ using System.IO;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
+using System.Threading;
 
 namespace O2Micro.Cobra.Common
 {
@@ -33,8 +34,8 @@ namespace O2Micro.Cobra.Common
         #endregion
 
         #region 内存缓冲区
-        private static List<string> sqls = new List<string>();
-        private static System.Timers.Timer t = new System.Timers.Timer();
+        private static List<string> sqls_buffer = new List<string>();
+        private static System.Timers.Timer flush_timer = new System.Timers.Timer();
         private static bool isTimerBooked = false;
         private static byte idle_cnt = 0;
         #endregion
@@ -45,11 +46,11 @@ namespace O2Micro.Cobra.Common
             {
                 lock (DB_Lock)
                 {
-                    if (sqls.Count == 0)
+                    if (sqls_buffer.Count == 0)
                     {
                         if (idle_cnt >= FlushIdleCount)
                         {
-                            t.Stop();
+                            flush_timer.Stop();
                             idle_cnt = 0;
                         }
                         else
@@ -57,14 +58,15 @@ namespace O2Micro.Cobra.Common
                     }
                     else
                     {
-                        SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
-                        sqls.Clear();
+                        SQLiteDriver2.ExecuteNonQueryTransaction(sqls_buffer);
+                        sqls_buffer.Clear();
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Flush DB failed\n" + ex.Message);
+                throw new Exception("Flush DB failed\n", ex);
+                //MessageBox.Show("Flush DB failed\n" + ex.Message);
             }
         }
 
@@ -111,7 +113,7 @@ namespace O2Micro.Cobra.Common
                 {
                     if (!isTimerBooked)
                     {
-                        t.Elapsed += new System.Timers.ElapsedEventHandler(tFlushDB_Elapsed);
+                        flush_timer.Elapsed += new System.Timers.ElapsedEventHandler(tFlushDB_Elapsed);
                         isTimerBooked = true;
                     }
                     if (!Directory.Exists(folder + "Database"))
@@ -134,41 +136,170 @@ namespace O2Micro.Cobra.Common
 
                     SQLiteDriver2.DB_Name = DBName;
                     SQLiteDriver2.DB_Path = DBpath;
-                    List<string> sqls = new List<string>();
-                    sqls.Add("CREATE TABLE IF NOT EXISTS " + SessionTableName + " (session_id INTEGER PRIMARY KEY, project_name VARCHAR(30) NOT NULL, module_name VARCHAR(30) NOT NULL, session_establish_time VARCHAR(17) NOT NULL, device_index VARCHAR(10), UNIQUE(project_name, module_name, session_establish_time));");//Issue1406 Leon
-                    sqls.Add("CREATE TABLE IF NOT EXISTS " + DataTableName + " (session_id INTEGER NOT NULL, data_set VARCHAR(500) NOT NULL);");
-                    //todo: Bus_SPI Bus_I2C2 Bus_???
-                    //int row = -1;
-                    SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
-
-                    #region import old db
-                    #region import CobraDB.db3
-                    DBName = "CobraDB.db3";
-                    sqls.Add("CREATE TABLE IF NOT EXISTS " + SessionTableName + " (session_id INTEGER PRIMARY KEY, project_name VARCHAR(30) NOT NULL, module_name VARCHAR(30) NOT NULL, session_establish_time VARCHAR(17) NOT NULL, device_index VARCHAR(10), UNIQUE(project_name, module_name, session_establish_time));");//Issue1406 Leon
-                    sqls.Add("CREATE TABLE IF NOT EXISTS " + DataTableName + " (id INTEGER PRIMARY KEY, session_id INTEGER NOT NULL, data_set VARCHAR(500) NOT NULL);");
-                    SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
-                    int row = -1;
-                    string sql = @"insert into SESSION_TABLE
-select Logs3.log_id, Products.name || '_' || Products.version || '_' || Logs3.user_type || '_' || Logs3.date, Logs3.module_name, Logs3.timestamp, ''
-from
-	(select Logs2.log_id, Projects.product_id, Projects.user_type, Projects.date, Modules.module_name, Logs2.timestamp 
-	from
-		(select Logs.log_id, TableTypes.project_id, TableTypes.module_id, Logs.timestamp From Logs, TableTypes where Logs.table_type = TableTypes.table_type) as Logs2,
-		Projects, Modules
-	where Logs2.project_id = Projects.project_id and Logs2.module_id = Modules.module_id) as Logs3,
-	Products
-where Logs3.product_id = Products.product_id";
-                    //SQLiteDriver2.ExecuteNonQuery(sql, ref row);
-                    #endregion
-                    #region import CobraDBv1.1.db3
-                    #endregion
-                    #endregion
+                    if (!File.Exists(SQLiteDriver2.DB_Path + SQLiteDriver2.DB_Name))
+                    {
+                        List<string> sqls = new List<string>();
+                        sqls.Add("CREATE TABLE IF NOT EXISTS " + SessionTableName + " (session_id INTEGER PRIMARY KEY, project_name VARCHAR(30) NOT NULL, module_name VARCHAR(30) NOT NULL, session_establish_time VARCHAR(17) NOT NULL, device_index VARCHAR(10), UNIQUE(project_name, module_name, session_establish_time));");//Issue1406 Leon
+                        sqls.Add("CREATE TABLE IF NOT EXISTS " + DataTableName + " (data_id INTEGER PRIMARY KEY, session_id INTEGER NOT NULL, data_set VARCHAR(500) NOT NULL);");
+                        //todo: Bus_SPI Bus_I2C2 Bus_???
+                        //int row = -1;
+                        SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
+                    }
+                    if (File.Exists(SQLiteDriver.DB_Path + "CobraDB.db3"))
+                    {
+                        TransportDB();
+                        //Thread renamefilethread = new Thread(() =>
+                        //{
+                            //Thread.Sleep(60000);
+                            File.Move(SQLiteDriver.DB_Path + "CobraDB.db3", SQLiteDriver.DB_Path + "CobraDB.db3_exported.db3");
+                        //});
+                        //renamefilethread.Start();
+                    }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Create CobraDB failed\n" + ex.Message);
+                throw new Exception("Create CobraDB failed\n", ex);
+                //MessageBox.Show("Create CobraDB failed\n" + ex.Message);
             }
+        }
+        private static void TransportDB()
+        {
+            List<string> sqls = new List<string>();
+            #region 填充SESSION_TABLE
+            int row = -1;
+            string sql = @"	select Logs3.log_id, Products.name || '_' || Products.version || '_' || Logs3.user_type || '_' || Logs3.date, Logs3.module_name, Logs3.timestamp, ''
+	from	
+		(select Logs2.log_id, Projects.product_id, Projects.user_type, Projects.date, Modules.module_name, Logs2.timestamp 
+		from
+			(select Logs.log_id, TableTypes.project_id, TableTypes.module_id, Logs.timestamp 
+			From Logs, TableTypes 
+			where Logs.table_type = TableTypes.table_type) as Logs2,
+			Projects, Modules
+		where Logs2.project_id = Projects.project_id and Logs2.module_id = Modules.module_id) as Logs3,
+		Products
+	where Logs3.product_id = Products.product_id";
+            SQLiteDriver2.DB_Name = "CobraDB.db3";
+            DataTable session_dt = new DataTable();
+            SQLiteDriver2.ExecuteSelect(sql, ref session_dt, ref row);
+            SQLiteDriver2.DB_Name = "CobraDBv2.1.db3";
+            SQLiteDriver2.DBMultipleInsertInto(SessionTableName, session_dt);
+            #endregion
+            
+            #region 填充DATA_TABLE
+            #region approach 1
+            /*List<string> datacolumns = new List<string>();
+            datacolumns.Add("log_id");
+            datacolumns.Add("table_type");
+
+            row = -1;
+            List<List<string>> datavalues = new List<List<string>>();
+            SQLiteDriver2.DB_Name = "CobraDB.db3";
+            SQLiteDriver2.DBSelect("Logs", null, datacolumns, ref datavalues, ref row);
+            SQLiteDriver2.DB_Name = "CobraDBv2.1.db3";
+            sqls.Clear();
+            foreach (var datavalue in datavalues)
+            {
+                try
+                {
+                    int log_id = Convert.ToInt32(datavalue[0]);
+                    int table_type = Convert.ToInt32(datavalue[1]);
+                    string TableName = "Table" + table_type.ToString();
+                    #region get column name
+                    List<string> columns = new List<string>();
+
+                    sql = "PRAGMA table_info(" + TableName + ");";
+                    DataTable dt = new DataTable();
+                    SQLiteDriver2.DB_Name = "CobraDB.db3";
+                    SQLiteDriver2.ExecuteSelect(sql, ref dt, ref row);
+                    SQLiteDriver2.DB_Name = "CobraDBv2.1.db3";
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        if (dr["name"].ToString() != "log_id")
+                            columns.Add(dr["name"].ToString());
+                    }
+                    #endregion
+                    #region get data dictionary
+                    DataTable temp_dt = new DataTable();
+                    Dictionary<string, string> conditions = new Dictionary<string, string>();
+                    conditions.Add("log_id", log_id.ToString());
+                    SQLiteDriver2.DB_Name = "CobraDB.db3";
+                    SQLiteDriver2.DBSelect(TableName, conditions, null, ref temp_dt, ref row);
+                    SQLiteDriver2.DB_Name = "CobraDBv2.1.db3";
+                    foreach (DataRow dr in temp_dt.Rows)
+                    {
+                        string data_set = "";
+                        foreach (string column in columns)
+                        {
+                            data_set += column + "|" + dr[column].ToString() + ",";
+                        }
+                        sql = "INSERT OR IGNORE INTO " + DataTableName + "(session_id, data_set) VALUES ('" + log_id.ToString() + "', '" + data_set + "')";
+                        sqls.Add(sql);
+                    }
+                    #endregion
+                }
+                catch (Exception ex)
+                {
+                    FolderMap.WriteFile(ex.Message);
+                }
+            }
+            SQLiteDriver2.DB_Name = "CobraDBv2.1.db3";
+            SQLiteDriver2.ExecuteNonQueryTransaction(sqls);*/
+            #endregion
+            #region approach 2
+            sql = "select table_type from Logs group by table_type";
+            DataTable table_type_dt = new DataTable();
+            SQLiteDriver2.DB_Name = "CobraDB.db3";
+            SQLiteDriver2.ExecuteSelect(sql, ref table_type_dt, ref row);
+            List<string> TableTypes = new List<string>();
+            foreach (DataRow dr in table_type_dt.Rows)
+            {
+                TableTypes.Add(dr["table_type"].ToString());
+            }
+            foreach (string table_type in TableTypes)
+            {
+                try
+                {
+                    string TableName = "Table" + table_type.ToString();
+                    #region get column name
+                    List<string> columns = new List<string>();
+
+                    sql = "PRAGMA table_info(" + TableName + ");";
+                    DataTable table_type_content_dt = new DataTable();
+                    SQLiteDriver2.ExecuteSelect(sql, ref table_type_content_dt, ref row);
+                    foreach (DataRow dr in table_type_content_dt.Rows)
+                    {
+                        if (dr["name"].ToString() != "log_id")
+                            columns.Add(dr["name"].ToString());
+                    }
+                    #endregion
+                    #region get data dictionary
+                    DataTable temp_dt = new DataTable();
+                    SQLiteDriver2.DBSelect(TableName, null, null, ref temp_dt, ref row);
+                    foreach (DataRow dr in temp_dt.Rows)
+                    {
+                        string data_set = "";
+                        foreach (string column in columns)
+                        {
+                            data_set += column + "|" + dr[column].ToString() + ",";
+                        }
+                        string log_id = dr["log_id"].ToString();
+                        sql = "INSERT OR IGNORE INTO " + DataTableName + "(session_id, data_set) VALUES ('" + log_id + "', '" + data_set + "')";
+                        sqls.Add(sql);
+                    }
+                    #endregion
+                }
+                catch (Exception ex)
+                {
+                    FolderMap.WriteFile(ex.Message);
+                }
+            }
+            SQLiteDriver2.DB_Name = "CobraDBv2.1.db3";
+            SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
+
+            #endregion
+            #endregion
+
         }
         public static void ExtensionRegister(string project_name)
         {
@@ -192,48 +323,63 @@ where Logs3.product_id = Products.product_id";
             }
             catch (Exception ex)
             {
-                MessageBox.Show("New session failed\n" + ex.Message);
+                throw new Exception("New session failed\n", ex);
+                //MessageBox.Show("New session failed\n" + ex.Message);
             }
         }
         public static void BeginNewRow(int session_id, Dictionary<string, string> data_dictionary)
         {
-            lock (DB_Lock)
+            try
             {
-                if (!t.Enabled)
+                lock (DB_Lock)
                 {
-                    t.Interval = FlushInterval;
-                    t.Start();
-                }
-                Dictionary<string, string> record = new Dictionary<string, string>();
-                record.Add("session_id", session_id.ToString());
+                    if (!flush_timer.Enabled)
+                    {
+                        flush_timer.Interval = FlushInterval;
+                        flush_timer.Start();
+                    }
+                    Dictionary<string, string> record = new Dictionary<string, string>();
+                    record.Add("session_id", session_id.ToString());
 
-                string data_dictionary_string = "";
-                foreach (string key in data_dictionary.Keys)
-                {
-                    data_dictionary_string += (key + "|" + data_dictionary[key] + ",");
-                }
-                record.Add("data_set", data_dictionary_string);
+                    string data_dictionary_string = "";
+                    foreach (string key in data_dictionary.Keys)
+                    {
+                        data_dictionary_string += (key + "|" + data_dictionary[key] + ",");
+                    }
+                    record.Add("data_set", data_dictionary_string);
 
-                string sql = SQLiteDriver2.SQLInsertInto(DataTableName, record);
-                sqls.Add(sql);
+                    string sql = SQLiteDriver2.SQLInsertInto(DataTableName, record);
+                    sqls_buffer.Add(sql);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("New Row failed\n", ex);
             }
         }
         public static void BeginNewRow(int session_id, string data_normal)
         {
-            lock (DB_Lock)
+            try
             {
-                if (!t.Enabled)
+                lock (DB_Lock)
                 {
-                    t.Interval = 1000;
-                    t.Start();
-                }
+                    if (!flush_timer.Enabled)
+                    {
+                        flush_timer.Interval = 1000;
+                        flush_timer.Start();
+                    }
 
-                Dictionary<string, string> record = new Dictionary<string, string>();
+                    Dictionary<string, string> record = new Dictionary<string, string>();
                     record.Add("session_id", session_id.ToString());
-                record.Add("data_set", data_normal);
+                    record.Add("data_set", data_normal);
 
-                string sql = SQLiteDriver2.SQLInsertInto(DataTableName, record);
-                sqls.Add(sql);
+                    string sql = SQLiteDriver2.SQLInsertInto(DataTableName, record);
+                    sqls_buffer.Add(sql);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("New Row failed\n", ex);
             }
         }
         public static void ExecuteQuery(string sql, ref DataTable dt, ref int row)
@@ -247,7 +393,8 @@ where Logs3.product_id = Products.product_id";
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Execute query failed\n" + ex.Message);
+                throw new Exception("Execute query failed\n", ex);
+                //MessageBox.Show("Execute query failed\n" + ex.Message);
             }
         }
         
@@ -258,10 +405,10 @@ where Logs3.product_id = Products.product_id";
             {
                 lock (DB_Lock)
                 {
-                    if (sqls.Count != 0)
+                    if (sqls_buffer.Count != 0)
                     {
-                        SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
-                        sqls.Clear();
+                        SQLiteDriver2.ExecuteNonQueryTransaction(sqls_buffer);
+                        sqls_buffer.Clear();
                     }
                     Dictionary<string, string> conditions = new Dictionary<string, string>();
                     conditions.Add("project_name", Project_Name);
@@ -291,7 +438,8 @@ where Logs3.product_id = Products.product_id";
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Scan SFL Get Sessions Infor failed\n" + ex.Message);
+                throw new Exception("Scan SFL Get Sessions Infor failed\n", ex);
+                //MessageBox.Show("Scan SFL Get Sessions Infor failed\n" + ex.Message);
             }
         }
         public static void ScanSFLDeleteOneSession(string module_name, string session_establish_time)
@@ -312,7 +460,8 @@ where Logs3.product_id = Products.product_id";
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Scan SFL Delete Session failed\n" + ex.Message);
+                throw new Exception("Scan SFL Delete Session failed\n", ex);
+                //MessageBox.Show("Scan SFL Delete Session failed\n" + ex.Message);
             }
         }
         public static void ScanSFLGetOneSession(string module_name, string session_establish_time, ref DataTable dt)
@@ -363,7 +512,8 @@ where Logs3.product_id = Products.product_id";
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Scan SFL Get One Session failed\n" + ex.Message);
+                throw new Exception("Scan SFL Get One Session failed\n", ex);
+                //MessageBox.Show("Scan SFL Get One Session failed\n" + ex.Message);
             }
         }
 #endregion

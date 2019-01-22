@@ -1732,7 +1732,14 @@ namespace O2Micro.Cobra.ScanPanel
         {
             List<List<String>> records = new List<List<string>>();
             //if (DBManager.GetLogsInforV2(sflname, ref records) != -1)//Issue1428 Leon
-            DBManager2.ScanSFLGetSessionsInfor(sflname, ref records);
+            try
+            {
+                DBManager2.ScanSFLGetSessionsInfor(sflname, ref records);
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(ex.Message);
+            }
             logdatalist.Clear();
             foreach (var record in records)
             {
@@ -1796,7 +1803,14 @@ namespace O2Micro.Cobra.ScanPanel
                         //CommunicationDBLog.NewLog(timestamp);
                     }
                     string session_establish_time = DateTime.Now.ToString();
-                    DBManager2.NewSession(sflname, ref session_id, parent.name, session_establish_time);
+                    try
+                    {
+                        DBManager2.NewSession(sflname, ref session_id, parent.name, session_establish_time);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Windows.MessageBox.Show(ex.Message);
+                    }
                     #endregion
                     /*
                     #region new logdata
@@ -1955,8 +1969,15 @@ namespace O2Micro.Cobra.ScanPanel
                 {
                     MessageBox.Show("Begin New Row Failed!");
                     return;
-                } 
-                DBManager2.BeginNewRow(session_id, records);
+                }
+                try
+                {
+                    DBManager2.BeginNewRow(session_id, records);
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show(ex.Message);
+                }
                 SnapShot.TimerCallbackPool[(long)TimerCounter].DBAccessed = true;
                 if (SnapShot.TimerCallbackPool[(long)TimerCounter].UIAccessed)  //如果这一帧数据已经被使用完了，就将其移除出快照池
                     SnapShot.TimerCallbackPool.Remove((long)TimerCounter);
@@ -2158,7 +2179,14 @@ namespace O2Micro.Cobra.ScanPanel
         private void DeleteBtn_Click(object sender, RoutedEventArgs e)
         {
             LogData ld = (LogData)loglist.SelectedItem;
-            DBManager2.ScanSFLDeleteOneSession(sflname, ld.Timestamp);
+            try
+            {
+                DBManager2.ScanSFLDeleteOneSession(sflname, ld.Timestamp);
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(ex.Message);
+            }
             logdatalist.Remove(ld);
         }
 
@@ -2187,7 +2215,14 @@ namespace O2Micro.Cobra.ScanPanel
             {
                 DataTable dt = new DataTable();
                 //DBManager.GetLog(sflname, ld.Timestamp, ref dt);
-                DBManager2.ScanSFLGetOneSession(sflname, ld.Timestamp, ref dt);
+                try
+                {
+                    DBManager2.ScanSFLGetOneSession(sflname, ld.Timestamp, ref dt);
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show(ex.Message);
+                }
                 fullpath = saveFileDialog.FileName;
                 ExportDB(fullpath, dt);
             }

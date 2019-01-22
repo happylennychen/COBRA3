@@ -96,7 +96,14 @@ namespace O2Micro.Cobra.Shell
                 //DB Design by Leon
 
                 //DB Design by Leon
-                DBManager2.CobraDBInit(FolderMap.m_projects_folder);
+                try
+                {
+                    DBManager2.CobraDBInit(FolderMap.m_projects_folder);
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
                 //DB Design by Leon
 
                 #endregion
