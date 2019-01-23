@@ -21,7 +21,7 @@ namespace O2Micro.Cobra.Common
         }
 
         public static bool DebugMode = false;       //为true时，每次启动都会在CobraDocument/Database/DebugDB创建新的临时DB
-        private static string DBName = "CobraDBv2.1.db3";
+        private static string DBName = "CobraDBv2.db3";
         private const string DataTableName = "DATA_TABLE";
         private const string SessionTableName = "SESSION_TABLE";
         private const int FlushInterval = 1000;
@@ -145,13 +145,14 @@ namespace O2Micro.Cobra.Common
                         //int row = -1;
                         SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
                     }
-                    if (File.Exists(SQLiteDriver.DB_Path + "CobraDB.db3"))
+                    string OLD_DB_NAME = "CobraDB.db3";
+                    if (File.Exists(SQLiteDriver.DB_Path + OLD_DB_NAME))
                     {
                         TransportDB();
                         //Thread renamefilethread = new Thread(() =>
                         //{
-                            //Thread.Sleep(60000);
-                            File.Move(SQLiteDriver.DB_Path + "CobraDB.db3", SQLiteDriver.DB_Path + "CobraDB.db3_exported.db3");
+                        //Thread.Sleep(60000);
+                        File.Move(SQLiteDriver.DB_Path + OLD_DB_NAME, SQLiteDriver.DB_Path + "CobraDB_exported.db3");
                         //});
                         //renamefilethread.Start();
                     }
@@ -165,6 +166,8 @@ namespace O2Micro.Cobra.Common
         }
         private static void TransportDB()
         {
+            string OLD_DB_NAME = "CobraDB.db3";
+            string NEW_DB_NAME = "CobraDBv2.db3";
             List<string> sqls = new List<string>();
             #region 填充SESSION_TABLE
             int row = -1;
@@ -179,10 +182,10 @@ namespace O2Micro.Cobra.Common
 		where Logs2.project_id = Projects.project_id and Logs2.module_id = Modules.module_id) as Logs3,
 		Products
 	where Logs3.product_id = Products.product_id";
-            SQLiteDriver2.DB_Name = "CobraDB.db3";
+            SQLiteDriver2.DB_Name = OLD_DB_NAME;
             DataTable session_dt = new DataTable();
             SQLiteDriver2.ExecuteSelect(sql, ref session_dt, ref row);
-            SQLiteDriver2.DB_Name = "CobraDBv2.1.db3";
+            SQLiteDriver2.DB_Name = NEW_DB_NAME;
             SQLiteDriver2.DBMultipleInsertInto(SessionTableName, session_dt);
             #endregion
             
@@ -196,7 +199,7 @@ namespace O2Micro.Cobra.Common
             List<List<string>> datavalues = new List<List<string>>();
             SQLiteDriver2.DB_Name = "CobraDB.db3";
             SQLiteDriver2.DBSelect("Logs", null, datacolumns, ref datavalues, ref row);
-            SQLiteDriver2.DB_Name = "CobraDBv2.1.db3";
+            SQLiteDriver2.DB_Name = "CobraDBv2.db3";
             sqls.Clear();
             foreach (var datavalue in datavalues)
             {
@@ -212,7 +215,7 @@ namespace O2Micro.Cobra.Common
                     DataTable dt = new DataTable();
                     SQLiteDriver2.DB_Name = "CobraDB.db3";
                     SQLiteDriver2.ExecuteSelect(sql, ref dt, ref row);
-                    SQLiteDriver2.DB_Name = "CobraDBv2.1.db3";
+                    SQLiteDriver2.DB_Name = "CobraDBv2.db3";
                     foreach (DataRow dr in dt.Rows)
                     {
                         if (dr["name"].ToString() != "log_id")
@@ -225,7 +228,7 @@ namespace O2Micro.Cobra.Common
                     conditions.Add("log_id", log_id.ToString());
                     SQLiteDriver2.DB_Name = "CobraDB.db3";
                     SQLiteDriver2.DBSelect(TableName, conditions, null, ref temp_dt, ref row);
-                    SQLiteDriver2.DB_Name = "CobraDBv2.1.db3";
+                    SQLiteDriver2.DB_Name = "CobraDBv2.db3";
                     foreach (DataRow dr in temp_dt.Rows)
                     {
                         string data_set = "";
@@ -243,13 +246,13 @@ namespace O2Micro.Cobra.Common
                     FolderMap.WriteFile(ex.Message);
                 }
             }
-            SQLiteDriver2.DB_Name = "CobraDBv2.1.db3";
+            SQLiteDriver2.DB_Name = "CobraDBv2.db3";
             SQLiteDriver2.ExecuteNonQueryTransaction(sqls);*/
             #endregion
             #region approach 2
             sql = "select table_type from Logs group by table_type";
             DataTable table_type_dt = new DataTable();
-            SQLiteDriver2.DB_Name = "CobraDB.db3";
+            SQLiteDriver2.DB_Name = OLD_DB_NAME;
             SQLiteDriver2.ExecuteSelect(sql, ref table_type_dt, ref row);
             List<string> TableTypes = new List<string>();
             foreach (DataRow dr in table_type_dt.Rows)
@@ -294,7 +297,7 @@ namespace O2Micro.Cobra.Common
                     FolderMap.WriteFile(ex.Message);
                 }
             }
-            SQLiteDriver2.DB_Name = "CobraDBv2.1.db3";
+            SQLiteDriver2.DB_Name = NEW_DB_NAME;
             SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
 
             #endregion
