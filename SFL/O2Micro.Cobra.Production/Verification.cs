@@ -62,36 +62,28 @@ namespace O2Micro.Cobra.ProductionPanel
         }
         private void LoadFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Forms.FolderBrowserDialog dlg = new System.Windows.Forms.FolderBrowserDialog();
-            //dlg.Description = "Choose an empty folder to save all the output files";
-            //dlg.RootFolder = Environment.SpecialFolder.History;
-            //dlg.ShowNewFolderButton = true;
-            if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.Cancel)
-                return;
-
-            if (Directory.GetFiles(dlg.SelectedPath).Length == 0)
+            Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
+            openFileDialog.Title = "Load Excel File";
+            openFileDialog.Filter = "Excel file (*.xlsx)|*.xlsx||";
+            openFileDialog.DefaultExt = "xlsx";
+            openFileDialog.FileName = "default";
+            openFileDialog.FilterIndex = 1;
+            openFileDialog.RestoreDirectory = true;
+            if (openFileDialog.ShowDialog() == true)
             {
-                System.Windows.MessageBox.Show("此目录是空目录!");
-                return;
-            }
-            DirectoryInfo di = new DirectoryInfo(dlg.SelectedPath);
-            if (di.Name != FolderMap.m_curextensionfile_name)
-            {
-                System.Windows.MessageBox.Show("此目录与当前工程不匹配!");
-                return;
+                VerificationFilePath.Text = openFileDialog.FileName;
             }
 
-            VerificationFilePath.Text = dlg.SelectedPath;
         }
 
         private void VerifyButton_Click(object sender, RoutedEventArgs e)
         {
-            string foldername = VerificationFilePath.Text.ToString();
             if (VerificationFilePath.Text.ToString() == "File Path")
             {
                 System.Windows.MessageBox.Show("请先选择目录!");
                 return;
             }
+            string filename = VerificationFilePath.Text.ToString();
             if (BoardFilePath.Text != "")
             {
                 if (LibErrorCode.IDS_ERR_SUCCESSFUL != LoadFile(BoardFilePath.Text, MainControl.ViewModelTypy.BOARD))
@@ -99,296 +91,303 @@ namespace O2Micro.Cobra.ProductionPanel
                     System.Windows.MessageBox.Show("Load board file failed!");
                     return;
                 }
+                boardviewmodel.WriteDevice();
             }
 
-            boardviewmodel.WriteDevice();
             //cfgviewmodel.WriteDevice();
 
-            string[] filenames = Directory.GetFiles(foldername);
             var excelApp = new Excel.Application();
             Excel.Workbook excelWKB = null;
             Excel._Worksheet excelSHEET = null;
+            try
+            {
+                excelWKB = excelApp.Workbooks.Open(filename);
+            }
+            catch (Exception c)
+            {
+                System.Windows.MessageBox.Show(c.ToString());
+            }
             foreach (var p in cfgviewmodel.sfl_parameterlist)
             {
-                string GroupName = p.catalog.Replace('/', ' ');
-                string filename = foldername + "\\" + GroupName + ".xlsx";
-                if (filenames.Contains(filename))
+                string relatedname = "";
+                foreach (Excel._Worksheet st in excelWKB.Sheets)
                 {
-                    try
+                    string fulltargetname = st.Name.Replace(' ', '/');
+                    string targetname = "";
+                    if (fulltargetname.StartsWith("("))
                     {
-                        excelWKB = excelApp.Workbooks.Open(filename);
-                    }
-                    catch
-                    {
-                    }
-                    foreach (Excel._Worksheet st in excelWKB.Sheets)
-                    {
-                        string targetname = st.Name.Replace(' ', '/');
+                        targetname = fulltargetname.Remove(0, fulltargetname.IndexOf(')') + 1);
                         if (targetname == p.nickname)
                         {
                             excelSHEET = st;
-                            if (p.nickname == "Vdoc2-m"
-                                )
-                            {
-                                string n = "b";
-                                n = "a";
-                            }
+                            relatedname = fulltargetname.Substring(fulltargetname.IndexOf('(') + 1, fulltargetname.IndexOf(')') - fulltargetname.IndexOf('(')-1);
                             break;
                         }
                     }
-                    try
+                    else
                     {
-                        if (excelSHEET != null)
+                        if (fulltargetname == p.nickname)
                         {
-                            int colcnt = excelSHEET.UsedRange.Columns.Count;
-                            int rowcnt = excelSHEET.UsedRange.Rows.Count;
-                            if (colcnt == 2) //普通参数
+                            excelSHEET = st;
+                            break;
+                        }
+                    }
+                }
+                try
+                {
+                    if (excelSHEET != null)
+                    {
+                        int colcnt = excelSHEET.UsedRange.Columns.Count;
+                        int rowcnt = excelSHEET.UsedRange.Rows.Count;
+                        if (relatedname == "") //普通参数
+                        {
+                            for (int row = 2; row <= rowcnt; row++)
                             {
-                                for (int row = 2; row <= rowcnt; row++)
+                                #region excel cell中的数据转到SFLViewModel中去
+                                string tmp = ((Excel.Range)excelSHEET.Cells[row, 1]).Text.ToString();
+                                if (tmp == "")
+                                    break;
+                                double dval = 0.0;
+                                if (p.brange)//为正常录入浮点数
                                 {
-                                    #region excel cell中的数据转到SFLViewModel中去
-                                    string tmp = ((Excel.Range)excelSHEET.Cells[row, 1]).Text.ToString();
-                                    double dval = 0.0;
-                                    if (p.brange)//为正常录入浮点数
+                                    switch (p.format)
                                     {
-                                        switch (p.format)
-                                        {
-                                            case 0: //Int     
-                                            case 1: //float1
-                                            case 2: //float2
-                                            case 3: //float3
-                                            case 4: //float4
-                                                {
-                                                    if (!Double.TryParse(tmp, out dval))
-                                                        dval = 0.0;
-                                                    break;
-                                                }
-                                            case 5: //Hex
-                                            case 6: //Word
-                                                {
-                                                    try
-                                                    {
-                                                        dval = (Double)Convert.ToInt32(tmp, 16);
-                                                    }
-                                                    catch (Exception ex)
-                                                    {
-                                                        dval = 0.0;
-                                                        break;
-                                                    }
-                                                    break;
-                                                }
-                                            default:
+                                        case 0: //Int     
+                                        case 1: //float1
+                                        case 2: //float2
+                                        case 3: //float3
+                                        case 4: //float4
+                                            {
+                                                if (!Double.TryParse(tmp, out dval))
+                                                    dval = 0.0;
                                                 break;
-                                        }
-                                        p.data = dval;
+                                            }
+                                        case 5: //Hex
+                                        case 6: //Word
+                                            {
+                                                try
+                                                {
+                                                    dval = (Double)Convert.ToInt32(tmp, 16);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    dval = 0.0;
+                                                    break;
+                                                }
+                                                break;
+                                            }
+                                        default:
+                                            break;
                                     }
-                                    else
-                                        p.sphydata = tmp;
-                                    #endregion
-
-                                    //WriteDevice(ref p);
-                                    #region WriteDevice SFLViewModel转到Parameter中去
-                                    if (p.berror && (p.errorcode & LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL) == LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL)
-                                        return;
-
-                                    p.IsWriteCalled = true;
-
-                                    Parameter param = p.parent;
-                                    if (p.brange)
-                                        param.phydata = p.data;
-                                    else
-                                        param.sphydata = p.sphydata;
-
-                                    p.IsWriteCalled = false;
-                                    #endregion
-
-
-                                    #region 调用DEM API
-                                    msg.owner = this;
-                                    msg.gm.sflname = ProductionSFLDBName;
-                                    var list = new AsyncObservableCollection<Parameter>();
-                                    list.Add(p.parent);
-                                    msg.task_parameterlist.parameterlist = list;
-                                    msg.task = TM.TM_CONVERT_PHYSICALTOHEX;
-                                    parent.AccessDevice(ref m_Msg);
-                                    while (msg.bgworker.IsBusy)
-                                        System.Windows.Forms.Application.DoEvents();
-                                    if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
-                                        return;
-                                    #endregion
-
-                                    #region 新建一列放入计算值
-                                    excelSHEET.Cells[row, 3] = p.parent.hexdata;
-                                    #endregion
-
-                                    #region 新建一列放入比较值
-                                    string strAnswer = ((Excel.Range)excelSHEET.Cells[row, 2]).Text.ToString();
-                                    UInt16 answer = Convert.ToUInt16(strAnswer, 2);
-                                    excelSHEET.Cells[row, 4] = p.parent.hexdata - answer;
-                                    #endregion
+                                    p.data = dval;
                                 }
+                                else
+                                    p.sphydata = tmp;
+                                #endregion
+
+                                //WriteDevice(ref p);
+                                #region WriteDevice SFLViewModel转到Parameter中去
+                                if (p.berror && (p.errorcode & LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL) == LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL)
+                                    return;
+
+                                p.IsWriteCalled = true;
+
+                                Parameter param = p.parent;
+                                if (p.brange)
+                                    param.phydata = p.data;
+                                else
+                                    param.sphydata = p.sphydata;
+
+                                p.IsWriteCalled = false;
+                                #endregion
+
+
+                                #region 调用DEM API
+                                msg.owner = this;
+                                msg.gm.sflname = ProductionSFLDBName;
+                                var list = new AsyncObservableCollection<Parameter>();
+                                list.Add(p.parent);
+                                msg.task_parameterlist.parameterlist = list;
+                                msg.task = TM.TM_CONVERT_PHYSICALTOHEX;
+                                parent.AccessDevice(ref m_Msg);
+                                while (msg.bgworker.IsBusy)
+                                    System.Windows.Forms.Application.DoEvents();
+                                if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                                    return;
+                                #endregion
+
+                                #region 新建一列放入计算值
+                                excelSHEET.Cells[row, 6] = p.parent.hexdata;
+                                #endregion
+
+                                #region 新建一列放入比较值
+                                string strAnswer = ((Excel.Range)excelSHEET.Cells[row, 2]).Text.ToString();
+                                UInt16 answer = Convert.ToUInt16(strAnswer, 2);
+                                excelSHEET.Cells[row, 7] = p.parent.hexdata - answer;
+                                #endregion
                             }
-                            else if (colcnt == 3)    //依赖参数
-                            { 
-                                for (int row = 2; row <= rowcnt; row++)
+                        }
+                        else    //依赖参数
+                        {
+                            for (int row = 2; row <= rowcnt; row++)
+                            {
+                                #region 第一列
+                                //获取TH参数的Name
+                                string p1name = relatedname;
+                                //根据Name获取参数
+                                SFLParameterModel p1 = cfgviewmodel.GetParameterByName(p1name);
+                                #region excel cell中的数据转到SFLViewModel中去
+                                string tmp = ((Excel.Range)excelSHEET.Cells[row, 2]).Text.ToString();
+                                double dval = 0.0;
+                                if (p1.brange)//为正常录入浮点数
                                 {
-                                    #region 第一列
-                                    //获取TH参数的Name
-                                    string p1name = ((Excel._Worksheet)excelWKB.Sheets[1]).Name;
-                                    //根据Name获取参数
-                                    SFLParameterModel p1 = cfgviewmodel.GetParameterByName(p1name);
-                                    #region excel cell中的数据转到SFLViewModel中去
-                                    string tmp = ((Excel.Range)excelSHEET.Cells[row, 2]).Text.ToString();
-                                    double dval = 0.0;
-                                    if (p1.brange)//为正常录入浮点数
+                                    switch (p1.format)
                                     {
-                                        switch (p1.format)
-                                        {
-                                            case 0: //Int     
-                                            case 1: //float1
-                                            case 2: //float2
-                                            case 3: //float3
-                                            case 4: //float4
-                                                {
-                                                    if (!Double.TryParse(tmp, out dval))
-                                                        dval = 0.0;
-                                                    break;
-                                                }
-                                            case 5: //Hex
-                                            case 6: //Word
-                                                {
-                                                    try
-                                                    {
-                                                        dval = (Double)Convert.ToInt32(tmp, 16);
-                                                    }
-                                                    catch (Exception ex)
-                                                    {
-                                                        dval = 0.0;
-                                                        break;
-                                                    }
-                                                    break;
-                                                }
-                                            default:
+                                        case 0: //Int     
+                                        case 1: //float1
+                                        case 2: //float2
+                                        case 3: //float3
+                                        case 4: //float4
+                                            {
+                                                if (!Double.TryParse(tmp, out dval))
+                                                    dval = 0.0;
                                                 break;
-                                        }
-                                        p1.data = dval;
-                                    }
-                                    else
-                                        p1.sphydata = tmp;
-                                    #endregion
-
-                                    //WriteDevice(ref p1);
-                                    #region WriteDevice SFLViewModel转到Parameter中去
-                                    if (p1.berror && (p1.errorcode & LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL) == LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL)
-                                        return;
-
-                                    p1.IsWriteCalled = true;
-
-                                    Parameter param1 = p1.parent;
-                                    if (p1.brange)
-                                        param1.phydata = p1.data;
-                                    else
-                                        param1.sphydata = p1.sphydata;
-
-                                    p1.IsWriteCalled = false;
-                                    #endregion
-                                    #endregion
-                                    #region 第二列
-                                    #region excel cell中的数据转到SFLViewModel中去
-                                    tmp = ((Excel.Range)excelSHEET.Cells[row, 1]).Text.ToString();
-                                    dval = 0.0;
-                                    if (p.brange)//为正常录入浮点数
-                                    {
-                                        switch (p.format)
-                                        {
-                                            case 0: //Int     
-                                            case 1: //float1
-                                            case 2: //float2
-                                            case 3: //float3
-                                            case 4: //float4
+                                            }
+                                        case 5: //Hex
+                                        case 6: //Word
+                                            {
+                                                try
                                                 {
-                                                    if (!Double.TryParse(tmp, out dval))
-                                                        dval = 0.0;
+                                                    dval = (Double)Convert.ToInt32(tmp, 16);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    dval = 0.0;
                                                     break;
                                                 }
-                                            case 5: //Hex
-                                            case 6: //Word
-                                                {
-                                                    try
-                                                    {
-                                                        dval = (Double)Convert.ToInt32(tmp, 16);
-                                                    }
-                                                    catch (Exception ex)
-                                                    {
-                                                        dval = 0.0;
-                                                        break;
-                                                    }
-                                                    break;
-                                                }
-                                            default:
                                                 break;
-                                        }
-                                        p.data = dval;
+                                            }
+                                        default:
+                                            break;
                                     }
-                                    else
-                                        p.sphydata = tmp;
-                                    #endregion
-
-                                    //WriteDevice(ref p);
-                                    #region WriteDevice SFLViewModel转到Parameter中去
-                                    if (p.berror && (p.errorcode & LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL) == LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL)
-                                        return;
-
-                                    p.IsWriteCalled = true;
-
-                                    Parameter param = p.parent;
-                                    if (p.brange)
-                                        param.phydata = p.data;
-                                    else
-                                        param.sphydata = p.sphydata;
-
-                                    p.IsWriteCalled = false;
-                                    #endregion
-                                    #endregion
-
-
-                                    #region 调用DEM API
-                                    msg.owner = this;
-                                    msg.gm.sflname = ProductionSFLDBName;
-                                    var list = new AsyncObservableCollection<Parameter>();
-                                    list.Add(param1);
-                                    list.Add(param);
-                                    msg.task_parameterlist.parameterlist = list;
-                                    msg.task = TM.TM_CONVERT_PHYSICALTOHEX;
-                                    parent.AccessDevice(ref m_Msg);
-                                    while (msg.bgworker.IsBusy)
-                                        System.Windows.Forms.Application.DoEvents();
-                                    if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
-                                        return;
-                                    #endregion
-
-                                    #region 新建一列放入计算值
-                                    excelSHEET.Cells[row, 4] = p.parent.hexdata;
-                                    #endregion
-
-                                    #region 新建一列放入比较值
-                                    string strAnswer = ((Excel.Range)excelSHEET.Cells[row, 3]).Text.ToString();
-                                    UInt16 answer = Convert.ToUInt16(strAnswer, 2);
-                                    excelSHEET.Cells[row, 5] = p.parent.hexdata - answer;
-                                    #endregion
+                                    p1.data = dval;
                                 }
+                                else
+                                    p1.sphydata = tmp;
+                                #endregion
+
+                                //WriteDevice(ref p1);
+                                #region WriteDevice SFLViewModel转到Parameter中去
+                                if (p1.berror && (p1.errorcode & LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL) == LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL)
+                                    return;
+
+                                p1.IsWriteCalled = true;
+
+                                Parameter param1 = p1.parent;
+                                if (p1.brange)
+                                    param1.phydata = p1.data;
+                                else
+                                    param1.sphydata = p1.sphydata;
+
+                                p1.IsWriteCalled = false;
+                                #endregion
+                                #endregion
+                                #region 第二列
+                                #region excel cell中的数据转到SFLViewModel中去
+                                tmp = ((Excel.Range)excelSHEET.Cells[row, 1]).Text.ToString();
+                                dval = 0.0;
+                                if (p.brange)//为正常录入浮点数
+                                {
+                                    switch (p.format)
+                                    {
+                                        case 0: //Int     
+                                        case 1: //float1
+                                        case 2: //float2
+                                        case 3: //float3
+                                        case 4: //float4
+                                            {
+                                                if (!Double.TryParse(tmp, out dval))
+                                                    dval = 0.0;
+                                                break;
+                                            }
+                                        case 5: //Hex
+                                        case 6: //Word
+                                            {
+                                                try
+                                                {
+                                                    dval = (Double)Convert.ToInt32(tmp, 16);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    dval = 0.0;
+                                                    break;
+                                                }
+                                                break;
+                                            }
+                                        default:
+                                            break;
+                                    }
+                                    p.data = dval;
+                                }
+                                else
+                                    p.sphydata = tmp;
+                                #endregion
+
+                                //WriteDevice(ref p);
+                                #region WriteDevice SFLViewModel转到Parameter中去
+                                if (p.berror && (p.errorcode & LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL) == LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL)
+                                    return;
+
+                                p.IsWriteCalled = true;
+
+                                Parameter param = p.parent;
+                                if (p.brange)
+                                    param.phydata = p.data;
+                                else
+                                    param.sphydata = p.sphydata;
+
+                                p.IsWriteCalled = false;
+                                #endregion
+                                #endregion
+
+
+                                #region 调用DEM API
+                                msg.owner = this;
+                                msg.gm.sflname = ProductionSFLDBName;
+                                var list = new AsyncObservableCollection<Parameter>();
+                                list.Add(param1);
+                                list.Add(param);
+                                msg.task_parameterlist.parameterlist = list;
+                                msg.task = TM.TM_CONVERT_PHYSICALTOHEX;
+                                parent.AccessDevice(ref m_Msg);
+                                while (msg.bgworker.IsBusy)
+                                    System.Windows.Forms.Application.DoEvents();
+                                if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                                    return;
+                                #endregion
+
+                                #region 新建一列放入计算值
+                                excelSHEET.Cells[row, 6] = p.parent.hexdata;
+                                #endregion
+
+                                #region 新建一列放入比较值
+                                string strAnswer = ((Excel.Range)excelSHEET.Cells[row, 3]).Text.ToString();
+                                UInt16 answer = Convert.ToUInt16(strAnswer, 2);
+                                excelSHEET.Cells[row, 7] = p.parent.hexdata - answer;
+                                #endregion
                             }
                         }
                     }
-                    catch
-                    { 
-                    }
-                    finally
-                    {
-                        excelWKB.Close(true);
-                        System.Runtime.InteropServices.Marshal.ReleaseComObject(excelWKB);
-                        excelWKB = null;
-                    }
+                }
+                catch (Exception c)
+                {
+                    System.Windows.MessageBox.Show(c.ToString());
+                }
+                finally
+                {
+                    //excelWKB.Close(true);
+                    //System.Runtime.InteropServices.Marshal.ReleaseComObject(excelWKB);
+                    //excelWKB = null;
                 }
             }
             excelApp.Workbooks.Close();

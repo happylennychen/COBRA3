@@ -1,4 +1,7 @@
-//#define debug
+#define debug
+//#define x
+#define y
+//#define m
 using System;
 using System.Text;
 using System.IO;
@@ -114,7 +117,41 @@ namespace O2Micro.Cobra.EM
         {
             if (Registry.GetCurExtensionFileName().Length == 0) return false;
             FolderMap.m_curextensionfile_name = Registry.GetCurExtensionFileName();
+<<<<<<< HEAD
 
+=======
+#if debug
+            string projectname = "Woodpecker8";
+#endif
+#if x
+            string xmlxpath = FolderMap.m_main_folder.Remove(FolderMap.m_main_folder.LastIndexOf("output\\"));
+            xmlxpath = Path.Combine(xmlxpath, "System\\DEM\\O2Micro.Cobra." + projectname + "\\xml x\\");
+            foreach (string path in Directory.GetFiles(xmlxpath))
+            {
+                string destPath = Path.Combine(FolderMap.m_extension_work_folder, Path.GetFileName(path));
+                File.Copy(path, destPath, true);
+            }
+#endif
+#if y
+            string xmlypath = FolderMap.m_main_folder.Remove(FolderMap.m_main_folder.LastIndexOf("output\\"));
+            xmlypath = Path.Combine(xmlypath, "System\\DEM\\O2Micro.Cobra." + projectname + "\\xml y\\");
+            foreach (string path in Directory.GetFiles(xmlypath))
+            {
+                string destPath = Path.Combine(FolderMap.m_extension_work_folder, Path.GetFileName(path));
+                File.Copy(path, destPath, true);
+            }
+#endif
+#if m
+            string xmlmpath = FolderMap.m_main_folder.Remove(FolderMap.m_main_folder.LastIndexOf("output\\"));
+            xmlmpath = Path.Combine(xmlmpath, "System\\DEM\\O2Micro.Cobra." + projectname + "\\xml m\\");
+            foreach (string path in Directory.GetFiles(xmlmpath))
+            {
+                string destPath = Path.Combine(FolderMap.m_extension_work_folder, Path.GetFileName(path));
+                File.Copy(path, destPath, true);
+            }
+#endif
+#if !debug
+>>>>>>> Issue1461
             string fullname = Registry.GetCurExtensionFileName() + FolderMap.m_extension_ext;
             string fullpath = FolderMap.m_extension_work_folder;
 
