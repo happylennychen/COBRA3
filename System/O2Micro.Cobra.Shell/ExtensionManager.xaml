@@ -46,7 +46,7 @@
                 </DataGrid.ColumnHeaderStyle>
                 <DataGrid.CellStyle>
                     <Style TargetType="DataGridCell">
-                        <Setter Property="Foreground" Value="{Binding Path=IsLegal, Mode=OneWay, Converter={StaticResource lc}, UpdateSourceTrigger=PropertyChanged}"></Setter>
+                        <Setter Property="Foreground" Value="{Binding Path=IsHighLighted, Mode=OneWay, Converter={StaticResource lc}, UpdateSourceTrigger=PropertyChanged}"></Setter>
                     </Style>
                 </DataGrid.CellStyle>
             </DataGrid>
