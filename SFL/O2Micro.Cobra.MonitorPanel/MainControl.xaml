@@ -76,7 +76,7 @@
                                             <DockPanel>
                                                 <StackPanel DockPanel.Dock="Right">
                                                     <Button Name="ViewFolderBtn" Click="ViewFolderBtn_Click" Visibility="Collapsed">Folder</Button>
-                                                    <Button Name="DeleteBtn" Click="DeleteBtn_Click" Focusable="False" Visibility="Collapsed">
+                                                    <Button Name="DeleteBtn" Click="DeleteBtn_Click" Focusable="False">
                                                         <Button.IsEnabled>
                                                             <MultiBinding Converter="{StaticResource ec2}">
                                                                 <Binding ElementName="loglist" Path="SelectedItems.Count" Mode="OneWay"></Binding>

@@ -74,7 +74,7 @@ namespace O2Micro.Cobra.Shell
         {
             foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
             {
-                if (btn.btnlabel == "BoardConfig" || btn.btnlabel == "Board Config")
+                if (btn.btnlabel == CobraGlobal.Constant.OldBoardConfigName || btn.btnlabel == CobraGlobal.Constant.NewBoardConfigName)
                 {
                     BoardConfigsflname = btn.btnlabel;
                     return true;
@@ -87,7 +87,7 @@ namespace O2Micro.Cobra.Shell
         {
             foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
             {
-                if (btn.btnlabel == "BoardConfig" || btn.btnlabel == "Board Config")
+                if (btn.btnlabel == CobraGlobal.Constant.OldBoardConfigName || btn.btnlabel == CobraGlobal.Constant.NewBoardConfigName)
                 {
                     return btn.id;
                 }

@@ -131,7 +131,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             viewmode = new SFLViewMode(pParent, this);
 
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
             {
                 SaveBoardConfigToInternalMemory();//Issue1378 Leon
             }
@@ -278,7 +278,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         }
                 }
             }
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.	//Issue686//Issue 1426 Leon
+            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.	//Issue686//Issue 1426 Leon
             {
                 WriteBtn.Content = "Apply";
                 ReadBtn.Content = "Reset";
@@ -340,7 +340,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         {
             string fullpath = "";
             Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
             {
                 openFileDialog.Title = "Load Board Config file";			//Support Production SFL, Leon
                 openFileDialog.Filter = "Board Config file (*.board)|*.board||";
@@ -367,7 +367,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             else
                 return;
 
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.    //Issue1373//Issue 1426 Leon
+            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.    //Issue1373//Issue 1426 Leon
             {
                 SaveBoardConfigFilePath(fullpath);//Issue1378 Leon
             }
@@ -446,7 +446,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();
             saveFileDialog.FilterIndex = 1;
             saveFileDialog.RestoreDirectory = true;
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
             {
                 saveFileDialog.FileName = chipname+"-"+MD5Code;//Issue1373 Leon
                 saveFileDialog.Title = "Save Board Config file";
@@ -473,7 +473,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             else return;
 
             StatusLabel.Content = fullpath;
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.    //Issue1373//Issue 1426 Leon
+            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.    //Issue1373//Issue 1426 Leon
             {
                 SaveBoardConfigFilePath(fullpath);
             }
@@ -916,7 +916,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             //string timestamp = DateTime.Now.ToString();
             //int log_id = -1;
             //DBManager.NewLog("Com", "Com Log", timestamp, ref log_id);
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
                 Reset();//Issue1381 Leon
             else if (ReadSubTask != 0)     //当前oce支持subtask特性
                 ReadCommand(ReadSubTask);
@@ -1138,7 +1138,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     msg.task_parameterlist = viewmode.dm_part_parameterlist;
                     break;
                 case "Button":
-                    if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+                    if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
                     {//Issue1381 Leon
                     }
                     else
@@ -1160,7 +1160,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     btn_ctrl.btn_cm.IsOpen = true;
                     return;
             }
-            if (sflname == "BoardConfig" || sflname == "Board Config")//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
                 Apply();//Issue1381 Leon
             else if (WriteSubTask != 0)
                 WriteCommand(WriteSubTask);

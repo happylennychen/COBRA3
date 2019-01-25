@@ -203,7 +203,7 @@ namespace O2Micro.Cobra.MonitorPanel
 #if SupportThreadMonitor
         private ThreadMonitorWindow tm = new ThreadMonitorWindow();
 #endif
-
+        int session_id = -1;
         #endregion
 
         #region 函数定义
@@ -1703,20 +1703,23 @@ namespace O2Micro.Cobra.MonitorPanel
         private void UpdateLogDataList()
         {
             List<List<String>> records = new List<List<string>>();
-            if (DBManager.GetLogsInforV2(sflname, ref records) != -1)//Issue1428 Leon
+            try
             {
-                logdatalist.Clear();
-                foreach (var record in records)
-                {
-                    LogData ld = new LogData();
-                    ld.Timestamp = record[0];
-                    ld.RecordNumber = Convert.ToInt64(record[1]);
-                    ld.DeviceNum = record[2];//Issue1428 Leon
-                    logdatalist.Add(ld);
-                }
+                DBManager2.ScanSFLGetSessionsInfor(sflname, ref records);
             }
-            else
-                MessageBox.Show("Get Logs Infor Failed!");
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(ex.Message);
+            }
+            logdatalist.Clear();
+            foreach (var record in records)
+            {
+                LogData ld = new LogData();
+                ld.Timestamp = record[0];
+                ld.RecordNumber = Convert.ToInt64(record[1]);
+                ld.DeviceNum = record[2];//Issue1428 Leon
+                logdatalist.Add(ld);
+            }
         }
 
         private void runBtn_Click(object sender, RoutedEventArgs e)
@@ -1769,6 +1772,15 @@ namespace O2Micro.Cobra.MonitorPanel
                             MessageBox.Show("Create Scan Log Failed!");
 
                         //CommunicationDBLog.NewLog(timestamp);
+                    }
+                    string session_establish_time = DateTime.Now.ToString();
+                    try
+                    {
+                        DBManager2.NewSession(sflname, ref session_id, parent.name, session_establish_time);
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Windows.MessageBox.Show(ex.Message);
                     }
                     #endregion
                     /*
@@ -1913,6 +1925,14 @@ namespace O2Micro.Cobra.MonitorPanel
                 {
                     MessageBox.Show("Begin New Row Failed!");
                     return;
+                }
+                try
+                {
+                    DBManager2.BeginNewRow(session_id, records);
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show(ex.Message);
                 }
                 SnapShot.TimerCallbackPool[(long)TimerCounter].DBAccessed = true;
                 if (SnapShot.TimerCallbackPool[(long)TimerCounter].UIAccessed)  //如果这一帧数据已经被使用完了，就将其移除出快照池
@@ -2122,16 +2142,16 @@ namespace O2Micro.Cobra.MonitorPanel
 
         private void DeleteBtn_Click(object sender, RoutedEventArgs e)
         {
-#if SupportCobraLog
-            int count = loglist.SelectedItems.Count;
-            for (int i = count; i > 0; i--)
+            LogData ld = (LogData)loglist.SelectedItem;
+            try
             {
-                LogData lg = (LogData)loglist.SelectedItems[i - 1];
-                lg.Delete();
+                DBManager2.ScanSFLDeleteOneSession(sflname, ld.Timestamp);
             }
-#else
-#endif
-            
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(ex.Message);
+            }
+            logdatalist.Remove(ld);
         }
 
         private void ExportBtn_Click(object sender, RoutedEventArgs e)
@@ -2158,7 +2178,15 @@ namespace O2Micro.Cobra.MonitorPanel
             if (saveFileDialog.ShowDialog() == true)
             {
                 DataTable dt = new DataTable();
-                DBManager.GetLog(sflname, ld.Timestamp, ref dt);
+                //DBManager.GetLog(sflname, ld.Timestamp, ref dt);
+                try
+                {
+                    DBManager2.ScanSFLGetOneSession(sflname, ld.Timestamp, ref dt);
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show(ex.Message);
+                }
                 fullpath = saveFileDialog.FileName;
                 ExportDB(fullpath, dt);
             }

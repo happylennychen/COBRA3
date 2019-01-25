@@ -1,6 +1,6 @@
-#define debug
+//#define debug
 //#define x
-#define y
+//#define y
 //#define m
 using System;
 using System.Text;
@@ -52,7 +52,7 @@ namespace O2Micro.Cobra.EM
         }
 
         //根据设备名的存在与否做删除/添加动作
-        public void AdjustDevice(bool badjust,string name)
+        public void AdjustDevice(bool badjust, string name)
         {
             m_EM_DevicesManage.AdjustDevice(badjust, name);
         }
@@ -92,9 +92,9 @@ namespace O2Micro.Cobra.EM
             ClearExtTemp();
 
             if (!UnZipExtension()) return false;
-            if (!LoadExtension()) 
-            { 
-                return false; 
+            if (!LoadExtension())
+            {
+                return false;
             }
 
             return true;
@@ -117,9 +117,6 @@ namespace O2Micro.Cobra.EM
         {
             if (Registry.GetCurExtensionFileName().Length == 0) return false;
             FolderMap.m_curextensionfile_name = Registry.GetCurExtensionFileName();
-<<<<<<< HEAD
-
-=======
 #if debug
             string projectname = "Woodpecker8";
 #endif
@@ -151,7 +148,6 @@ namespace O2Micro.Cobra.EM
             }
 #endif
 #if !debug
->>>>>>> Issue1461
             string fullname = Registry.GetCurExtensionFileName() + FolderMap.m_extension_ext;
             string fullpath = FolderMap.m_extension_work_folder;
 
@@ -164,7 +160,6 @@ namespace O2Micro.Cobra.EM
                     GZip.Decompress(FolderMap.m_extensions_folder, fullpath, fullname);
             }
             //复制Dll文件到主目录下
-#if !debug
             foreach (string path in Directory.GetFiles(FolderMap.m_extension_work_folder, "*.dll"))
             {
                 string destPath = Path.Combine(FolderMap.m_dem_library_folder, Path.GetFileName(path));
@@ -252,7 +247,7 @@ namespace O2Micro.Cobra.EM
             {
                 XmlElement xe = (XmlElement)xn;
                 string modulename = xe.GetAttribute("DBModuleName");
-                if(modulename != "")
+                if (modulename != "")
                     modulelist.Add(modulename);
             }
             bus_type = root.GetAttribute("bustype");
@@ -283,6 +278,7 @@ namespace O2Micro.Cobra.EM
                 DBManager.supportdb = false;
             }
             DBManager2.ExtensionRegister(Registry.GetCurExtensionFileName());
+
             if (!m_EM_DevicesManage.Build()) return false;
 
 
@@ -299,7 +295,7 @@ namespace O2Micro.Cobra.EM
                 AutomationTestLog.cl.folder = logfolder;
             }
             //将目录中已有的可识别的logdata加入testlog.logdatalist中
-			AutomationTestLog.cl.SyncLogData();
+            AutomationTestLog.cl.SyncLogData();
             #endregion
 
             return true;
@@ -314,7 +310,7 @@ namespace O2Micro.Cobra.EM
         #endregion
 
         #region OCE检查 ID:592 697
-        public UInt32 MonitorExtension(string filename) 
+        public UInt32 MonitorExtension(string filename)
         {
             try
             {
@@ -357,7 +353,7 @@ namespace O2Micro.Cobra.EM
                 if (root.GetAttribute("libname") == string.Empty) return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE;
                 if (root.GetAttribute("ProjectCode") == string.Empty) return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE;
                 if (root.GetAttribute("OCEVersion") == string.Empty) return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE;
-                
+
                 if (!File.Exists(Path.Combine(FolderMap.m_extension_monitor_folder, string.Format("{0}{1}", root.GetAttribute("libname"), ".dll")))) return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_DEM;
                 new VersionInfo(name, root.GetAttribute("ProjectCode"), new Version(root.GetAttribute("OCEVersion")), ASSEMBLY_TYPE.OCE, LibErrorCode.IDS_ERR_SUCCESSFUL);
             }

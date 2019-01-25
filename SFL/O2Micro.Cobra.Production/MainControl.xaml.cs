@@ -164,7 +164,7 @@ namespace O2Micro.Cobra.ProductionPanel
             string BDsflname = "";
             foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
             {
-                if (btn.btnlabel == "BoardConfig" || btn.btnlabel == "Board Config")
+                if (btn.btnlabel == CobraGlobal.Constant.OldBoardConfigName || btn.btnlabel == CobraGlobal.Constant.NewBoardConfigName)
                 {
                     BDsflname = btn.btnlabel;
                 }

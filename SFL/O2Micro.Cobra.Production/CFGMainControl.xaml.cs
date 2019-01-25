@@ -145,7 +145,7 @@ namespace O2Micro.Cobra.ProductionPanel
 
             foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)  //根据ExtensionDescriptor中是否包含Board Config SFL来决定是否显示输入项
             {
-                if (btn.btnlabel == "BoardConfig" || btn.btnlabel == "Board Config")
+                if (btn.btnlabel == CobraGlobal.Constant.OldBoardConfigName || btn.btnlabel == CobraGlobal.Constant.NewBoardConfigName)
                 {
                     hasBoardConfig = true;
                     ShowBoardConfigInput(true);

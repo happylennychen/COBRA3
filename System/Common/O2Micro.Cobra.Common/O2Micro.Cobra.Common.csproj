@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncObservableCollection.cs" />
+    <Compile Include="CobraGlobal.cs" />
     <Compile Include="Compress.cs" />
     <Compile Include="SQLiteDriver2.cs" />
     <Compile Include="DBManager2.cs" />

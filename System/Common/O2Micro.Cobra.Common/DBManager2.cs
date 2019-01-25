@@ -144,17 +144,23 @@ namespace O2Micro.Cobra.Common
                         //todo: Bus_SPI Bus_I2C2 Bus_???
                         //int row = -1;
                         SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
+                        sqls.Clear();
                     }
                     string OLD_DB_NAME = "CobraDB.db3";
+                    string NEW_DB_NAME = "CobraDBv2.db3";
                     if (File.Exists(SQLiteDriver.DB_Path + OLD_DB_NAME))
                     {
+                        FileInfo ofi = new FileInfo(SQLiteDriver.DB_Path + OLD_DB_NAME);
+                        FolderMap.WriteFile("Transportation started.");
+                        System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+                        stopwatch.Start();
+
                         TransportDB();
-                        //Thread renamefilethread = new Thread(() =>
-                        //{
-                        //Thread.Sleep(60000);
+                        FolderMap.WriteFile("Transportation Finished in " + Math.Round(stopwatch.Elapsed.TotalMilliseconds, 0).ToString() + "mS");
+                        FileInfo nfi = new FileInfo(SQLiteDriver.DB_Path + NEW_DB_NAME);
+                        FolderMap.WriteFile("Old DB size: " + (ofi.Length / 1024).ToString() + "KB, New DB size: " + (nfi.Length / 1024).ToString() + "KB");
                         File.Move(SQLiteDriver.DB_Path + OLD_DB_NAME, SQLiteDriver.DB_Path + "CobraDB_exported.db3");
-                        //});
-                        //renamefilethread.Start();
+                        FolderMap.WriteFile("CobraDB.db3 renamed to CobraDB_exported.db3");
                     }
                 }
             }
@@ -187,8 +193,9 @@ namespace O2Micro.Cobra.Common
             SQLiteDriver2.ExecuteSelect(sql, ref session_dt, ref row);
             SQLiteDriver2.DB_Name = NEW_DB_NAME;
             SQLiteDriver2.DBMultipleInsertInto(SessionTableName, session_dt);
+            FolderMap.WriteFile(row.ToString() + " sessions were added into SESSION_TABLE");
             #endregion
-            
+
             #region 填充DATA_TABLE
             #region approach 1
             /*List<string> datacolumns = new List<string>();
@@ -254,16 +261,19 @@ namespace O2Micro.Cobra.Common
             DataTable table_type_dt = new DataTable();
             SQLiteDriver2.DB_Name = OLD_DB_NAME;
             SQLiteDriver2.ExecuteSelect(sql, ref table_type_dt, ref row);
+            int table_type_cnt = row;
             List<string> TableTypes = new List<string>();
             foreach (DataRow dr in table_type_dt.Rows)
             {
                 TableTypes.Add(dr["table_type"].ToString());
             }
+            int total_row = 0;
             foreach (string table_type in TableTypes)
             {
                 try
                 {
                     string TableName = "Table" + table_type.ToString();
+                    /*
                     #region get column name
                     List<string> columns = new List<string>();
 
@@ -276,33 +286,92 @@ namespace O2Micro.Cobra.Common
                             columns.Add(dr["name"].ToString());
                     }
                     #endregion
+                    */
                     #region get data dictionary
                     DataTable temp_dt = new DataTable();
+                    SQLiteDriver2.DB_Name = OLD_DB_NAME;
                     SQLiteDriver2.DBSelect(TableName, null, null, ref temp_dt, ref row);
+                    total_row += row;
                     foreach (DataRow dr in temp_dt.Rows)
                     {
                         string data_set = "";
-                        foreach (string column in columns)
+                        //foreach (string column in columns)
+                        foreach (DataColumn dc in temp_dt.Columns)
                         {
-                            data_set += column + "|" + dr[column].ToString() + ",";
+                            if (dc.ColumnName != "log_id")
+                                data_set += dc.ColumnName + "|" + dr[dc.ColumnName].ToString() + ",";
                         }
                         string log_id = dr["log_id"].ToString();
                         sql = "INSERT OR IGNORE INTO " + DataTableName + "(session_id, data_set) VALUES ('" + log_id + "', '" + data_set + "')";
                         sqls.Add(sql);
+                        if (sqls.Count >= 50000)
+                        {
+                            SQLiteDriver2.DB_Name = NEW_DB_NAME;
+                            SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
+                            sqls.Clear();
+                            SQLiteDriver2.DB_Name = OLD_DB_NAME;
+                        }
                     }
                     #endregion
                 }
                 catch (Exception ex)
                 {
                     FolderMap.WriteFile(ex.Message);
+
+                    FolderMap.WriteFile("sqls.Count:"+sqls.Count.ToString());
                 }
             }
+            if (sqls.Count != 0)
+            {
+                SQLiteDriver2.DB_Name = NEW_DB_NAME;
+                SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
+                sqls.Clear();
+            }
+            FolderMap.WriteFile(total_row.ToString() + " rows in " + table_type_cnt.ToString() + " tables were added.");
+
+            #endregion
+            #endregion
+
+            #region 随机验证
+            string verification_sql = "";
+            string old_log_id = "";
+            string old_table_type = "";
+            row = 0;
+            string random_data_set = "";
+            string row_id = "";
+            DataTable random_dt = new DataTable();
+
+            verification_sql = "select session_id from DATA_TABLE group by session_id order by random() asc limit 1";
             SQLiteDriver2.DB_Name = NEW_DB_NAME;
-            SQLiteDriver2.ExecuteNonQueryTransaction(sqls);
+            SQLiteDriver2.ExecuteSelect(verification_sql, ref random_dt, ref row);
+            old_log_id = random_dt.Rows[0]["session_id"].ToString();
+            verification_sql = "select data_set from DATA_TABLE where session_id = " + old_log_id + " order by data_id desc limit 1";
+            random_dt = new DataTable();
+            SQLiteDriver2.ExecuteSelect(verification_sql, ref random_dt, ref row);
+            random_data_set = random_dt.Rows[0]["data_set"].ToString();
+            FolderMap.WriteFile("Data in new DB:\t\t" + random_data_set);
 
-            #endregion
-            #endregion
 
+            random_dt = new DataTable();
+            verification_sql = "select * from Logs where log_id = " + old_log_id;
+            SQLiteDriver2.DB_Name = OLD_DB_NAME;
+            SQLiteDriver2.ExecuteSelect(verification_sql, ref random_dt, ref row);
+            old_table_type = random_dt.Rows[0]["table_type"].ToString();
+            verification_sql = "select rowid, * from Table" + old_table_type + " where log_id = " + old_log_id + " order by rowid desc limit 1";
+            random_dt = new DataTable();
+            SQLiteDriver2.ExecuteSelect(verification_sql, ref random_dt, ref row);
+            random_data_set = "";
+            foreach (DataColumn dc in random_dt.Columns)
+            {
+                if (dc.ColumnName == "rowid")
+                    row_id = random_dt.Rows[0][dc.ColumnName].ToString();
+                else if (dc.ColumnName != "log_id")
+                    random_data_set += dc.ColumnName + "|" + random_dt.Rows[0][dc.ColumnName].ToString() + ",";
+            }
+            FolderMap.WriteFile("Table Name: " + " Table" + old_table_type + " log_id: " + old_log_id);
+            FolderMap.WriteFile("Data in old DB:\t\t" + random_data_set);
+            SQLiteDriver2.DB_Name = NEW_DB_NAME;
+            #endregion
         }
         public static void ExtensionRegister(string project_name)
         {
