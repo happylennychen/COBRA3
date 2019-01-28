@@ -44,6 +44,17 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             set { m_btn_Name = value; }
         }
 
+        private string m_btn_Content;
+        public string btn_content
+        {
+            get { return m_btn_Content; }
+            set
+            {
+                m_btn_Content = value;
+                OnPropertyChanged("btn_content");
+            }
+        }
+
         private bool m_bEnable;
         public bool benable
         {

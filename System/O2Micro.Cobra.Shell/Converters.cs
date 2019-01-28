@@ -271,7 +271,7 @@ namespace O2Micro.Cobra.Shell
     {
         public Object Convert(Object value, Type targetType, Object parameter, CultureInfo culture)
         {
-            bool isHighLighted = (bool)value;
+            bool isHighLighted = (bool)value;	//Issue1289 Leon
             if (isHighLighted)
                 return Brushes.Red;
             else

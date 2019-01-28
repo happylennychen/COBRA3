@@ -72,28 +72,6 @@ namespace O2Micro.Cobra.Shell
 
         private void UpdateExtensionsLegality()
         {
-            /*int number = ExtensionFiles.Count;
-            for (int i = 0; i < number; i++)
-            {
-                ExtensionFiles[i].IsLegal = true;
-            }
-            if (IsInDebugMode)
-                return;
-            for (int i = 0; i < number; i++)
-            {
-                if (ExtensionFiles[i].IsLegal == false)
-                    continue;
-                for (int j = i + 1; j < number; j++)
-                {
-                    if (ExtensionFiles[j].IsLegal == false)
-                        continue;
-                    if (IsEqual(ExtensionFiles[i], ExtensionFiles[j]))
-                    {
-                        ExtensionFiles[i].IsLegal = false;
-                        ExtensionFiles[j].IsLegal = false;
-                    }
-                }
-            }*/
             int number = ExtensionFiles.Count;  //Issue1289
             for (int i = 0; i < number; i++)
             {
@@ -117,7 +95,7 @@ namespace O2Micro.Cobra.Shell
         private void SelectBtn_Click(object sender, RoutedEventArgs e)
         {
             ExtensionFile ef = (ExtensionFile)ExManager.SelectedItem;
-            if (ef.IsLegal == false && IsInDebugMode == false)
+            if (ef.IsLegal == false && IsInDebugMode == false)	//Issue1289 Leon
             {
                 MessageBox.Show("This OCE is illegal and cannot be loaded!");
                 return;
@@ -435,31 +413,6 @@ namespace O2Micro.Cobra.Shell
                 m_extDescrip_xmlDoc.Load(filenmae);
                 XmlElement root = m_extDescrip_xmlDoc.DocumentElement;
                 if (root == null) return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE;
-                /*XmlNode DBConfigNode = root.SelectSingleNode("descendant::Part[@Name = 'DBConfig']");
-                if (DBConfigNode == null)
-                    return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE;
-                XmlNodeList nodeList = DBConfigNode.ChildNodes;
-                if (nodeList == null)
-                    return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE;
-                foreach (XmlNode xn in nodeList)
-                {
-                    XmlElement xe = (XmlElement)xn;
-                    switch (xe.Name)
-                    {
-                        case "ChipName":
-                            Chip = xe.InnerText;
-                            break;
-                        case "ChipVersion":
-                            Version = xe.InnerText;
-                            break;
-                        case "UserType":
-                            Type = xe.InnerText;
-                            break;
-                        case "Date":
-                            Date = xe.InnerText;
-                            break;
-                    }
-                }*/
             }
             catch (System.Exception ex)
             {

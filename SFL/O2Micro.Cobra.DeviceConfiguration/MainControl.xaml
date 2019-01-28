@@ -137,13 +137,13 @@
 				<ColumnDefinition Width="0.23*"/>
 				<ColumnDefinition Width="0.18*"/>
 			</Grid.ColumnDefinitions>
-            <Button x:Name="LoadBtn" Content="Load From File" Style="{DynamicResource btn-deviceConfiguration}"  Click="LoadBtn_Click" />
-            <Button x:Name="SaveBtn" Content="Save To File" Style="{DynamicResource btn-deviceConfiguration}" Grid.Column="1" Click="SaveBtn_Click" />
-            <Button x:Name="ReadBtn" Content="Read From Device" Style="{DynamicResource btn-deviceConfiguration}" Grid.Column="2" Click="ReadBtn_Click"
+            <Button x:Name="LoadBtn" Content="{Binding btn_content}" Style="{DynamicResource btn-deviceConfiguration}"  Click="LoadBtn_Click" />
+            <Button x:Name="SaveBtn" Content="{Binding btn_content}" Style="{DynamicResource btn-deviceConfiguration}" Grid.Column="1" Click="SaveBtn_Click" />
+            <Button x:Name="ReadBtn" Content="{Binding btn_content}" Style="{DynamicResource btn-deviceConfiguration}" Grid.Column="2" Click="ReadBtn_Click"
                     IsEnabled="{Binding benable}" ContextMenu="{Binding btn_menu_control}"/>
-            <Button x:Name="WriteBtn" Content="Write To Device" Style="{DynamicResource btn-deviceConfiguration}" Grid.Column="3"  Click="WriteBtn_Click"
+            <Button x:Name="WriteBtn" Content="{Binding btn_content}" Style="{DynamicResource btn-deviceConfiguration}" Grid.Column="3"  Click="WriteBtn_Click"
                     IsEnabled="{Binding benable}" ContextMenu="{Binding btn_menu_control}"/>
-            <Button x:Name="EraseBtn" Content="Erase " Style="{DynamicResource btn-deviceConfiguration}" Grid.Column="4" Click="EraseBtn_Click" IsEnabled="{Binding benable}" Visibility="{Binding visi}"/>
+            <Button x:Name="EraseBtn" Content="{Binding btn_content}" Style="{DynamicResource btn-deviceConfiguration}" Grid.Column="4" Click="EraseBtn_Click" IsEnabled="{Binding benable}" Visibility="{Binding visi}"/>
         </Grid>
 		<Grid x:Name="MiddlePanel" Height="32" Margin="0,0,0,40" VerticalAlignment="Bottom">
             <Label x:Name="StatusLabel" Content="Default" Style="{DynamicResource label-deviceConfiguration}"/>

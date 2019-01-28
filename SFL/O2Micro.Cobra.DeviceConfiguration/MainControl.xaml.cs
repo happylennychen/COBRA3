@@ -99,13 +99,13 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         private Dictionary<string, string> BCImg = new System.Collections.Generic.Dictionary<string, string>();//Issue 1426 Leon
 
 
-        public ushort m_readsubtask = 0;
+        public ushort m_readsubtask = 0;	//Issue1363 Leon
         public ushort ReadSubTask
         {
             set { m_readsubtask = value; }
             get { return m_readsubtask; }
         }
-        public ushort m_writesubtask = 0;
+        public ushort m_writesubtask = 0;	//Issue1363 Leon
         public ushort WriteSubTask
         {
             set { m_writesubtask = value; }
@@ -150,7 +150,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 NoMapping = true;
             #endregion
 
-            #region 初始化SubTask
+            #region 初始化SubTask	//Issue1363 Leon
             string str_option = String.Empty;
             XmlNodeList nodelist = parent.GetUINodeList(sflname);
             foreach (XmlNode node in nodelist)
@@ -228,6 +228,9 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                                 else
                                     btCtrl.benable = true;
 
+                                if (sub.Attributes["Recontent"] != null)	//Guo
+                                    btCtrl.btn_content = sub.Attributes["Recontent"].Value.ToString();
+
                                 //Leon add Visibility Property control here
                                 if (sub.Attributes["Visibility"] != null)
                                 {
@@ -276,6 +279,35 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                             }
                             break;
                         }
+                }
+            }
+            foreach (UIElement uiE in BottomPanel.Children)	//Guo
+            {
+                if (!(uiE is System.Windows.Controls.Button)) continue;
+                System.Windows.Controls.Button btn = (uiE as System.Windows.Controls.Button);
+                if (ui_config.GetBtnControlByName(btn.Name) != null)
+                {
+                    if (ui_config.GetBtnControlByName(btn.Name).btn_content != null)
+                        continue;
+                }
+
+                switch (btn.Name)
+                {
+                    case "LoadBtn":
+                        btn.Content = "Load From File";
+                        break;
+                    case "SaveBtn":
+                        btn.Content = "Save To File";
+                        break;
+                    case "ReadBtn":
+                        btn.Content = "Read From Device";
+                        break;
+                    case "WriteBtn":
+                        btn.Content = "Write To Device";
+                        break;
+                    case "EraseBtn":
+                        btn.Content = "Erase";
+                        break;
                 }
             }
             if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.	//Issue686//Issue 1426 Leon
@@ -918,7 +950,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             //DBManager.NewLog("Com", "Com Log", timestamp, ref log_id);
             if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
                 Reset();//Issue1381 Leon
-            else if (ReadSubTask != 0)     //当前oce支持subtask特性
+            else if (ReadSubTask != 0)     //当前oce支持subtask特性 Issue1363 Leon
                 ReadCommand(ReadSubTask);
             else
                 Read();
@@ -969,7 +1001,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             parent.bBusy = false;*/
         }
-        private void ReadCommand(ushort subtask)
+        private void ReadCommand(ushort subtask)	//Issue1363 Leon
         {
             //if(parent.bSimulation)
 
@@ -1162,7 +1194,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
             if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
                 Apply();//Issue1381 Leon
-            else if (WriteSubTask != 0)
+            else if (WriteSubTask != 0)		//Issue1363 Leon
                 WriteCommand(WriteSubTask);
             else
                 write();
@@ -1215,7 +1247,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             parent.bBusy = false;
         }
-        private void WriteCommand(ushort subtask)
+        private void WriteCommand(ushort subtask)	//Issue1363 Leon
         {
             UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
             if (parent.bBusy)

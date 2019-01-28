@@ -277,7 +277,7 @@ namespace O2Micro.Cobra.EM
                 //MessageBox.Show("Extension Register Failed!");
                 DBManager.supportdb = false;
             }
-            DBManager2.ExtensionRegister(Registry.GetCurExtensionFileName());
+            DBManager2.ExtensionRegister(Registry.GetCurExtensionFileName());	//Issue1465 Leon
 
             if (!m_EM_DevicesManage.Build()) return false;
 
