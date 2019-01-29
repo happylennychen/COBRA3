@@ -102,7 +102,7 @@ namespace O2Micro.Cobra.Shell
                 }
                 catch(Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.Message + ex.InnerException.Message);
                 }
                 //DB Design by Leon
 

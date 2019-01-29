@@ -436,7 +436,7 @@ namespace O2Micro.Cobra.Communication
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(ex.Message);
+                System.Windows.MessageBox.Show(ex.Message + ex.InnerException.Message);
             }
         }
 
@@ -861,21 +861,33 @@ namespace O2Micro.Cobra.Communication
 
                 if (yRW == 0)
                 {
+                    strTmp = string.Empty;
+                    if(wLengthDEM > 0)
                     {
-                        strTmp = string.Empty;
                         for (int i = 0; i < wLengthDEM; i++)
                         {
                             strTmp += string.Format("Data|0x{0:X2}, ", yDataFromDEM[i + 2]);
                         }
-                        strdbg += strTmp;
                     }
+                    else
+                    {
+                        strTmp += string.Format("Data|,");
+                    }
+                    strdbg += strTmp;
                 }
                 else
                 {
                     strTmp = string.Empty;
-                    for (int i = 0; i < wLengthChip; i++)
+                    if (wLengthChip > 0)
                     {
-                        strTmp += string.Format("Data|0x{0:X2}, ", yDataFromChip[i]);
+                        for (int i = 0; i < wLengthChip; i++)
+                        {
+                            strTmp += string.Format("Data|0x{0:X2}, ", yDataFromChip[i]);
+                        }
+                    }
+                    else
+                    {
+                        strTmp += string.Format("Data|,");
                     }
                     strdbg += strTmp;
                 }
@@ -910,10 +922,10 @@ namespace O2Micro.Cobra.Communication
                     strdbg += "ErrCode|" + string.Format("0x{0:X8}, ", ErrorCode);
                     strdbg += "R/W|Write, ";
                     {
-                        strTmp = string.Empty;
+                        strTmp = string.Format("Data|");
                         for (int i = 0; i < wLengthDEM; i++)
                         {
-                            strTmp += string.Format("Data|0x{0:X2}, ", yDataFromDEM[i]);
+                            strTmp += string.Format("0x{0:X2}, ", yDataFromDEM[i]);
                         }
                         strdbg += strTmp;
                     }
@@ -926,15 +938,24 @@ namespace O2Micro.Cobra.Communication
                     }
                     catch (Exception ex)
                     {
-                        System.Windows.MessageBox.Show(ex.Message);
+                        System.Windows.MessageBox.Show(ex.Message + ex.InnerException.Message);
                     }
 
+                    AutoMationTest.AutoMationTest.AnalyzeATMUID(u32RandId, ref strTmp, ref yRW);
+                    strdbg = "DayTime|" + strTmp + ", ";
+                    strdbg += "CID|" + string.Format("0x{0:X8}, ", u32RandId);
+                    strdbg += "ErrCode|" + string.Format("0x{0:X8}, ", ErrorCode);
                     strdbg += "R/W|Read, ";
                     {
-                        strTmp = string.Empty;
-                        for (int i = 0; i < wLengthChip; i++)
+                        strTmp = string.Format("Data|");
+                        if (wLengthChip == 0)
+                            strTmp += ",";
+                        else
                         {
-                            strTmp += string.Format("Data|0x{0:X2}, ", yDataFromChip[i]);
+                            for (int i = 0; i < wLengthChip; i++)
+                            {
+                                strTmp += string.Format("0x{0:X2}, ", yDataFromChip[i]);
+                            }
                         }
                         strdbg += strTmp;
                     }
@@ -948,7 +969,7 @@ namespace O2Micro.Cobra.Communication
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(ex.Message);
+                System.Windows.MessageBox.Show(ex.Message + ex.InnerException.Message);
             }
             #endregion
 

@@ -139,7 +139,7 @@ namespace O2Micro.Cobra.Common
                     if (!File.Exists(SQLiteDriver2.DB_Path + SQLiteDriver2.DB_Name))
                     {
                         List<string> sqls = new List<string>();
-                        sqls.Add("CREATE TABLE IF NOT EXISTS " + SessionTableName + " (session_id INTEGER PRIMARY KEY, project_name VARCHAR(30) NOT NULL, module_name VARCHAR(30) NOT NULL, session_establish_time VARCHAR(17) NOT NULL, device_index VARCHAR(10), UNIQUE(project_name, module_name, session_establish_time));");//Issue1406 Leon
+                        sqls.Add("CREATE TABLE IF NOT EXISTS " + SessionTableName + " (session_id INTEGER PRIMARY KEY, project_name VARCHAR(30) NOT NULL, module_name VARCHAR(30) NOT NULL, session_establish_time VARCHAR(17) NOT NULL, device_index VARCHAR(10), row_number VARCHAR(10), UNIQUE(project_name, module_name, session_establish_time));");//Issue1406 Leon
                         sqls.Add("CREATE TABLE IF NOT EXISTS " + DataTableName + " (data_id INTEGER PRIMARY KEY, session_id INTEGER NOT NULL, data_set VARCHAR(500) NOT NULL);");
                         //todo: Bus_SPI Bus_I2C2 Bus_???
                         //int row = -1;
@@ -249,8 +249,30 @@ namespace O2Micro.Cobra.Common
                 //MessageBox.Show("Execute query failed\n" + ex.Message);
             }
         }
-        
-#region For Scan SFL
+
+        #region For Scan SFL
+        public static void ScanSFLUpdateSessionSize(int session_id, ulong session_row_number)
+        {
+            try
+            {
+                lock (DB_Lock)
+                {
+                    if (sqls_buffer.Count != 0)
+                    {
+                        SQLiteDriver2.ExecuteNonQueryTransaction(sqls_buffer);
+                        sqls_buffer.Clear();
+                    }
+                    string sql = "UPDATE " + SessionTableName + " SET row_number = " + session_row_number.ToString() + " WHERE session_id = " + session_id.ToString() + ";";
+                    int row = -1;
+                    SQLiteDriver2.ExecuteNonQuery(sql, ref row);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Scan SFL Get Sessions Infor failed\n", ex);
+                //MessageBox.Show("Scan SFL Get Sessions Infor failed\n" + ex.Message);
+            }
+        }
         public static void ScanSFLGetSessionsInfor(string module_name, ref List<List<string>> records)
         {
             try
@@ -269,6 +291,7 @@ namespace O2Micro.Cobra.Common
                     datacolumns.Add("session_id");
                     datacolumns.Add("session_establish_time");
                     datacolumns.Add("device_index");
+                    datacolumns.Add("row_number");
 
                     int row = -1;
                     List<List<string>> datavalues = new List<List<string>>();
@@ -278,11 +301,12 @@ namespace O2Micro.Cobra.Common
                         int session_id = Convert.ToInt32(datavalue[0]);
                         string timestamp = datavalue[1];
                         string device_num = datavalue[2];
-                        int session_size = -1;
-                        GetSessionSize(session_id, ref session_size);
+                        string session_size = datavalue[3];
+                        //int session_size = -1;
+                        //GetSessionSize(session_id, ref session_size);
                         List<string> item = new List<string>();
                         item.Add(timestamp);
-                        item.Add(session_size.ToString());
+                        item.Add(session_size);
                         item.Add(device_num);
                         records.Add(item);
                     }

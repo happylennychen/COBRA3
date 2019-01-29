@@ -154,6 +154,7 @@ namespace O2Micro.Cobra.ScanPanel
         private ThreadMonitorWindow tm = new ThreadMonitorWindow();
 #endif
         int session_id = -1;
+        ulong session_row_number = 0;
         #endregion
 
         #region 函数定义
@@ -1728,24 +1729,33 @@ namespace O2Micro.Cobra.ScanPanel
             #endregion
         }
 
-        private void UpdateLogDataList()
+        private void UpdateLogDataList(int session_id = 0, ulong session_row_number = 0)
         {
             List<List<String>> records = new List<List<string>>();
             //if (DBManager.GetLogsInforV2(sflname, ref records) != -1)//Issue1428 Leon
             try
             {
+                if(session_id != 0 && session_row_number!=0)
+                    DBManager2.ScanSFLUpdateSessionSize(session_id, session_row_number);
                 DBManager2.ScanSFLGetSessionsInfor(sflname, ref records);
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(ex.Message);
+                System.Windows.MessageBox.Show(ex.Message + ex.InnerException.Message);
             }
             logdatalist.Clear();
             foreach (var record in records)
             {
                 LogData ld = new LogData();
                 ld.Timestamp = record[0];
-                ld.RecordNumber = Convert.ToInt64(record[1]);
+                try
+                {
+                    ld.RecordNumber = Convert.ToInt64(record[1]);
+                }
+                catch
+                {
+                    ld.RecordNumber = -9999;
+                }
                 ld.DeviceNum = record[2];//Issue1428 Leon
                 logdatalist.Add(ld);
             }
@@ -1809,7 +1819,7 @@ namespace O2Micro.Cobra.ScanPanel
                     }
                     catch (Exception ex)
                     {
-                        System.Windows.MessageBox.Show(ex.Message);
+                        System.Windows.MessageBox.Show(ex.Message + ex.InnerException.Message);
                     }
                     #endregion
                     /*
@@ -1887,7 +1897,7 @@ namespace O2Micro.Cobra.ScanPanel
                 {
                     EnterStopState(errorcode);
                     //ResetContext();
-                    UpdateLogDataList();
+                    UpdateLogDataList(session_id, session_row_number);
                 }
 
                 isReentrant_Run = false;
@@ -1973,10 +1983,11 @@ namespace O2Micro.Cobra.ScanPanel
                 try
                 {
                     DBManager2.BeginNewRow(session_id, records);
+                    session_row_number += 1;
                 }
                 catch (Exception ex)
                 {
-                    System.Windows.MessageBox.Show(ex.Message);
+                    System.Windows.MessageBox.Show(ex.Message + ex.InnerException.Message);
                 }
                 SnapShot.TimerCallbackPool[(long)TimerCounter].DBAccessed = true;
                 if (SnapShot.TimerCallbackPool[(long)TimerCounter].UIAccessed)  //如果这一帧数据已经被使用完了，就将其移除出快照池
@@ -2185,7 +2196,7 @@ namespace O2Micro.Cobra.ScanPanel
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(ex.Message);
+                System.Windows.MessageBox.Show(ex.Message + ex.InnerException.Message);
             }
             logdatalist.Remove(ld);
         }
@@ -2221,7 +2232,7 @@ namespace O2Micro.Cobra.ScanPanel
                 }
                 catch (Exception ex)
                 {
-                    System.Windows.MessageBox.Show(ex.Message);
+                    System.Windows.MessageBox.Show(ex.Message + ex.InnerException.Message);
                 }
                 fullpath = saveFileDialog.FileName;
                 ExportDB(fullpath, dt);
