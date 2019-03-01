@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:O2Micro.Cobra.ScanPanel"
         Width="400" Height="340" 
-        Title="Coinfiguration Window" WindowStartupLocation="CenterOwner" Topmost="True" ShowInTaskbar="False" ResizeMode="NoResize" 
+        Title="Configuration Window" WindowStartupLocation="CenterOwner" Topmost="True" ShowInTaskbar="False" ResizeMode="NoResize" 
         Icon="/O2Micro.Cobra.Shell;component/Images/Cobra.ico">
 
     <Window.Resources>

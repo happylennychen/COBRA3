@@ -1,6 +1,6 @@
-//#define debug
-//#define x
-//define y
+#define debug
+#define x
+//#define y
 //#define m
 using System;
 using System.Text;
