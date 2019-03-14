@@ -110,6 +110,7 @@ namespace O2Micro.Cobra.ProductionPanel
             foreach (var p in cfgviewmodel.sfl_parameterlist)
             {
                 string relatedname = "";
+                excelSHEET = null;
                 foreach (Excel._Worksheet st in excelWKB.Sheets)
                 {
                     string fulltargetname = st.Name.Replace(' ', '/');
@@ -133,6 +134,8 @@ namespace O2Micro.Cobra.ProductionPanel
                         }
                     }
                 }
+                if (excelSHEET == null)
+                    continue;
                 try
                 {
                     if (excelSHEET != null)
