@@ -160,19 +160,8 @@ namespace O2Micro.Cobra.ProductionPanel
             ProductionSFLDBName = "Production";
             if (String.IsNullOrEmpty(ProductionSFLDBName)) return;
 
-            string EFsflname = "EFUSE Config";      //Issue1556
-            string BDsflname = "Board Config";
-            /*foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
-            {
-                if (btn.btnlabel == CobraGlobal.Constant.OldBoardConfigName || btn.btnlabel == CobraGlobal.Constant.NewBoardConfigName)
-                {
-                    BDsflname = btn.btnlabel;
-                }
-                else if (btn.btnlabel == "EfuseConfig" || btn.btnlabel == "EFUSE Config")
-                {
-                    EFsflname = btn.btnlabel;
-                }
-            }*/
+            string EFsflname = CobraGlobal.Constant.NewEFUSEConfigName;      //Issue1556
+            string BDsflname = CobraGlobal.Constant.NewBoardConfigName;
 
             #region Get SFL Names
             XmlElement root = EMExtensionManage.m_extDescrip_xmlDoc.DocumentElement;
@@ -182,25 +171,20 @@ namespace O2Micro.Cobra.ProductionPanel
             try
             {
                 string ExternalSFLNames = xe.GetAttribute("External");
-                // = new string[2];
-                string[] strlist = ExternalSFLNames.Split('|');
-                if (strlist.Count<string>() == 3)   //oces that are not updated yet
+                if (ExternalSFLNames != "")
                 {
-                    if (BDsflname == CobraGlobal.Constant.OldBoardConfigName)
-                        BDsflname = "Board Config";
-                    if (EFsflname == "EfuseConfig")
-                        EFsflname = "EFUSE Config";
-                }
-                else        //updated oces
-                {
-                    EFsflname = strlist[0];
-                    BDsflname = strlist[1];
+                    // = new string[2];
+                    string[] strlist = ExternalSFLNames.Split('|');
+                    if (strlist.Count<string>() == 2)
+                    {
+                        EFsflname = strlist[0];
+                        BDsflname = strlist[1];
+                    }
                 }
             }
             catch   //other cases
             {
-                BDsflname = "Board Config";
-                EFsflname = "EFUSE Config";
+
             }
             #endregion
 
