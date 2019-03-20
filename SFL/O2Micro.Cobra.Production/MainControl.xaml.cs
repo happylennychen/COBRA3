@@ -160,9 +160,9 @@ namespace O2Micro.Cobra.ProductionPanel
             ProductionSFLDBName = "Production";
             if (String.IsNullOrEmpty(ProductionSFLDBName)) return;
 
-            string EFsflname = "";
-            string BDsflname = "";
-            foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
+            string EFsflname = "EFUSE Config";      //Issue1556
+            string BDsflname = "Board Config";
+            /*foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
             {
                 if (btn.btnlabel == CobraGlobal.Constant.OldBoardConfigName || btn.btnlabel == CobraGlobal.Constant.NewBoardConfigName)
                 {
@@ -172,7 +172,37 @@ namespace O2Micro.Cobra.ProductionPanel
                 {
                     EFsflname = btn.btnlabel;
                 }
+            }*/
+
+            #region Get SFL Names
+            XmlElement root = EMExtensionManage.m_extDescrip_xmlDoc.DocumentElement;
+            if (root == null) return;
+            XmlNode ProductionNode = root.SelectSingleNode("descendant::Button[@DBModuleName = '" + ProductionSFLDBName + "']");
+            XmlElement xe = (XmlElement)ProductionNode;
+            try
+            {
+                string ExternalSFLNames = xe.GetAttribute("External");
+                // = new string[2];
+                string[] strlist = ExternalSFLNames.Split('|');
+                if (strlist.Count<string>() == 3)   //oces that are not updated yet
+                {
+                    if (BDsflname == CobraGlobal.Constant.OldBoardConfigName)
+                        BDsflname = "Board Config";
+                    if (EFsflname == "EfuseConfig")
+                        EFsflname = "EFUSE Config";
+                }
+                else        //updated oces
+                {
+                    EFsflname = strlist[0];
+                    BDsflname = strlist[1];
+                }
             }
+            catch   //other cases
+            {
+                BDsflname = "Board Config";
+                EFsflname = "EFUSE Config";
+            }
+            #endregion
 
             cfgviewmodel = new SFLViewModel(pParent, this, EFsflname);
             boardviewmodel = new SFLViewModel(pParent, this, BDsflname);
@@ -218,6 +248,11 @@ namespace O2Micro.Cobra.ProductionPanel
 
             InitialUI();
 
+            UpdateUIWithXML();
+        }
+
+        private void UpdateUIWithXML()
+        { 
             #region Hide or Show Configuration Tab//Issue1272 Leon
             XmlElement root = EMExtensionManage.m_extDescrip_xmlDoc.DocumentElement;
             if (root == null) return;
