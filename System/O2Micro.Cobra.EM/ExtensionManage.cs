@@ -118,7 +118,7 @@ namespace O2Micro.Cobra.EM
             if (Registry.GetCurExtensionFileName().Length == 0) return false;
             FolderMap.m_curextensionfile_name = Registry.GetCurExtensionFileName();
 #if debug
-            string projectname = "Azalea14";
+            string projectname = "KALL14";
 #endif
 #if x
             string xmlxpath = FolderMap.m_main_folder.Remove(FolderMap.m_main_folder.LastIndexOf("output\\"));

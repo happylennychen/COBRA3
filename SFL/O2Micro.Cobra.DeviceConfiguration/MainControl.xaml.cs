@@ -111,6 +111,11 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             set { m_writesubtask = value; }
             get { return m_writesubtask; }
         }
+        public ushort SaveHexSubTask
+        {
+            set;
+            get;
+        }
 
         public MainControl(object pParent, string name)
         {
@@ -166,6 +171,8 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                                     ReadSubTask = Convert.ToUInt16(sub.InnerText);
                                 else if (sub.Name == "Write")
                                     WriteSubTask = Convert.ToUInt16(sub.InnerText);
+                                else if (sub.Name == "SaveHex")
+                                    SaveHexSubTask = Convert.ToUInt16(sub.InnerText);
                             }
                             break;
                         }
@@ -488,8 +495,10 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             else
             {
                 saveFileDialog.FileName = chipname + "-" + MD5Code;//Issue1373 Leon
-                saveFileDialog.Title = "Save Configuration File";
-                saveFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg|c file (*.c)|*.c|h file (*.h)|*.h||";
+                //saveFileDialog.Title = "Save Configuration File";
+                //saveFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg|c file (*.c)|*.c|h file (*.h)|*.h||";
+                saveFileDialog.Title = "Save File";       //Issue1513 Leon
+                saveFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg|c file (*.c)|*.c|h file (*.h)|*.h|hex file (*.hex)|*.hex||";
                 saveFileDialog.DefaultExt = "cfg";
             }
             saveFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
@@ -869,6 +878,10 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     break;
                 case "h":
                     SaveHFile(fullpath);
+                    break;
+                case "hex":
+                    if(System.Windows.MessageBox.Show("Please make sure the Board Config is configured correctly!", "Warnning!", MessageBoxButton.OK) == MessageBoxResult.OK)
+                        SaveHexFile(fullpath);  //Issue1513 Leon
                     break;
                 default:
                     SaveCfgFile(fullpath);
@@ -1736,6 +1749,18 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             item.AppendChild(Tvalue);
 
             doc.Save(fullpath);
+        }
+
+        private void SaveHexFile(string fullpath)
+        {
+            viewmode.WriteDevice();
+            msg.task_parameterlist = viewmode.dm_parameterlist;
+            msg.sub_task = SaveHexSubTask;
+            msg.sub_task_json = fullpath;
+            msg.task = TM.TM_COMMAND;
+            parent.AccessDevice(ref m_Msg);
+            while (msg.bgworker.IsBusy)
+                System.Windows.Forms.Application.DoEvents();
         }
 
         private void SaveCFile(string fullpath)
