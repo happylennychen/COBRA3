@@ -298,7 +298,7 @@ namespace O2Micro.Cobra.ProductionPanel
             string fullpath = "";
             Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
             openFileDialog.Title = "Load File";
-            openFileDialog.Filter = "Config file (*.pack)|*.pack|(*.cfg)|*.cfg||";
+            openFileDialog.Filter = "Config file (*.pack)|*.pack||";    //Leon Issue1544
             openFileDialog.DefaultExt = "pack";
             openFileDialog.FileName = "default";
             openFileDialog.FilterIndex = 1;
