@@ -171,14 +171,29 @@ namespace O2Micro.Cobra.ProductionPanel
             try
             {
                 string ExternalSFLNames = xe.GetAttribute("External");
-                if (ExternalSFLNames != "")
+                if (ExternalSFLNames != "") //M version
                 {
                     // = new string[2];
                     string[] strlist = ExternalSFLNames.Split('|');
-                    if (strlist.Count<string>() == 2)
+                    if (strlist.Count<string>() == 2)   //New
                     {
                         EFsflname = strlist[0];
                         BDsflname = strlist[1];
+                    }
+                    if (strlist.Count<string>() == 3)   //Old
+                    {
+                        EFsflname = strlist[0];
+                        BDsflname = strlist[1];
+                    }
+                }
+                else     //X Y version
+                {
+                    foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
+                    {
+                        if (btn.btnlabel == CobraGlobal.Constant.OldBoardConfigName || btn.btnlabel == CobraGlobal.Constant.NewBoardConfigName)
+                            BDsflname = btn.btnlabel;
+                        else if (btn.btnlabel == CobraGlobal.Constant.OldEFUSEConfigName || btn.btnlabel == CobraGlobal.Constant.NewEFUSEConfigName)
+                            EFsflname = btn.btnlabel;
                     }
                 }
             }

@@ -1,7 +1,7 @@
-#define debug
+//#define debug
 //#define x
 //#define y
-#define m
+//#define m
 using System;
 using System.Text;
 using System.IO;
