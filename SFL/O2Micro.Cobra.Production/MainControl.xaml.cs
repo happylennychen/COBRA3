@@ -160,19 +160,48 @@ namespace O2Micro.Cobra.ProductionPanel
             ProductionSFLDBName = "Production";
             if (String.IsNullOrEmpty(ProductionSFLDBName)) return;
 
-            string EFsflname = "";
-            string BDsflname = "";
-            foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
+            string EFsflname = CobraGlobal.Constant.NewEFUSEConfigName;      //Issue1556
+            string BDsflname = CobraGlobal.Constant.NewBoardConfigName;
+
+            #region Get SFL Names
+            XmlElement root = EMExtensionManage.m_extDescrip_xmlDoc.DocumentElement;
+            if (root == null) return;
+            XmlNode ProductionNode = root.SelectSingleNode("descendant::Button[@DBModuleName = '" + ProductionSFLDBName + "']");
+            XmlElement xe = (XmlElement)ProductionNode;
+            try
             {
-                if (btn.btnlabel == CobraGlobal.Constant.OldBoardConfigName || btn.btnlabel == CobraGlobal.Constant.NewBoardConfigName)
+                string ExternalSFLNames = xe.GetAttribute("External");
+                if (ExternalSFLNames != "") //M version
                 {
-                    BDsflname = btn.btnlabel;
+                    // = new string[2];
+                    string[] strlist = ExternalSFLNames.Split('|');
+                    if (strlist.Count<string>() == 2)   //New
+                    {
+                        EFsflname = strlist[0];
+                        BDsflname = strlist[1];
+                    }
+                    if (strlist.Count<string>() == 3)   //Old
+                    {
+                        EFsflname = strlist[0];
+                        BDsflname = strlist[1];
+                    }
                 }
-                else if (btn.btnlabel == "EfuseConfig" || btn.btnlabel == "EFUSE Config")
+                else     //X Y version
                 {
-                    EFsflname = btn.btnlabel;
+                    foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
+                    {
+                        if (btn.btnlabel == CobraGlobal.Constant.OldBoardConfigName || btn.btnlabel == CobraGlobal.Constant.NewBoardConfigName)
+                            BDsflname = btn.btnlabel;
+                        else if (btn.btnlabel == CobraGlobal.Constant.OldEFUSEConfigName || btn.btnlabel == CobraGlobal.Constant.NewEFUSEConfigName)
+                            EFsflname = btn.btnlabel;
+                    }
                 }
             }
+            catch   //other cases
+            {
+
+            }
+            #endregion
 
             cfgviewmodel = new SFLViewModel(pParent, this, EFsflname);
             boardviewmodel = new SFLViewModel(pParent, this, BDsflname);
@@ -218,6 +247,11 @@ namespace O2Micro.Cobra.ProductionPanel
 
             InitialUI();
 
+            UpdateUIWithXML();
+        }
+
+        private void UpdateUIWithXML()
+        { 
             #region Hide or Show Configuration Tab//Issue1272 Leon
             XmlElement root = EMExtensionManage.m_extDescrip_xmlDoc.DocumentElement;
             if (root == null) return;
