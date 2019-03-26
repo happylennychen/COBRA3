@@ -111,7 +111,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             set { m_writesubtask = value; }
             get { return m_writesubtask; }
         }
-        public ushort SaveHexSubTask
+        public ushort SaveHexSubTask	//Issue1513 Leon
         {
             set;
             get;
@@ -171,7 +171,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                                     ReadSubTask = Convert.ToUInt16(sub.InnerText);
                                 else if (sub.Name == "Write")
                                     WriteSubTask = Convert.ToUInt16(sub.InnerText);
-                                else if (sub.Name == "SaveHex")
+                                else if (sub.Name == "SaveHex")		//Issue1513 Leon
                                     SaveHexSubTask = Convert.ToUInt16(sub.InnerText);
                             }
                             break;
@@ -879,9 +879,9 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 case "h":
                     SaveHFile(fullpath);
                     break;
-                case "hex":
+                case "hex":		//Issue1513 Leon
                     if(System.Windows.MessageBox.Show("Please make sure the Board Config is configured correctly!", "Warnning!", MessageBoxButton.OK) == MessageBoxResult.OK)
-                        SaveHexFile(fullpath);  //Issue1513 Leon
+                        SaveHexFile(fullpath);
                     break;
                 default:
                     SaveCfgFile(fullpath);
@@ -1751,7 +1751,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             doc.Save(fullpath);
         }
 
-        private void SaveHexFile(string fullpath)
+        private void SaveHexFile(string fullpath)	//Issue1513 Leon
         {
             viewmode.WriteDevice();
             msg.task_parameterlist = viewmode.dm_parameterlist;

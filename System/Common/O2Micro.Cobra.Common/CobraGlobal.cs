@@ -11,7 +11,7 @@ namespace O2Micro.Cobra.Common
         {
             public const string OldBoardConfigName = "BoardConfig";
             public const string NewBoardConfigName = "Board Config";
-            public const string OldEFUSEConfigName = "EfuseConfig";
+            public const string OldEFUSEConfigName = "EfuseConfig";		//Issue1556 Leon
             public const string NewEFUSEConfigName = "EFUSE Config";
         }
     }
