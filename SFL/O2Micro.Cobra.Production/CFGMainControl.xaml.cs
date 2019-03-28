@@ -559,7 +559,7 @@ namespace O2Micro.Cobra.ProductionPanel
             saveFileDialog.FilterIndex = 1;
             saveFileDialog.RestoreDirectory = true;
             saveFileDialog.Title = "Save HEX File";
-            saveFileDialog.Filter = "pack file (*.hex)|*.hex||";
+            saveFileDialog.Filter = "Hex file (*.hex)|*.hex||";
             saveFileDialog.DefaultExt = "hex";
             saveFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
             if (saveFileDialog.ShowDialog() == true)
@@ -621,6 +621,31 @@ namespace O2Micro.Cobra.ProductionPanel
 
                     bw.Close();
                 }
+
+
+                string csvpath = System.IO.Path.ChangeExtension(fullpath, "csv");
+                FileStream fs = new FileStream(csvpath, FileMode.Create);
+                StreamWriter sw1 = new StreamWriter(fs);
+                sw1.WriteLine("Name, Bin");
+                foreach (var p in msg.task_parameterlist.parameterlist)
+                {
+                    string name = p.sfllist[CobraGlobal.Constant.NewEFUSEConfigName].nodetable["NickName"].ToString();
+                    string value = "";
+                    if ((p.guid & 0x000c0000) == 0x000c0000)   //虚拟参数
+                    {
+                        /*value = p.phydata.ToString();*/
+                    }
+                    else
+                    {
+                        int bitnumber = p.reglist["Low"].bitsnumber;
+                        value = Convert.ToString(p.hexdata, 2);
+                        value = value.PadLeft(bitnumber, '0');
+                        value = bitnumber.ToString() + "b'" + value;
+                        sw1.WriteLine(name + ", " + value);
+                    }
+                }
+                sw1.Close();
+                fs.Close();
             }
             catch
             {
