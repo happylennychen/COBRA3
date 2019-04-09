@@ -640,7 +640,7 @@ namespace O2Micro.Cobra.ProductionPanel
                         int bitnumber = p.reglist["Low"].bitsnumber;
                         value = Convert.ToString(p.hexdata, 2);
                         value = value.PadLeft(bitnumber, '0');
-                        value = bitnumber.ToString() + "b'" + value;
+                        value = bitnumber.ToString() + "'b" + value;
                         sw1.WriteLine(name + ", " + value);
                     }
                 }
