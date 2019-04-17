@@ -14,5 +14,7 @@ namespace O2Micro.Cobra.Common
             public const string OldEFUSEConfigName = "EfuseConfig";		//Issue1556 Leon
             public const string NewEFUSEConfigName = "EFUSE Config";
         }
+
+        public static string CurrentOCEName = String.Empty;
     }
 }

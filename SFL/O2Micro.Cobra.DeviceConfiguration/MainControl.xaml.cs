@@ -422,6 +422,14 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         {
 
             StringBuilder sb = new StringBuilder();
+
+            string SOCEVersion = CobraGlobal.CurrentOCEName;
+            string SCobraVersion = (from asm in LibInfor.m_assembly_list
+                                    where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
+                                    select asm).ToArray()[0].Assembly_ver.ToString();
+            sb.Append(SCobraVersion);
+            sb.Append(SOCEVersion);
+
             foreach (SFLModel model in viewmode.sfl_parameterlist)
             {
                 if (model == null) continue;
@@ -767,15 +775,22 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             string hash = "";
             for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
             {
-                string name = xn.Attributes[0].Value;
-                if (name == "MD5")
+                if (xn.Name == "CobraVersion" || xn.Name == "OCEVersion")
                 {
-                    hash = xn.InnerText;
-                    continue;
+                    sb.Append(xn.InnerText);
                 }
-                sb.Append(name);
-                tmp = xn.InnerText;
-                sb.Append(tmp);
+                else
+                {
+                    string name = xn.Attributes[0].Value;
+                    if (name == "MD5")
+                    {
+                        hash = xn.InnerText;
+                        continue;
+                    }
+                    sb.Append(name);
+                    tmp = xn.InnerText;
+                    sb.Append(tmp);
+                }
             }
             if (hash == "")         //没有MD5
             {
@@ -801,6 +816,8 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
             {
+                if (xn.Name == "CobraVersion" || xn.Name == "OCEVersion")
+                    continue;
                 //tmp = xn.Name.Replace("H","0x");
                 //selfid = Convert.ToUInt32(tmp, 16);
                 string name = xn.Attributes[0].Value;
@@ -1701,6 +1718,24 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             XmlElement root = doc.DocumentElement;
 
             StringBuilder sb = new StringBuilder();
+
+            string SOCEVersion = CobraGlobal.CurrentOCEName;
+            string SCobraVersion = (from asm in LibInfor.m_assembly_list
+                                    where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
+                                    select asm).ToArray()[0].Assembly_ver.ToString();
+            sb.Append(SCobraVersion);
+            sb.Append(SOCEVersion);
+
+            XmlElement E1 = doc.CreateElement("CobraVersion");
+            XmlNode N1 = doc.CreateTextNode(SCobraVersion);
+            root.AppendChild(E1);
+            E1.AppendChild(N1);
+
+            XmlElement E2 = doc.CreateElement("OCEVersion");
+            XmlNode N2 = doc.CreateTextNode(SOCEVersion);
+            root.AppendChild(E2);
+            E2.AppendChild(N2);
+
             foreach (SFLModel model in viewmode.sfl_parameterlist)
             {
                 if (model == null) continue;
