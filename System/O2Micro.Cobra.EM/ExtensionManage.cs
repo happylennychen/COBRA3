@@ -1,4 +1,4 @@
-//#define debug
+#define debug
 //#define x
 //#define y
 //#define m

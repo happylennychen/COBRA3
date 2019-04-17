@@ -626,11 +626,12 @@ namespace O2Micro.Cobra.ProductionPanel
                 string csvpath = System.IO.Path.ChangeExtension(fullpath, "csv");
                 FileStream fs = new FileStream(csvpath, FileMode.Create);
                 StreamWriter sw1 = new StreamWriter(fs);
-                sw1.WriteLine("Name, Bin");
+                sw1.WriteLine("Name, Bin, Dec");
                 foreach (var p in msg.task_parameterlist.parameterlist)
                 {
                     string name = p.sfllist[CobraGlobal.Constant.NewEFUSEConfigName].nodetable["NickName"].ToString();
                     string value = "";
+                    string dec = "";
                     if ((p.guid & 0x000c0000) == 0x000c0000)   //虚拟参数
                     {
                         /*value = p.phydata.ToString();*/
@@ -641,7 +642,8 @@ namespace O2Micro.Cobra.ProductionPanel
                         value = Convert.ToString(p.hexdata, 2);
                         value = value.PadLeft(bitnumber, '0');
                         value = bitnumber.ToString() + "'b" + value;
-                        sw1.WriteLine(name + ", " + value);
+                        dec = Convert.ToString(p.hexdata);
+                        sw1.WriteLine(name + ", " + value + "," + dec);
                     }
                 }
                 sw1.Close();
