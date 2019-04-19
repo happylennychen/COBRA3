@@ -93,9 +93,40 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
         }
 
+        private double GetMaxValue(Parameter param)
+        {
+            TASKMessage msg = new TASKMessage();
+            msg.task = TM.TM_COMMAND;
+            msg.sub_task = control_parent.GetMaxValueSubTask;
+            msg.task_parameterlist.parameterlist.Add(param);
+            device_parent.AccessDevice(ref msg);
+            while (msg.bgworker.IsBusy)
+                System.Windows.Forms.Application.DoEvents();
+            if (msg.errorcode == LibErrorCode.IDS_ERR_SUCCESSFUL)
+                return param.dbPhyMax;
+            else
+                return 0;
+        }
+
+        private double GetMinValue(Parameter param)
+        {
+            TASKMessage msg = new TASKMessage();
+            msg.task = TM.TM_COMMAND;
+            msg.sub_task = control_parent.GetMinValueSubTask;
+            msg.task_parameterlist.parameterlist.Add(param);
+            device_parent.AccessDevice(ref msg);
+            while (msg.bgworker.IsBusy)
+                System.Windows.Forms.Application.DoEvents();
+            if (msg.errorcode == LibErrorCode.IDS_ERR_SUCCESSFUL)
+                return param.dbPhyMin;
+            else
+                return 0;
+        }
+
         #region 参数操作
         private void InitSFLParameter(Parameter param)
         {
+            Double errorvalue = -9999;
             UInt16 udata = 0;
             Double ddata = 0.0;
             bool bdata = false;
@@ -162,7 +193,17 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                             if (!Double.TryParse(de.Value.ToString(), out ddata))
                                 model.minvalue = 0.0;
                             else
-                                model.minvalue = Convert.ToDouble(de.Value.ToString());
+                            {
+                                double xmlmin = Convert.ToDouble(de.Value.ToString());
+                                if (xmlmin != errorvalue)
+                                    model.minvalue = Convert.ToDouble(de.Value.ToString());
+                                else
+                                {
+                                    model.minvalue = GetMinValue(param);
+                                    //MainControl o = CobraGlobal.BoardConfigSFL as MainControl;
+                                    //o.BoardConfigChanged += new EventHandler(model.SFLModel_BoardConfigChanged);
+                                }
+                            }
                             break;
                         }
                     case "MaxValue":
@@ -171,8 +212,15 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                                 model.maxvalue = 0.0;
                             else
                             {
-                                double d = Convert.ToDouble(de.Value.ToString());
-                                model.maxvalue = d;
+                                double xmlmax = Convert.ToDouble(de.Value.ToString());
+                                if (xmlmax != errorvalue)
+                                    model.maxvalue = Convert.ToDouble(de.Value.ToString());
+                                else
+                                {
+                                    model.maxvalue = GetMaxValue(param);
+                                    //MainControl o = CobraGlobal.BoardConfigSFL as MainControl;
+                                    //o.BoardConfigChanged += new EventHandler(model.SFLModel_BoardConfigChanged);
+                                }
                             }
                             break;
                         }

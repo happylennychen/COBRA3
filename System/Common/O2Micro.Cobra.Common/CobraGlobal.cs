@@ -16,5 +16,7 @@ namespace O2Micro.Cobra.Common
         }
 
         public static string CurrentOCEName = String.Empty;
+
+        public static object BoardConfigSFL = new object();//Issue1593 Leon
     }
 }

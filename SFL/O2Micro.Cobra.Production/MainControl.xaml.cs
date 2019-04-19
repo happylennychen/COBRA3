@@ -123,6 +123,7 @@ namespace O2Micro.Cobra.ProductionPanel
             FileFormatError,
             FileParsingError,
             FileIntegrityError,
+            TokenMismatch,
         }
         private Dictionary<ErrorCode, string> ErrorMessage = new Dictionary<ErrorCode, string>()
         {
@@ -130,6 +131,7 @@ namespace O2Micro.Cobra.ProductionPanel
             {ErrorCode.FileFormatError, "File format error!"},
             {ErrorCode.FileParsingError, "File parsing error!"},
             {ErrorCode.FileIntegrityError, "File integrity error!"},
+            {ErrorCode.TokenMismatch, "Token mismatch!"},
         };
 
         public DataTable Records = new DataTable();
@@ -538,64 +540,102 @@ namespace O2Micro.Cobra.ProductionPanel
             XmlElement root = doc.DocumentElement;
             StringBuilder sb = new StringBuilder();
             string hash = "";
+            string SCobraVersion = string.Empty;
+            string SOCEVersion = string.Empty;
             try
             {
                 for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
                 {
-                    //tmp = xn.Name.Replace("H","0x");
-                    //selfid = Convert.ToUInt32(tmp, 16);
-                    string name = xn.Attributes[0].Value;
-                    if (name == "MD5")
+                    if (xn.Name == "CobraVersion")
                     {
-                        hash = xn.InnerText;
-                        continue;
-                    }
-                    sb.Append(name);
-                    if(vmt == ViewModelTypy.CFG)
-                        model = cfgviewmodel.GetParameterByName(name);
-                    else if (vmt == ViewModelTypy.BOARD)
-                        model = boardviewmodel.GetParameterByName(name);
-                    if (model == null) continue;
-
-                    model.berror = false;
-
-                    tmp = xn.InnerText;
-                    sb.Append(tmp);
-                    if (model.brange)//为正常录入浮点数
-                    {
-                        switch (model.format)
+                        SCobraVersion = (from asm in LibInfor.m_assembly_list
+                                         where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
+                                         select asm).ToArray()[0].Assembly_ver.ToString();
+                        if (xn.InnerText != SCobraVersion)
                         {
-                            case 0: //Int     
-                            case 1: //float1
-                            case 2: //float2
-                            case 3: //float3
-                            case 4: //float4
-                                {
-                                    if (!Double.TryParse(tmp, out dval))
-                                        dval = 0.0;
-                                    break;
-                                }
-                            case 5: //Hex
-                            case 6: //Word
-                                {
-                                    try
-                                    {
-                                        dval = (Double)Convert.ToInt32(tmp, 16);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        dval = 0.0;
-                                        break;
-                                    }
-                                    break;
-                                }
-                            default:
-                                break;
+                            string warning = "Cobra in file: " + xn.InnerText;
+                            warning += "\nCobra you are using: " + SCobraVersion;
+                            warning += "\nCobra Version Mismatch! Load failed!";
+                            gm.message = warning;
+                            return ErrorCode.TokenMismatch;
                         }
-                        model.data = dval;
+
+                        sb.Append(xn.InnerText);
+                    }
+                    else if (xn.Name == "OCEVersion")
+                    {
+                        SOCEVersion = CobraGlobal.CurrentOCEName;
+                        if (xn.InnerText != SOCEVersion)
+                        {
+                            string warning = "OCE in file: " + xn.InnerText;
+                            warning += "\nOCE you are using: " + CobraGlobal.CurrentOCEName;
+                            warning += "\nOCE Mismatch!";
+                            gm.message = warning;
+                            return ErrorCode.TokenMismatch;
+                        }
+                        sb.Append(xn.InnerText);
                     }
                     else
-                        model.sphydata = tmp;
+                    {
+                        string name = xn.Attributes[0].Value;
+                        if (name == "MD5")
+                        {
+                            hash = xn.InnerText;
+                            continue;
+                        }
+                        sb.Append(name);
+                        if (vmt == ViewModelTypy.CFG)
+                            model = cfgviewmodel.GetParameterByName(name);
+                        else if (vmt == ViewModelTypy.BOARD)
+                            model = boardviewmodel.GetParameterByName(name);
+                        if (model == null) continue;
+
+                        model.berror = false;
+
+                        tmp = xn.InnerText;
+                        sb.Append(tmp);
+                        if (model.brange)//为正常录入浮点数
+                        {
+                            switch (model.format)
+                            {
+                                case 0: //Int     
+                                case 1: //float1
+                                case 2: //float2
+                                case 3: //float3
+                                case 4: //float4
+                                    {
+                                        if (!Double.TryParse(tmp, out dval))
+                                            dval = 0.0;
+                                        break;
+                                    }
+                                case 5: //Hex
+                                case 6: //Word
+                                    {
+                                        try
+                                        {
+                                            dval = (Double)Convert.ToInt32(tmp, 16);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            dval = 0.0;
+                                            break;
+                                        }
+                                        break;
+                                    }
+                                default:
+                                    break;
+                            }
+                            model.data = dval;
+                        }
+                        else
+                            model.sphydata = tmp;
+                    }
+                }
+
+                if (SCobraVersion == string.Empty || SOCEVersion == string.Empty)
+                {
+                    gm.message = "Cannot find Cobra Version and/or OCE version information in this file! Load failed!";
+                    return ErrorCode.TokenMismatch;
                 }
             }
             catch

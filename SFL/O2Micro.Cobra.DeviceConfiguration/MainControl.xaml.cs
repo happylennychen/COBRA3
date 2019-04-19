@@ -116,6 +116,20 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             set;
             get;
         }
+        public ushort GetMaxValueSubTask { get; set; }	//Issue1593 Leon
+        public ushort GetMinValueSubTask { get; set; }	//Issue1593 Leon
+
+        public event EventHandler BoardConfigChanged;//Issue1593 Leon
+
+        protected virtual void OnRasieBoardConfigChangedEvent()//Issue1593 Leon
+        {
+            EventHandler handler = BoardConfigChanged;
+
+            if (handler != null)
+            {
+                handler(this, EventArgs.Empty);
+            }
+        }
 
         public MainControl(object pParent, string name)
         {
@@ -126,6 +140,35 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             sflname = name;
             if (String.IsNullOrEmpty(sflname)) return;
+
+            #region 初始化SubTask	//Issue1363 Leon
+            string str_option = String.Empty;
+            XmlNodeList nodelist = parent.GetUINodeList(sflname);
+            foreach (XmlNode node in nodelist)
+            {
+                str_option = node.Name;
+                switch (str_option)
+                {
+                    case "SubTask":
+                        {
+                            foreach (XmlNode sub in node)
+                            {
+                                if (sub.Name == "Read")
+                                    ReadSubTask = Convert.ToUInt16(sub.InnerText);
+                                else if (sub.Name == "Write")
+                                    WriteSubTask = Convert.ToUInt16(sub.InnerText);
+                                else if (sub.Name == "SaveHex")		//Issue1513 Leon
+                                    SaveHexSubTask = Convert.ToUInt16(sub.InnerText);
+                                else if (sub.Name == "GetMax")		//Issue1513 Leon
+                                    GetMaxValueSubTask = Convert.ToUInt16(sub.InnerText);
+                                else if (sub.Name == "GetMin")		//Issue1513 Leon
+                                    GetMinValueSubTask = Convert.ToUInt16(sub.InnerText);
+                            }
+                            break;
+                        }
+                }
+            }
+            #endregion
 
             InitalUI();
             LibInfor.AssemblyRegister(Assembly.GetExecutingAssembly(), ASSEMBLY_TYPE.SFL);
@@ -155,30 +198,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 NoMapping = true;
             #endregion
 
-            #region 初始化SubTask	//Issue1363 Leon
-            string str_option = String.Empty;
-            XmlNodeList nodelist = parent.GetUINodeList(sflname);
-            foreach (XmlNode node in nodelist)
-            {
-                str_option = node.Name;
-                switch (str_option)
-                {
-                    case "SubTask":
-                        {
-                            foreach (XmlNode sub in node)
-                            {
-                                if (sub.Name == "Read")
-                                    ReadSubTask = Convert.ToUInt16(sub.InnerText);
-                                else if (sub.Name == "Write")
-                                    WriteSubTask = Convert.ToUInt16(sub.InnerText);
-                                else if (sub.Name == "SaveHex")		//Issue1513 Leon
-                                    SaveHexSubTask = Convert.ToUInt16(sub.InnerText);
-                            }
-                            break;
-                        }
-                }
-            }
-            #endregion
             if (border)
             {
                 var queryResults = viewmode.sfl_parameterlist.OrderBy(model => model.order).ThenBy(model => model.guid).Select(model => model);
@@ -409,6 +428,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.    //Issue1373//Issue 1426 Leon
             {
                 SaveBoardConfigFilePath(fullpath);//Issue1378 Leon
+                OnRasieBoardConfigChangedEvent();//Issue1593 Leon
             }
         }
 
@@ -773,10 +793,39 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             StringBuilder sb = new StringBuilder();
             string hash = "";
+            string SCobraVersion = string.Empty;
+            string SOCEVersion = string.Empty;
             for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
             {
-                if (xn.Name == "CobraVersion" || xn.Name == "OCEVersion")
+                if (xn.Name == "CobraVersion")
                 {
+                    SCobraVersion = (from asm in LibInfor.m_assembly_list
+                                         where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
+                                         select asm).ToArray()[0].Assembly_ver.ToString();
+                    if (xn.InnerText != SCobraVersion)
+                    {
+                        string warning = "Cobra Version in file: " + xn.InnerText;
+                        warning += "\nCobra you are using: " + SCobraVersion;
+                        warning += "\nCobra Version Mismatch! Load failed!";
+                        gm.message = warning;
+                        CallWarningControl(gm);
+                        return;
+                    }
+ 
+                    sb.Append(xn.InnerText);
+                }
+                else if (xn.Name == "OCEVersion")
+                {
+                    SOCEVersion = CobraGlobal.CurrentOCEName;
+                    if (xn.InnerText != SOCEVersion)
+                    {
+                        string warning = "OCE name in file: " + xn.InnerText;
+                        warning += "\nOCE you are using: " + CobraGlobal.CurrentOCEName;
+                        warning += "\nOCE Mismatch!";
+                        gm.message = warning;
+                        CallWarningControl(gm);
+                        return;
+                    }
                     sb.Append(xn.InnerText);
                 }
                 else
@@ -791,6 +840,12 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     tmp = xn.InnerText;
                     sb.Append(tmp);
                 }
+            }
+            if (SCobraVersion == string.Empty || SOCEVersion == string.Empty)
+            {
+                gm.message = "Cannot find Cobra Version and/or OCE version information in this file! Load failed!";
+                CallWarningControl(gm);
+                return;
             }
             if (hash == "")         //没有MD5
             {
@@ -1276,6 +1331,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
 
             parent.bBusy = false;
+            OnRasieBoardConfigChangedEvent();//Issue1593 Leon
         }
         private void WriteCommand(ushort subtask)	//Issue1363 Leon
         {

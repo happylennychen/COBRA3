@@ -303,5 +303,18 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 OnPropertyChanged("relations");
             }
         }
+
+        public void SFLModel_BoardConfigChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                //this.maxvalue = parent
+            }
+            catch
+            {
+                //sender is not a SubProgramClass type
+                return;
+            }
+        }
     }
 }

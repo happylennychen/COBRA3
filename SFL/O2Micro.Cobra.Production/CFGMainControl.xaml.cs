@@ -457,20 +457,61 @@ namespace O2Micro.Cobra.ProductionPanel
             XmlElement root = doc.DocumentElement;
             StringBuilder sb = new StringBuilder();
             string hash = "";
+            string SCobraVersion = string.Empty;
+            string SOCEVersion = string.Empty;
             try
             {
                 for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
                 {
-                    string name = xn.Attributes[0].Value;
-                    if (name == "MD5")
+                    if (xn.Name == "CobraVersion")
                     {
-                        hash = xn.InnerText;
-                        continue;
-                    }
-                    sb.Append(name);
+                        SCobraVersion = (from asm in LibInfor.m_assembly_list
+                                         where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
+                                         select asm).ToArray()[0].Assembly_ver.ToString();
+                        if (xn.InnerText != SCobraVersion)
+                        {
+                            string warning = "Cobra in file: " + xn.InnerText;
+                            warning += "\nCobra you are using: " + SCobraVersion;
+                            warning += "\nCobra Version Mismatch! Load failed!";
+                            gm.message = warning;
+                            //CallWarningControl(gm);
+                            return false;
+                        }
 
-                    tmp = xn.InnerText;
-                    sb.Append(tmp);
+                        sb.Append(xn.InnerText);
+                    }
+                    else if (xn.Name == "OCEVersion")
+                    {
+                        SOCEVersion = CobraGlobal.CurrentOCEName;
+                        if (xn.InnerText != SOCEVersion)
+                        {
+                            string warning = "OCE in file: " + xn.InnerText;
+                            warning += "\nOCE you are using: " + CobraGlobal.CurrentOCEName;
+                            warning += "\nOCE Mismatch!";
+                            gm.message = warning;
+                            //CallWarningControl(gm);
+                            return false;
+                        }
+                        sb.Append(xn.InnerText);
+                    }
+                    else
+                    {
+                        string name = xn.Attributes[0].Value;
+                        if (name == "MD5")
+                        {
+                            hash = xn.InnerText;
+                            continue;
+                        }
+                        sb.Append(name);
+                        tmp = xn.InnerText;
+                        sb.Append(tmp);
+                    }
+                }
+                if (SCobraVersion == string.Empty || SOCEVersion == string.Empty)
+                {
+                    gm.message = "Cannot find Cobra Version and/or OCE version information in this file! Load failed!";
+                    //CallWarningControl(gm);
+                    return false;
                 }
             }
             catch
