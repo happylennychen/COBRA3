@@ -183,6 +183,10 @@ namespace O2Micro.Cobra.EM
         }
 
         private List<WorkPanelItem> m_device_panellist = new List<WorkPanelItem>();
+        public List<WorkPanelItem> device_panellist //Issue1593 Leon
+        {
+            get { return m_device_panellist; }
+        }
         #endregion
 
         #region 设备基础定义

@@ -1,5 +1,5 @@
-//#define debug
-//#define x
+#define debug
+#define x
 //#define y
 //#define m
 using System;

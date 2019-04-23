@@ -165,7 +165,6 @@ namespace O2Micro.Cobra.Shell
                 {
                     WorkPanelItem wpi = tabs[i];
                     BoardConfigSFL = (O2Micro.Cobra.DeviceConfigurationPanel.MainControl)wpi.item;
-                    CobraGlobal.BoardConfigSFL = BoardConfigSFL;//Issue1593 Leon
                 }
 
                 LoadPreviousSettings();

@@ -159,9 +159,9 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                                     WriteSubTask = Convert.ToUInt16(sub.InnerText);
                                 else if (sub.Name == "SaveHex")		//Issue1513 Leon
                                     SaveHexSubTask = Convert.ToUInt16(sub.InnerText);
-                                else if (sub.Name == "GetMax")		//Issue1513 Leon
+                                else if (sub.Name == "GetMax")		//Issue1593 Leon
                                     GetMaxValueSubTask = Convert.ToUInt16(sub.InnerText);
-                                else if (sub.Name == "GetMin")		//Issue1513 Leon
+                                else if (sub.Name == "GetMin")		//Issue1593 Leon
                                     GetMinValueSubTask = Convert.ToUInt16(sub.InnerText);
                             }
                             break;
@@ -428,7 +428,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.    //Issue1373//Issue 1426 Leon
             {
                 SaveBoardConfigFilePath(fullpath);//Issue1378 Leon
-                OnRasieBoardConfigChangedEvent();//Issue1593 Leon
             }
         }
 
@@ -2008,6 +2007,39 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             rf.Close();
             sw.Close();
             wf.Close();
+        }
+        #endregion
+
+        #region 计算边界值   //Issue1593 Leon
+
+        public double GetMaxValue(Parameter param)
+        {
+            TASKMessage msg = new TASKMessage();
+            msg.task = TM.TM_COMMAND;
+            msg.sub_task = GetMaxValueSubTask;
+            msg.task_parameterlist.parameterlist.Add(param);
+            parent.AccessDevice(ref msg);
+            while (msg.bgworker.IsBusy)
+                System.Windows.Forms.Application.DoEvents();
+            if (msg.errorcode == LibErrorCode.IDS_ERR_SUCCESSFUL)
+                return param.dbPhyMax;
+            else
+                return 0;
+        }
+
+        public double GetMinValue(Parameter param)
+        {
+            TASKMessage msg = new TASKMessage();
+            msg.task = TM.TM_COMMAND;
+            msg.sub_task = GetMinValueSubTask;
+            msg.task_parameterlist.parameterlist.Add(param);
+            parent.AccessDevice(ref msg);
+            while (msg.bgworker.IsBusy)
+                System.Windows.Forms.Application.DoEvents();
+            if (msg.errorcode == LibErrorCode.IDS_ERR_SUCCESSFUL)
+                return param.dbPhyMin;
+            else
+                return 0;
         }
         #endregion
     }

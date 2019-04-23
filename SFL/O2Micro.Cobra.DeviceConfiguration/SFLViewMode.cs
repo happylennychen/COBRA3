@@ -93,37 +93,18 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
         }
 
-        private double GetMaxValue(Parameter param)
+        #region 参数操作        
+        public MainControl GetBoardConfigSFL()  //Issue1593 Leon
         {
-            TASKMessage msg = new TASKMessage();
-            msg.task = TM.TM_COMMAND;
-            msg.sub_task = control_parent.GetMaxValueSubTask;
-            msg.task_parameterlist.parameterlist.Add(param);
-            device_parent.AccessDevice(ref msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            if (msg.errorcode == LibErrorCode.IDS_ERR_SUCCESSFUL)
-                return param.dbPhyMax;
-            else
-                return 0;
+            foreach (var i in device_parent.device_panellist)
+            {
+                MainControl o = i.item as MainControl;
+                if(o != null)
+                    if (o.sflname == CobraGlobal.Constant.NewBoardConfigName)
+                        return o;
+            }
+            return null;
         }
-
-        private double GetMinValue(Parameter param)
-        {
-            TASKMessage msg = new TASKMessage();
-            msg.task = TM.TM_COMMAND;
-            msg.sub_task = control_parent.GetMinValueSubTask;
-            msg.task_parameterlist.parameterlist.Add(param);
-            device_parent.AccessDevice(ref msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            if (msg.errorcode == LibErrorCode.IDS_ERR_SUCCESSFUL)
-                return param.dbPhyMin;
-            else
-                return 0;
-        }
-
-        #region 参数操作
         private void InitSFLParameter(Parameter param)
         {
             Double errorvalue = -9999;
@@ -133,6 +114,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             SFLModel model = new SFLModel();
 
             model.parent = param.sfllist[sflname].parent;
+            model.VeiwModelParent = this;
             model.guid = param.guid;
             model.bedit = true;
             model.berror = false;
@@ -199,9 +181,10 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                                     model.minvalue = Convert.ToDouble(de.Value.ToString());
                                 else
                                 {
-                                    model.minvalue = GetMinValue(param);
-                                    //MainControl o = CobraGlobal.BoardConfigSFL as MainControl;
-                                    //o.BoardConfigChanged += new EventHandler(model.SFLModel_BoardConfigChanged);
+                                    model.minvalue = control_parent.GetMinValue(param);
+                                    MainControl BoardConfigSFL = GetBoardConfigSFL();
+                                    if(BoardConfigSFL != null)
+                                        BoardConfigSFL.BoardConfigChanged += new EventHandler(model.SFLModel_BoardConfigChanged);
                                 }
                             }
                             break;
@@ -217,9 +200,10 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                                     model.maxvalue = Convert.ToDouble(de.Value.ToString());
                                 else
                                 {
-                                    model.maxvalue = GetMaxValue(param);
-                                    //MainControl o = CobraGlobal.BoardConfigSFL as MainControl;
-                                    //o.BoardConfigChanged += new EventHandler(model.SFLModel_BoardConfigChanged);
+                                    model.maxvalue = control_parent.GetMaxValue(param);
+                                    MainControl BoardConfigSFL = GetBoardConfigSFL();
+                                    if (BoardConfigSFL != null)
+                                        BoardConfigSFL.BoardConfigChanged += new EventHandler(model.SFLModel_BoardConfigChanged);
                                 }
                             }
                             break;

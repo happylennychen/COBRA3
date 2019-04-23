@@ -24,6 +24,8 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             set { m_Parent = value; }
         }
 
+        public SFLViewMode VeiwModelParent { set; get; }    //Issue1593 Leon
+
         private string m_NickName;
         public string nickname
         {
@@ -308,7 +310,10 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         {
             try
             {
-                //this.maxvalue = parent
+                this.parent.PropertyChanged -= this.VeiwModelParent.Parameter_PropertyChanged;
+                this.maxvalue = this.VeiwModelParent.control_parent.GetMaxValue(this.parent);
+                this.minvalue = this.VeiwModelParent.control_parent.GetMinValue(this.parent);
+                this.parent.PropertyChanged += this.VeiwModelParent.Parameter_PropertyChanged;
             }
             catch
             {
