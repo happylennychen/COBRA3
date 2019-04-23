@@ -912,7 +912,7 @@ namespace O2Micro.Cobra.Common
 
                 #region Device Configuration SFL error description
                 case IDS_ERR_SECTION_DEVICECONFSFL_PARAM_INVALID:
-                    strErr = "Some parameters' value should be invalid, Please check!";
+                    strErr = "Some parameters' value are invalid, Please check!";
                     break;
                 case IDS_ERR_SECTION_DEVICECONFSFL_PARAM_UNENALBE:
                     strErr = "The parameter had been uneable and can't be changed!";

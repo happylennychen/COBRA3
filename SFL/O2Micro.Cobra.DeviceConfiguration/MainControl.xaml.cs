@@ -504,8 +504,28 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             doc.Save(settingfilepath);
         }
 
+        private UInt32 ParameterValidityCheck()   //Issue1607 Leon
+        {
+            foreach (SFLModel model in viewmode.sfl_parameterlist)
+            {
+                if (model.berror && (model.errorcode & LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL) == LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL)
+                    return LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL_PARAM_INVALID;
+            }
+            return LibErrorCode.IDS_ERR_SUCCESSFUL;
+        }
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
+            UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
+            ret = ParameterValidityCheck();
+            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
+            {
+                var m = new GeneralMessage();
+                m.message = LibErrorCode.GetErrorDescription(ret);
+                m.level = 2;
+                CallWarningControl(m);
+                    return;
+            }
+
             string fullpath = "";
             string chipname = GetChipName();    //Issue1373
             string MD5Code = GetMD5Code();//Issue1373 Leon
