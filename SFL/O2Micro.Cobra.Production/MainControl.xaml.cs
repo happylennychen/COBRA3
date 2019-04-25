@@ -136,6 +136,8 @@ namespace O2Micro.Cobra.ProductionPanel
 
         public DataTable Records = new DataTable();
         bool isReentrant = false;   //控制Operation button的重入问题
+
+        private UInt16 VerificationTaskID = 0;
         #endregion
 
         #region 函数定义
@@ -274,6 +276,27 @@ namespace O2Micro.Cobra.ProductionPanel
             string ShowVerify = xe.GetAttribute("ShowVerify");
             if (ShowVerify.ToUpper() == "FALSE")
                 VerificationContainer.Visibility = System.Windows.Visibility.Collapsed;
+            #endregion
+
+            #region 初始化Verification Button
+            string str_option = String.Empty;
+            XmlNodeList nodelist = parent.GetUINodeList(ProductionSFLDBName);
+            string password = String.Empty;
+            foreach (XmlNode node in nodelist)
+            {
+                str_option = node.Name;
+                switch (str_option)
+                {
+                    case "Verification":
+                        {
+                            ReadBackCheckButton.Content = node.InnerText;
+                            ReadBackCheckButton.Visibility = System.Windows.Visibility.Visible;
+                            XmlElement xe1 = (XmlElement)(node);
+                            this.VerificationTaskID = Convert.ToUInt16(xe1.GetAttribute("SubTaskID"));
+                            break;
+                        }
+                }
+            }
             #endregion
         }
 
@@ -828,6 +851,7 @@ namespace O2Micro.Cobra.ProductionPanel
 
             OperationButtonName.Text = buttonname;
             OperationButton.IsEnabled = isEnabled;
+            ReadBackCheckButton.IsEnabled = isEnabled;
         }
 
         private UInt32 PrepareDownloadData(ushort sub_task)
@@ -1339,6 +1363,33 @@ namespace O2Micro.Cobra.ProductionPanel
             }
         }
 
+
+        private void ReadBackCheckButton_Click(object sender, RoutedEventArgs e)
+        {
+            msg.task_parameterlist.parameterlist = cfgviewmodel.dm_parameterlist.parameterlist;
+            msg.owner = this;
+            msg.gm.sflname = ProductionSFLName;//Issue1426 Leon
+            UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
+
+            ret = boardviewmodel.WriteDevice();
+            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
+            {
+                PromptWarning(LibErrorCode.GetErrorDescription(ret));
+            }
+            ret = cfgviewmodel.WriteDevice();
+            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
+            {
+                PromptWarning(LibErrorCode.GetErrorDescription(ret));
+            }
+
+            ret = Command(VerificationTaskID);
+            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
+            {
+                PromptWarning(LibErrorCode.GetErrorDescription(ret));
+            }
+            else
+                PromptWarning("Verification Passed!");
+        }
         #region 通用控件消息响应
         private void msg_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {

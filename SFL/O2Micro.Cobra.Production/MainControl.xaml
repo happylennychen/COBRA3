@@ -8,7 +8,7 @@
 	xmlns:controls="clr-namespace:O2Micro.Cobra.ControlLibrary;assembly=O2Micro.Cobra.ControlLibrary"
 	mc:Ignorable="d"
 	x:Class="O2Micro.Cobra.ProductionPanel.MainControl"
-	x:Name="UserControl" d:DesignHeight="460" d:DesignWidth="740" FontSize="12" >
+	x:Name="UserControl" d:DesignHeight="410" d:DesignWidth="525" FontSize="12" >
     <UserControl.Resources>
         <src:WidthConverter x:Key="wc"></src:WidthConverter>
     </UserControl.Resources>
@@ -46,7 +46,10 @@
                                                 </DockPanel>
                                             </Button.Content>
                                         </Button>
-                                        <CheckBox HorizontalAlignment="Right" Grid.Row="2" VerticalAlignment="Center" Name="WarningCheckBox" IsChecked="True">Display all prompts</CheckBox>
+                                        <DockPanel Grid.Row="2">
+                                            <Button Name="ReadBackCheckButton" Height="20" Width="120" Margin="5" IsEnabled="False" Click="ReadBackCheckButton_Click" Visibility="Collapsed">Read Back Check</Button>
+                                            <CheckBox HorizontalAlignment="Right" VerticalAlignment="Center" Name="WarningCheckBox" IsChecked="True">Display all prompts</CheckBox>
+                                        </DockPanel>
                                     </Grid>
                                 </GroupBox>
                                 <GroupBox Grid.Row="1" Header="Status">

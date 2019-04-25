@@ -547,6 +547,8 @@ namespace O2Micro.Cobra.Communication
         //(A160105)Francis, save to log
         public bool WriteDataToLog(byte[] yDataFromDEM, byte[] yDataFromChip, UInt16 wLengthChip, UInt16 wLengthDEM, byte yRW)
         {
+            if (wLengthDEM == 1)
+                return true;
             bool bReturn = true;
             string strTmp = string.Empty;
             LogData ldTmp = CommunicationLog.clCommLog.logdatalist[CommunicationLog.clCommLog.logdatalist.Count - 1];
