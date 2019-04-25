@@ -816,11 +816,17 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             string SOCEVersion = string.Empty;
             for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
             {
-                if (xn.Name == "CobraVersion")
+                string name = xn.Attributes[0].Value;
+                if (name == "MD5")
+                {
+                    hash = xn.InnerText;
+                    continue;
+                }
+                else if (name == "CobraVersion")
                 {
                     SCobraVersion = (from asm in LibInfor.m_assembly_list
-                                         where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
-                                         select asm).ToArray()[0].Assembly_ver.ToString();
+                                     where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
+                                     select asm).ToArray()[0].Assembly_ver.ToString();
                     if (xn.InnerText != SCobraVersion)
                     {
                         string warning = "Cobra Version in file: " + xn.InnerText;
@@ -830,10 +836,10 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         CallWarningControl(gm);
                         return;
                     }
- 
+
                     sb.Append(xn.InnerText);
                 }
-                else if (xn.Name == "OCEVersion")
+                else if (name == "OCEVersion")
                 {
                     SOCEVersion = CobraGlobal.CurrentOCEName;
                     if (xn.InnerText != SOCEVersion)
@@ -849,16 +855,11 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 }
                 else
                 {
-                    string name = xn.Attributes[0].Value;
-                    if (name == "MD5")
-                    {
-                        hash = xn.InnerText;
-                        continue;
-                    }
                     sb.Append(name);
                     tmp = xn.InnerText;
                     sb.Append(tmp);
                 }
+
             }
             if (SCobraVersion == string.Empty || SOCEVersion == string.Empty)
             {
@@ -1793,7 +1794,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             XmlElement root = doc.DocumentElement;
 
             StringBuilder sb = new StringBuilder();
-
+            
             string SOCEVersion = CobraGlobal.CurrentOCEName;
             string SCobraVersion = (from asm in LibInfor.m_assembly_list
                                     where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
@@ -1801,7 +1802,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             sb.Append(SCobraVersion);
             sb.Append(SOCEVersion);
 
-            XmlElement E1 = doc.CreateElement("CobraVersion");
+            /*XmlElement E1 = doc.CreateElement("CobraVersion");
             XmlNode N1 = doc.CreateTextNode(SCobraVersion);
             root.AppendChild(E1);
             E1.AppendChild(N1);
@@ -1809,7 +1810,25 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             XmlElement E2 = doc.CreateElement("OCEVersion");
             XmlNode N2 = doc.CreateTextNode(SOCEVersion);
             root.AppendChild(E2);
-            E2.AppendChild(N2);
+            E2.AppendChild(N2);*/
+            XmlElement CVitem = doc.CreateElement("item");
+            XmlAttribute CVAname = doc.CreateAttribute("Name");
+            XmlText CVTname = doc.CreateTextNode("CobraVersion");
+            XmlText CVTvalue = doc.CreateTextNode(SCobraVersion);
+            root.AppendChild(CVitem);
+            CVitem.SetAttributeNode(CVAname);
+            CVAname.AppendChild(CVTname);
+            CVitem.AppendChild(CVTvalue);
+
+
+            XmlElement OVitem = doc.CreateElement("item");
+            XmlAttribute OVAname = doc.CreateAttribute("Name");
+            XmlText OVTname = doc.CreateTextNode("OCEVersion");
+            XmlText OVTvalue = doc.CreateTextNode(SOCEVersion);
+            root.AppendChild(OVitem);
+            OVitem.SetAttributeNode(OVAname);
+            OVAname.AppendChild(OVTname);
+            OVitem.AppendChild(OVTvalue);
 
             foreach (SFLModel model in viewmode.sfl_parameterlist)
             {

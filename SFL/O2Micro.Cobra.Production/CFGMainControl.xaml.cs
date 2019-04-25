@@ -463,14 +463,20 @@ namespace O2Micro.Cobra.ProductionPanel
             {
                 for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
                 {
-                    if (xn.Name == "CobraVersion")
+                    string name = xn.Attributes[0].Value;
+                    if (name == "MD5")
+                    {
+                        hash = xn.InnerText;
+                        continue;
+                    }
+                    else if (name == "CobraVersion")
                     {
                         SCobraVersion = (from asm in LibInfor.m_assembly_list
                                          where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
                                          select asm).ToArray()[0].Assembly_ver.ToString();
                         if (xn.InnerText != SCobraVersion)
                         {
-                            string warning = "Cobra in file: " + xn.InnerText;
+                            string warning = "Cobra Version in file: " + xn.InnerText;
                             warning += "\nCobra you are using: " + SCobraVersion;
                             warning += "\nCobra Version Mismatch! Load failed!";
                             gm.message = warning;
@@ -480,12 +486,12 @@ namespace O2Micro.Cobra.ProductionPanel
 
                         sb.Append(xn.InnerText);
                     }
-                    else if (xn.Name == "OCEVersion")
+                    else if (name == "OCEVersion")
                     {
                         SOCEVersion = CobraGlobal.CurrentOCEName;
                         if (xn.InnerText != SOCEVersion)
                         {
-                            string warning = "OCE in file: " + xn.InnerText;
+                            string warning = "OCE name in file: " + xn.InnerText;
                             warning += "\nOCE you are using: " + CobraGlobal.CurrentOCEName;
                             warning += "\nOCE Mismatch!";
                             gm.message = warning;
@@ -496,16 +502,11 @@ namespace O2Micro.Cobra.ProductionPanel
                     }
                     else
                     {
-                        string name = xn.Attributes[0].Value;
-                        if (name == "MD5")
-                        {
-                            hash = xn.InnerText;
-                            continue;
-                        }
                         sb.Append(name);
                         tmp = xn.InnerText;
                         sb.Append(tmp);
                     }
+
                 }
                 if (SCobraVersion == string.Empty || SOCEVersion == string.Empty)
                 {
