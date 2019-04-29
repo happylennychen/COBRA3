@@ -28,6 +28,8 @@ using System.Text.RegularExpressions;
 using O2Micro.Cobra.EM;
 using O2Micro.Cobra.Common;
 using O2Micro.Cobra.AutoMationTest;
+using System.Runtime.InteropServices;
+using Excel = Microsoft.Office.Interop.Excel;
 
 namespace O2Micro.Cobra.DeviceConfigurationPanel
 {
@@ -401,7 +403,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
             {
                 openFileDialog.Title = "Load Board Config file";			//Support Production SFL, Leon
-                openFileDialog.Filter = "Board Config file (*.board)|*.board||";
+                openFileDialog.Filter = "Board Config file (*.board)|*.board|Excel file (*.xlsx)|*.xlsx||";
                 openFileDialog.DefaultExt = "board";
             }
             else
@@ -419,7 +421,14 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 if (parent == null) return;
                 {
                     fullpath = openFileDialog.FileName;
-                    LoadFile(fullpath);
+                    int index = fullpath.LastIndexOf('.');
+                    string suffix = fullpath.Substring(index + 1).ToLower();
+                    if(suffix == "board" || suffix == "cfg")
+                        LoadFile(fullpath);
+                    else if (suffix == "xlsx")
+                    {
+                        LoadBoardConfigFromExcel(fullpath);
+                    }
                 }
             }
             else
@@ -789,7 +798,48 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             StatusLabel.Content = fullpath;
         }
 
+        private void LoadBoardConfigFromExcel(string fullpath)
+        {
+            var excelApp = new Excel.Application();
+            try
+            {
+                Excel.Workbook excelWKB = null;
+                Excel._Worksheet excelSHEET = null;
+                excelWKB = excelApp.Workbooks.Open(fullpath);
+                excelSHEET = excelWKB.Sheets[1];
 
+                for (int row = 4; row <= 200; row++)
+                {
+                    string tmp = ((Excel.Range)excelSHEET.Cells[row, 2]).Text.ToString();
+                    var model = viewmode.GetParameterByName(tmp);
+                    if (model == null)
+                        return;
+                    else
+                    {
+                        model.berror = false;
+
+                        tmp = ((Excel.Range)excelSHEET.Cells[row, 3]).Text.ToString();
+
+                        double dval = 0.0;
+                        if (!Double.TryParse(tmp, out dval))
+                            dval = 0.0;
+                        model.data = dval * 1000;
+                    }
+                }
+            }
+            catch (Exception c)
+            {
+                System.Windows.MessageBox.Show(c.ToString());
+            }
+            finally
+            {
+                StatusLabel.Content = fullpath;
+                excelApp.Workbooks.Close();
+                excelApp.Quit();
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
+                excelApp = null;
+            }
+        }
         internal void LoadFile(string fullpath)
         {
             double dval = 0.0;
