@@ -420,15 +420,22 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             {
                 if (parent == null) return;
                 {
+                    bool ret = true;
                     fullpath = openFileDialog.FileName;
                     int index = fullpath.LastIndexOf('.');
                     string suffix = fullpath.Substring(index + 1).ToLower();
                     if(suffix == "board" || suffix == "cfg")
-                        LoadFile(fullpath);
+                        ret = LoadFile(fullpath);
                     else if (suffix == "xlsx")
                     {
-                        LoadBoardConfigFromExcel(fullpath);
+                        ret &= LoadBoardConfigFromExcel(fullpath);
                     }
+                    if (ret == true)
+                    {
+                        gm.message = "Board Setting will only take effect after Apply button is clicked!";
+                        CallWarningControl(gm);
+                    }
+
                 }
             }
             else
@@ -798,8 +805,9 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             StatusLabel.Content = fullpath;
         }
 
-        private void LoadBoardConfigFromExcel(string fullpath)
+        private bool LoadBoardConfigFromExcel(string fullpath)
         {
+            bool ret = true;
             var excelApp = new Excel.Application();
             try
             {
@@ -813,7 +821,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     string tmp = ((Excel.Range)excelSHEET.Cells[row, 2]).Text.ToString();
                     var model = viewmode.GetParameterByName(tmp);
                     if (model == null)
-                        return;
+                        break;
                     else
                     {
                         model.berror = false;
@@ -830,6 +838,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             catch (Exception c)
             {
                 System.Windows.MessageBox.Show(c.ToString());
+                ret = false;
             }
             finally
             {
@@ -839,8 +848,9 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
                 excelApp = null;
             }
+            return ret;
         }
-        internal void LoadFile(string fullpath)
+        internal bool LoadFile(string fullpath)
         {
             double dval = 0.0;
             string tmp;
@@ -855,7 +865,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             {
                 gm.message = "File format error!";
                 CallWarningControl(gm);
-                return;
+                return false;
             }
 
             XmlElement root = doc.DocumentElement;
@@ -884,7 +894,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         warning += "\nCobra Version Mismatch! Load failed!";
                         gm.message = warning;
                         CallWarningControl(gm);
-                        return;
+                        return false;
                     }
 
                     sb.Append(xn.InnerText);
@@ -899,7 +909,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         warning += "\nOCE Mismatch!";
                         gm.message = warning;
                         CallWarningControl(gm);
-                        return;
+                        return false;
                     }
                     sb.Append(xn.InnerText);
                 }
@@ -915,7 +925,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             {
                 gm.message = "Cannot find Cobra Version and/or OCE version information in this file! Load failed!";
                 CallWarningControl(gm);
-                return;
+                return false;
             }
             if (hash == "")         //没有MD5
             {
@@ -934,7 +944,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     {
                         gm.message = "File illegal, MD5 check failed";
                         CallWarningControl(gm);
-                        return;
+                        return false;
                     }
                 }
             }
@@ -1008,6 +1018,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     model.sphydata = tmp;
             }
             StatusLabel.Content = fullpath;
+            return true;
         }
         internal void SaveFile(string fullpath)
         {
