@@ -430,7 +430,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     {
                         ret &= LoadBoardConfigFromExcel(fullpath);
                     }
-                    if (ret == true)
+                    if (ret == true && (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName))
                     {
                         gm.message = "Board Setting will only take effect after Apply button is clicked!";
                         CallWarningControl(gm);
@@ -965,6 +965,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 if (model == null) continue;
 
                 model.berror = false;
+                model.errorcode = LibErrorCode.IDS_ERR_SUCCESSFUL;
 
                 tmp = xn.InnerText;
 
@@ -1033,7 +1034,12 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     SaveHFile(fullpath);
                     break;
                 case "hex":		//Issue1513 Leon
-                    if(System.Windows.MessageBox.Show("Please make sure the Board Config is configured correctly!", "Warnning!", MessageBoxButton.OK) == MessageBoxResult.OK)
+                    //if(System.Windows.MessageBox.Show("Please make sure the Board Config is configured correctly!", "Warnning!", MessageBoxButton.OK) == MessageBoxResult.OK)
+                    gm.message = "Please make sure the Board Config is configured correctly!";
+                    //gm.level = 0;
+                    msg.gm.level = 0;
+                    CallSelectControl(gm);
+                    if(msg.controlmsg.bcancel == true)
                         SaveHexFile(fullpath);
                     break;
                 default:

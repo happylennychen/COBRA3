@@ -597,12 +597,15 @@ namespace O2Micro.Cobra.ProductionPanel
                         SOCEVersion = CobraGlobal.CurrentOCEName;
                         if (xn.InnerText != SOCEVersion)
                         {
-                            string warning = "OCE name in file: " + xn.InnerText;
-                            warning += "\nOCE you are using: " + CobraGlobal.CurrentOCEName;
-                            warning += "\nOCE Mismatch!";
-                            gm.message = warning;
-                            //CallWarningControl(gm);
-                            return ErrorCode.TokenMismatch;
+                            if (CobraGlobal.CurrentOCEName.Replace("_M_", "_X_") != xn.InnerText)   //Exclude M version loading X version *.pack 
+                            {
+                                string warning = "OCE name in file: " + xn.InnerText;
+                                warning += "\nOCE you are using: " + CobraGlobal.CurrentOCEName;
+                                warning += "\nOCE Mismatch!";
+                                gm.message = warning;
+                                //CallWarningControl(gm);
+                                return ErrorCode.TokenMismatch;
+                            }
                         }
                         sb.Append(xn.InnerText);
                     }

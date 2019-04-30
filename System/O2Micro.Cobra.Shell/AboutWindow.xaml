@@ -29,7 +29,7 @@
                     <RowDefinition Height="0.2*" />
                 </Grid.RowDefinitions>
                 <Grid x:Name="SoftwareInfoPanel"  Background="#FFFEFEFE" Margin="1,1,1,1" Grid.Row="0">
-                    <TextBlock Height="26" Margin="8,10,148,0" TextWrapping="Wrap" Text="COBRA VERSION: V 2.00.16" VerticalAlignment="Top" FontSize="18.667"/>
+                    <TextBlock Height="26" Margin="8,10,148,0" TextWrapping="Wrap" Text="COBRA VERSION: V 2.00.17" VerticalAlignment="Top" FontSize="18.667"/>
                     <TextBlock Margin="8,49,148,42.76" TextWrapping="Wrap" Text="O2Micro 2019 All rights reserved" FontSize="18.667"/>
                     <TextBlock Margin="8,0,148,7" TextWrapping="Wrap" Text="View The O2Micro End-User License Agreement" Height="26" VerticalAlignment="Bottom" FontSize="16" TextDecorations="Underline" Foreground="#FFB69879" MouseLeftButtonDown="TextBlock_MouseLeftButtonDown" />
                 </Grid>
