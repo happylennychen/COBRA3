@@ -83,6 +83,21 @@ namespace O2Micro.Cobra.Common
             return ((byte)pWord);
         }
 
+        public static string ToHexString(byte[] bytes) // 0xae00cf => "AE00CF "
+        {
+            string hexString = string.Empty;
+            if (bytes != null)
+            {
+                StringBuilder strB = new StringBuilder();
+                strB.Append("0x");
+                for (int i = 0; i < bytes.Length; i++)
+                    strB.Append(bytes[i].ToString("X2"));
+                hexString = strB.ToString();
+
+            } return hexString;
+
+        }
+
         public static int FindProximalValFromList(AsyncObservableCollection<string> list, double dval)
         {
             Double[] array = new Double[list.Count];

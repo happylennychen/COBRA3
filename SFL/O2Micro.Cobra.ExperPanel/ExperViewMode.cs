@@ -15,7 +15,8 @@ namespace O2Micro.Cobra.ExperPanel
 {
 	public class ExperViewMode
 	{
-        static public UInt32 SectionElementFlag = 0xFFFF0000;
+        //static public UInt32 SectionElementFlag = 0xFFFF0000;
+        static public UInt32 SectionElementFlag = 0x00FF0000;
         static public UInt32 NonvolatileElement = 0x00020000;   //Leon: Efuse, EEPROM, YFLASH and etc.
 		static public  UInt32 OperationElement = 0x00030000;
 		static public  UInt32 TestButtonElement = 0x00040000;
@@ -225,7 +226,12 @@ namespace O2Micro.Cobra.ExperPanel
 						{
 							xmlData.strDescrip = de.Value.ToString();
 							break;
-						}
+                        }
+                    case "Tips":
+                        {
+                            xmlData.strBitTips = de.Value.ToString();
+                            break;
+                        }
 					case "TestMode":
 						{
 							xmlData.strTestMode = de.Value.ToString();
@@ -392,6 +398,7 @@ namespace O2Micro.Cobra.ExperPanel
 						mdltemp.ArrRegComponet[i + yBitStartLoc].strBitDescrip = xmldataIn.strDescrip;
 					else
 						mdltemp.ArrRegComponet[i + yBitStartLoc].strBitDescrip = ExperBitComponent.BitDescrpDefault;
+                    mdltemp.ArrRegComponet[i + yBitStartLoc].strBitTips = xmldataIn.strBitTips;
 					mdltemp.ArrRegComponet[i + yBitStartLoc].strUnit = xmldataIn.strUnit;
 					if (i == 0)
 					{

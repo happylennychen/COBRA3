@@ -447,6 +447,24 @@ namespace O2Micro.Cobra.EM
                         ret = GetRegisteInfor(ref m_Msg);
                         break;
                     }
+                case TM.TM_SPEICAL_READDEVICE:
+                    {
+                        msg.gm.level = 2;
+                        msg.gm.message = "Debug Read Device";
+                        gm = msg.gm;
+                        msg.bgworker.ReportProgress(msg.percent, msg.gm.message);
+                        ret = ReadDevice(ref m_Msg);
+                        break;
+                    }
+                case TM.TM_SPEICAL_WRITEDEVIE:
+                    {
+                        msg.gm.level = 2;
+                        msg.gm.message = "Debug Write Device";
+                        gm = msg.gm;
+                        msg.bgworker.ReportProgress(msg.percent, msg.gm.message);
+                        ret = WriteDevice(ref m_Msg);
+                        break;
+                    }
                 default:
                     break;
             }
@@ -643,6 +661,16 @@ namespace O2Micro.Cobra.EM
         public UInt32 BitOperation(ref TASKMessage m_Msg)
         {
             return m_device_dm.BitOperation(ref m_Msg);
+        }
+
+        private UInt32 ReadDevice(ref TASKMessage msg)
+        {
+            return m_device_dm.ReadDevice(ref msg);
+        }
+
+        private UInt32 WriteDevice(ref TASKMessage msg)
+        {
+            return m_device_dm.WriteDevice(ref msg);
         }
         #endregion
     }

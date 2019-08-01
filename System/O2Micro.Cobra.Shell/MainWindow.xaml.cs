@@ -133,7 +133,6 @@ namespace O2Micro.Cobra.Shell
                 InitBWork();
                 #endregion
 
-
                 createShortCut();
                 startup.Dispatcher.BeginInvoke(new Action(() =>
                 {
@@ -145,6 +144,7 @@ namespace O2Micro.Cobra.Shell
                 CatchSystemException(ex.Message);
             }
         }
+
         public void InitBWork()
         {
             //Upgrade worker

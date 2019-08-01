@@ -21,6 +21,7 @@ namespace O2Micro.Cobra.ExperPanel
 		public bool bRead { get; set; }
 		public bool bWrite { get; set; }
 		public string strDescrip { get; set; }
+        public string strBitTips { get; set; }
 		public string strTestMode { get; set; }
 		public Parameter pmrXDParent { get; set; }
 		public UInt32 u32Guid { get; set; }
@@ -39,6 +40,7 @@ namespace O2Micro.Cobra.ExperPanel
 			bRead = false;
 			bWrite = false;
 			strDescrip = string.Empty;
+            strBitTips = string.Empty;
 			pmrXDParent = null;
 			u32Guid = 0xFFFFFFFF;
 			strGroup = string.Empty;
@@ -111,6 +113,14 @@ namespace O2Micro.Cobra.ExperPanel
 		{
 			get { return m_strBitDescrip; }
 			set { m_strBitDescrip = value; OnPropertyChanged("strBitDescrip"); }
+		}
+
+        //save Bit description
+        private string m_strBitTips;
+        public string strBitTips
+		{
+            get { return m_strBitTips; }
+            set { m_strBitTips = value; OnPropertyChanged("strBitTips"); }
 		}
 
 		//save Group string

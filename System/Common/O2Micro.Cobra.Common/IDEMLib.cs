@@ -32,5 +32,7 @@ namespace O2Micro.Cobra.Common
     public interface IDEMLib2 : IDEMLib
     {
         bool DestroyInterface();
+        UInt32 ReadDevice(ref TASKMessage msg);
+        UInt32 WriteDevice(ref TASKMessage msg);
     }
 }

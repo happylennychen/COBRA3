@@ -301,6 +301,32 @@ namespace O2Micro.Cobra.DM
         {
             return m_dem_lib.BitOperation(ref m_Msg);
         }
+
+        public UInt32 ReadDevice(ref TASKMessage msg)
+        {
+            try
+            {
+                return (m_dem_lib as IDEMLib2).ReadDevice(ref msg);
+            }
+            catch (System.Exception ex)
+            {
+
+            }
+            return LibErrorCode.IDS_ERR_DEM_LOST_INTERFACE;
+        }
+
+        public UInt32 WriteDevice(ref TASKMessage msg)
+        {
+            try
+            {
+                return (m_dem_lib as IDEMLib2).WriteDevice(ref msg);
+            }
+            catch (System.Exception ex)
+            {
+
+            }
+            return LibErrorCode.IDS_ERR_DEM_LOST_INTERFACE;
+        }
         #endregion
     }
 }

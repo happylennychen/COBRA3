@@ -165,7 +165,8 @@ namespace O2Micro.Cobra.Common
         public const UInt32 IDS_ERR_DEM_PASSWORD_INVALID        = IDS_ERR_SECTION_DEM + 0x10;
         public const UInt32 IDS_ERR_DEM_ADC_STOPPED             = IDS_ERR_SECTION_DEM + 0x11;
         public const UInt32 IDS_ERR_DEM_DIRTYCHIP 				= IDS_ERR_SECTION_DEM + 0x12;
-        public const UInt32 IDS_ERR_DEM_MAPPING_TIMEOUT 		= IDS_ERR_SECTION_DEM + 0x13;
+        public const UInt32 IDS_ERR_DEM_MAPPING_TIMEOUT         = IDS_ERR_SECTION_DEM + 0x13;
+        public const UInt32 IDS_ERR_DEM_LOST_INTERFACE          = IDS_ERR_SECTION_DEM + 0x14;
 
 		
 
@@ -839,6 +840,9 @@ namespace O2Micro.Cobra.Common
                     break;
                 case IDS_ERR_DEM_MAPPING_TIMEOUT:
                     strErr = "Mapping Timeout!";
+                    break;
+                case IDS_ERR_DEM_LOST_INTERFACE:
+                    strErr = "DEM lost the interface,Please improve the DEM!";
                     break;
                 #endregion
 
