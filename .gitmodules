@@ -25,3 +25,6 @@
 [submodule "System/DEM/O2Micro.Cobra.Yeti"]
 	path = System/DEM/O2Micro.Cobra.Yeti
 	url = https://github.com/happylennychen/O2Micro.Cobra.Yeti
+[submodule "System/DEM/O2Micro.Cobra.SP8G2"]
+	path = System/DEM/O2Micro.Cobra.SP8G2
+	url = https://github.com/happylennychen/O2Micro.Cobra.SP8G2

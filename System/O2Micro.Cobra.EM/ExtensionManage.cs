@@ -1,5 +1,5 @@
-//#define debug
-//#define x
+#define debug
+#define x
 //#define y
 //#define m
 using System;
@@ -118,7 +118,7 @@ namespace O2Micro.Cobra.EM
             if (Registry.GetCurExtensionFileName().Length == 0) return false;
             FolderMap.m_curextensionfile_name = Registry.GetCurExtensionFileName();
 #if debug
-            string projectname = "KALL14";
+            string projectname = "Azalea14";
 #endif
 #if x
             string xmlxpath = FolderMap.m_main_folder.Remove(FolderMap.m_main_folder.LastIndexOf("output\\"));
