@@ -378,10 +378,10 @@ namespace O2Micro.Cobra.EM
             string extxmlfullname = FolderMap.m_extension_monitor_folder + FolderMap.m_ext_descrip_xml_name + FolderMap.m_extension_work_ext;
             m_extDescrip_xmlDoc.Load(extxmlfullname);
             root = m_extDescrip_xmlDoc.DocumentElement;
-            string dllfilename = Path.Combine(FolderMap.m_extension_monitor_folder, string.Format("{0}{1}", root.GetAttribute("libname"), ".dll"));
-            FileInfo fi = new FileInfo(dllfilename);
+            string dllfilefullpath = Path.Combine(FolderMap.m_extension_monitor_folder, string.Format("{0}{1}", root.GetAttribute("libname"), ".dll"));
+            FileInfo fi = new FileInfo(dllfilefullpath);
+            string dllfilename = string.Format("{0}{1}", root.GetAttribute("libname"), ".dll");
 
-            TokenContent.Add(dllfilename, fi.Length.ToString());
 
             /*XDocument doc = XDocument.Load(extxmlfullname);
 
@@ -399,7 +399,7 @@ namespace O2Micro.Cobra.EM
                            }).ToList();*/
 
             var strpair = (from ele in doc.Descendants("Element")
-                           where ele.Element("Private").Element("SFL").Attribute("Name").Value == "EFUSE Config"
+                           where ele.Element("Private") != null && ele.Element("Private").Element("SFL") != null && ele.Element("Private").Element("SFL").Attribute("Name").Value == "EFUSE Config"
                            select new string[] {
                                ele.Element("Private").Element("SFL").Element("NickName").Value,
                                ele.Element("PhyRef").Value + "," + ele.Element("RegRef").Value + "," + ele.Element("Private").Element("SFL").Element("EditType").Value + ","+ ele.Element("Private").Element("SFL").Element("Format").Value
@@ -411,6 +411,7 @@ namespace O2Micro.Cobra.EM
             }
 
             TokenContent = TokenContent.OrderBy(o => o.Key).ToDictionary(o => o.Key, o => o.Value); //排除顺序影响
+            TokenContent.Add(dllfilename, fi.Length.ToString());
 
             String str = String.Empty;      //以string形式返回Token
             foreach (var k in TokenContent.Keys)
