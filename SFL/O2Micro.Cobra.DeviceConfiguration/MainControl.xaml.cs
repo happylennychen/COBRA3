@@ -873,7 +873,8 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             StringBuilder sb = new StringBuilder();
             string hash = "";
             string SCobraVersion = string.Empty;
-            string SOCEVersion = string.Empty;
+            string SOCEToken = string.Empty;
+            string SOCETokenMD5 = string.Empty;
             for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
             {
                 string name = xn.Attributes[0].Value;
@@ -899,17 +900,22 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
                     sb.Append(xn.InnerText);
                 }
-                else if (name == "OCEVersion")
+                else if (name == "OCETokenMD5")
                 {
-                    SOCEVersion = CobraGlobal.CurrentOCEName;
-                    if (xn.InnerText != SOCEVersion)
+                    SOCEToken = CobraGlobal.CurrentOCEToken;
+                    using (MD5 md5Hash = MD5.Create())
                     {
-                        string warning = "OCE name in file: " + xn.InnerText;
-                        warning += "\nOCE you are using: " + CobraGlobal.CurrentOCEName;
-                        warning += "\nOCE Mismatch!";
-                        gm.message = warning;
-                        CallWarningControl(gm);
-                        return false;
+                        if (VerifyMd5Hash(md5Hash, SOCEToken, xn.InnerText))
+                        {
+                            SOCETokenMD5 = xn.InnerText;
+                        }
+                        else
+                        {
+                            string warning = "OCE token md5 mismatch!";
+                            gm.message = warning;
+                            CallWarningControl(gm);
+                            return false;
+                        }
                     }
                     sb.Append(xn.InnerText);
                 }
@@ -921,7 +927,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 }
 
             }
-            if (SCobraVersion == string.Empty || SOCEVersion == string.Empty)
+            if (SCobraVersion == string.Empty || SOCEToken == string.Empty)
             {
                 gm.message = "Cannot find Cobra Version and/or OCE version information in this file! Load failed!";
                 CallWarningControl(gm);
@@ -951,7 +957,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
             {
-                if (xn.Name == "CobraVersion" || xn.Name == "OCEVersion")
+                if (xn.Name == "CobraVersion" || xn.Name == "OCETokenMD5")
                     continue;
                 //tmp = xn.Name.Replace("H","0x");
                 //selfid = Convert.ToUInt32(tmp, 16);
@@ -1862,12 +1868,18 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             StringBuilder sb = new StringBuilder();
             
-            string SOCEVersion = CobraGlobal.CurrentOCEName;
+            string SOCEToken = CobraGlobal.CurrentOCEToken;
+
+            string SOCETokenMD5 = "";
+            using (MD5 md5Hash = MD5.Create())
+            {
+                SOCETokenMD5 = GetMd5Hash(md5Hash, SOCEToken);
+            }
             string SCobraVersion = (from asm in LibInfor.m_assembly_list
                                     where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
                                     select asm).ToArray()[0].Assembly_ver.ToString();
             sb.Append(SCobraVersion);
-            sb.Append(SOCEVersion);
+            sb.Append(SOCETokenMD5);
 
             /*XmlElement E1 = doc.CreateElement("CobraVersion");
             XmlNode N1 = doc.CreateTextNode(SCobraVersion);
@@ -1890,8 +1902,8 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             XmlElement OVitem = doc.CreateElement("item");
             XmlAttribute OVAname = doc.CreateAttribute("Name");
-            XmlText OVTname = doc.CreateTextNode("OCEVersion");
-            XmlText OVTvalue = doc.CreateTextNode(SOCEVersion);
+            XmlText OVTname = doc.CreateTextNode("OCETokenMD5");
+            XmlText OVTvalue = doc.CreateTextNode(SOCETokenMD5);
             root.AppendChild(OVitem);
             OVitem.SetAttributeNode(OVAname);
             OVAname.AppendChild(OVTname);
