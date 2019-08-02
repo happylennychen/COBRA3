@@ -7,10 +7,12 @@ using System.Text;
 using System.IO;
 using System.Xml;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using O2Micro.Cobra.Common;
+using System.Xml.Linq;
 
 namespace O2Micro.Cobra.EM
 {
@@ -365,5 +367,57 @@ namespace O2Micro.Cobra.EM
             return LibErrorCode.IDS_ERR_SUCCESSFUL;
         }
         #endregion
+
+        public String GetExtensionToken()
+        {
+            Dictionary<string, string> TokenContent = new Dictionary<string, string>(); //存放token的数据结构
+
+
+            XmlDocument m_extDescrip_xmlDoc = new XmlDocument();
+            XmlElement root = null;
+            string extxmlfullname = FolderMap.m_extension_monitor_folder + FolderMap.m_ext_descrip_xml_name + FolderMap.m_extension_work_ext;
+            m_extDescrip_xmlDoc.Load(extxmlfullname);
+            root = m_extDescrip_xmlDoc.DocumentElement;
+            string dllfilename = Path.Combine(FolderMap.m_extension_monitor_folder, string.Format("{0}{1}", root.GetAttribute("libname"), ".dll"));
+            FileInfo fi = new FileInfo(dllfilename);
+
+            TokenContent.Add(dllfilename, fi.Length.ToString());
+
+            /*XDocument doc = XDocument.Load(extxmlfullname);
+
+            var SFLLabels = (from button in doc.Descendants("Button")       //获得SFL名称
+                             where (button.Attribute("PanelName") != null && button.Attribute("PanelName").Value.Equals("O2Micro.Cobra.DeviceConfigurationPanel"))
+                             select button.Attribute("Label").Value
+                                 ).ToList();*/
+            string devxmlfullname = FolderMap.m_extension_monitor_folder + FolderMap.m_dev_descrip_xml_name + FolderMap.m_extension_work_ext;
+            XDocument doc = XDocument.Load(devxmlfullname);
+            /*var strpair = (from sflnode in doc.Descendants("SFL")
+                           where sflnode.Attribute("Name").Value == "EFUSE Config"
+                           select new string[] {
+                               sflnode.Element("NickName").Value,
+                               sflnode.Ancestors(""
+                           }).ToList();*/
+
+            var strpair = (from ele in doc.Descendants("Element")
+                           where ele.Element("Private").Element("SFL").Attribute("Name").Value == "EFUSE Config"
+                           select new string[] {
+                               ele.Element("Private").Element("SFL").Element("NickName").Value,
+                               ele.Element("PhyRef").Value + "," + ele.Element("RegRef").Value + "," + ele.Element("Private").Element("SFL").Element("EditType").Value + ","+ ele.Element("Private").Element("SFL").Element("Format").Value
+                           }).ToList();
+
+            foreach (var i in strpair)
+            {
+                TokenContent.Add(i[0], i[1]);
+            }
+
+            TokenContent = TokenContent.OrderBy(o => o.Key).ToDictionary(o => o.Key, o => o.Value); //排除顺序影响
+
+            String str = String.Empty;      //以string形式返回Token
+            foreach (var k in TokenContent.Keys)
+            {
+                str += k + ":" + TokenContent[k] + ";";
+            }
+            return str;
+        }
     }
 }
