@@ -441,7 +441,7 @@ namespace O2Micro.Cobra.ProductionPanel
                 return false;
             }
         }
-        private bool CheckFile(string fullpath, ref string MD5Code)
+        private ErrorCode CheckFile(string fullpath, ref string MD5Code)
         {
             string tmp;
 
@@ -452,13 +452,13 @@ namespace O2Micro.Cobra.ProductionPanel
             }
             catch
             {
-                return false;
+                return ErrorCode.FileFormatError;
             }
             XmlElement root = doc.DocumentElement;
             StringBuilder sb = new StringBuilder();
             string hash = "";
             string SCobraVersion = string.Empty;
-            string SOCEVersion = string.Empty;
+            string SOCETokenMD5 = string.Empty;
             try
             {
                 for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
@@ -479,24 +479,23 @@ namespace O2Micro.Cobra.ProductionPanel
                             string warning = "Cobra Version in file: " + xn.InnerText;
                             warning += "\nCobra you are using: " + SCobraVersion;
                             warning += "\nCobra Version Mismatch! Load failed!";
-                            gm.message = warning;
-                            //CallWarningControl(gm);
-                            return false;
+
+                            parent.ErrorMessage[ErrorCode.TokenMismatch] = warning;
+                            return ErrorCode.TokenMismatch;
                         }
 
                         sb.Append(xn.InnerText);
                     }
-                    else if (name == "OCEVersion")
+                    else if (name == "OCETokenMD5")
                     {
-                        SOCEVersion = CobraGlobal.CurrentOCEName;
-                        if (xn.InnerText != SOCEVersion)
+                        SOCETokenMD5 = CobraGlobal.CurrentOCETokenMD5;
+                        if (xn.InnerText != SOCETokenMD5)
                         {
-                            string warning = "OCE name in file: " + xn.InnerText;
-                            warning += "\nOCE you are using: " + CobraGlobal.CurrentOCEName;
+                            string warning = "OCE Token MD5 in file: " + xn.InnerText;
+                            warning += "\nOCE Token MD5 in OCE: " + SOCETokenMD5;
                             warning += "\nOCE Mismatch!";
-                            gm.message = warning;
-                            //CallWarningControl(gm);
-                            return false;
+                            parent.ErrorMessage[ErrorCode.TokenMismatch] = warning;
+                            return ErrorCode.TokenMismatch;
                         }
                         sb.Append(xn.InnerText);
                     }
@@ -508,27 +507,27 @@ namespace O2Micro.Cobra.ProductionPanel
                     }
 
                 }
-                if (SCobraVersion == string.Empty || SOCEVersion == string.Empty)
+                if (SCobraVersion == string.Empty || SOCETokenMD5 == string.Empty)
                 {
-                    gm.message = "Cannot find Cobra Version and/or OCE version information in this file! Load failed!";
+                    parent.ErrorMessage[ErrorCode.TokenMismatch] = "Cannot find Cobra Version and/or OCE Token MD5 in this file! Load failed!";
                     //CallWarningControl(gm);
-                    return false;
+                    return ErrorCode.TokenMismatch;
                 }
             }
             catch
             {
-                return false;
+                return ErrorCode.FileParsingError;
             }
             using (MD5 md5Hash = MD5.Create())
             {
                 if (VerifyMd5Hash(md5Hash, sb.ToString(), hash))
                 {
                     MD5Code = hash.Substring(hash.Length - 5);
-                    return true;
+                    return ErrorCode.Success;
                 }
                 else
                 {
-                    return false;
+                    return ErrorCode.FileIntegrityError;
                 }
             }
         }
@@ -544,7 +543,7 @@ namespace O2Micro.Cobra.ProductionPanel
             openFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
             if (openFileDialog.ShowDialog() == true)
             {
-                if (CheckFile(openFileDialog.FileName, ref ParameterMD5))
+                /*if (CheckFile(openFileDialog.FileName, ref ParameterMD5))
                 {
                     ParametersFilePath.Text = openFileDialog.FileName;
                     ParametersFilePath.IsEnabled = true;
@@ -553,6 +552,18 @@ namespace O2Micro.Cobra.ProductionPanel
                 else
                 {
                     MessageBox.Show("File illegal.");
+                }*/
+                ErrorCode ret = ErrorCode.Success;
+                ret = CheckFile(openFileDialog.FileName, ref ParameterMD5);
+                if (ret != ErrorCode.Success)
+                {
+                    parent.ShowWarning("Load Failed!", parent.ErrorMessage[ret]);
+                }
+                else
+                {
+                    ParametersFilePath.Text = openFileDialog.FileName;
+                    ParametersFilePath.IsEnabled = true;
+                    ParametersFileName = openFileDialog.SafeFileName;
                 }
             }
         }
@@ -569,7 +580,7 @@ namespace O2Micro.Cobra.ProductionPanel
             openFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
             if (openFileDialog.ShowDialog() == true)
             {
-                if (CheckFile(openFileDialog.FileName, ref BoardMD5))
+                /*if (CheckFile(openFileDialog.FileName, ref BoardMD5))
                 {
                     BoardFilePath.Text = openFileDialog.FileName;
                     BoardFilePath.IsEnabled = true;
@@ -578,6 +589,18 @@ namespace O2Micro.Cobra.ProductionPanel
                 else
                 {
                     MessageBox.Show("File illegal.");
+                }*/
+                ErrorCode ret = ErrorCode.Success;
+                ret = CheckFile(openFileDialog.FileName, ref BoardMD5);
+                if (ret != ErrorCode.Success)
+                {
+                    parent.ShowWarning("Load Failed!", parent.ErrorMessage[ret]);
+                }
+                else
+                {
+                    BoardFilePath.Text = openFileDialog.FileName;
+                    BoardFilePath.IsEnabled = true;
+                    BoardFileName = openFileDialog.SafeFileName;
                 }
             }
         }

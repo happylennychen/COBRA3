@@ -31,6 +31,14 @@ using System.Runtime.InteropServices;
 
 namespace O2Micro.Cobra.ProductionPanel
 {
+    public enum ErrorCode
+    {
+        Success,
+        FileFormatError,
+        FileParsingError,
+        FileIntegrityError,
+        TokenMismatch,
+    }
     /// <summary>
     /// MainControl.xaml 的交互逻辑
     /// </summary>
@@ -117,15 +125,7 @@ namespace O2Micro.Cobra.ProductionPanel
 
         AsyncObservableCollection<Parameter> scanlist = new AsyncObservableCollection<Parameter>();
 
-        public enum ErrorCode
-        {
-            Success,
-            FileFormatError,
-            FileParsingError,
-            FileIntegrityError,
-            TokenMismatch,
-        }
-        private Dictionary<ErrorCode, string> ErrorMessage = new Dictionary<ErrorCode, string>()
+        public Dictionary<ErrorCode, string> ErrorMessage = new Dictionary<ErrorCode, string>()
         {
             {ErrorCode.Success, "Successful"},
             {ErrorCode.FileFormatError, "File format error!"},
@@ -321,7 +321,7 @@ namespace O2Micro.Cobra.ProductionPanel
             SubStatus.Foreground = Brushes.White;
         }
 
-        private void ShowWarning(string main, string sub)
+        public void ShowWarning(string main, string sub)
         {
             Thread t = new Thread(Alarm);
             t.Start();
@@ -564,7 +564,7 @@ namespace O2Micro.Cobra.ProductionPanel
             StringBuilder sb = new StringBuilder();
             string hash = "";
             string SCobraVersion = string.Empty;
-            string SOCEVersion = string.Empty;
+            string SOCETokenMD5 = string.Empty;
             try
             {
                 for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
@@ -585,27 +585,22 @@ namespace O2Micro.Cobra.ProductionPanel
                             string warning = "Cobra Version in file: " + xn.InnerText;
                             warning += "\nCobra you are using: " + SCobraVersion;
                             warning += "\nCobra Version Mismatch! Load failed!";
-                            gm.message = warning;
-                            //CallWarningControl(gm);
+                            ErrorMessage[ErrorCode.TokenMismatch] = warning;
                             return ErrorCode.TokenMismatch;
                         }
 
                         sb.Append(xn.InnerText);
                     }
-                    else if (name == "OCEVersion")
+                    else if (name == "OCETokenMD5")
                     {
-                        SOCEVersion = CobraGlobal.CurrentOCEName;
-                        if (xn.InnerText != SOCEVersion)
+                        SOCETokenMD5 = CobraGlobal.CurrentOCETokenMD5;
+                        if (xn.InnerText != SOCETokenMD5)
                         {
-                            if (CobraGlobal.CurrentOCEName.Replace("_M_", "_X_") != xn.InnerText)   //Exclude M version loading X version *.pack 
-                            {
-                                string warning = "OCE name in file: " + xn.InnerText;
-                                warning += "\nOCE you are using: " + CobraGlobal.CurrentOCEName;
-                                warning += "\nOCE Mismatch!";
-                                gm.message = warning;
-                                //CallWarningControl(gm);
-                                return ErrorCode.TokenMismatch;
-                            }
+                            string warning = "OCE Token MD5 in file: " + xn.InnerText;
+                            warning += "\nOCE Token MD5 in OCE: " + SOCETokenMD5;
+                            warning += "\nOCE Mismatch!";
+                            ErrorMessage[ErrorCode.TokenMismatch] = warning;
+                            return ErrorCode.TokenMismatch;
                         }
                         sb.Append(xn.InnerText);
                     }
@@ -659,9 +654,9 @@ namespace O2Micro.Cobra.ProductionPanel
                             model.sphydata = tmp;
                     }
                 }
-                if (SCobraVersion == string.Empty || SOCEVersion == string.Empty)
+                if (SCobraVersion == string.Empty || SOCETokenMD5 == string.Empty)
                 {
-                    gm.message = "Cannot find Cobra Version and/or OCE version information in this file! Load failed!";
+                    ErrorMessage[ErrorCode.TokenMismatch] = "Cannot find Cobra Version and/or OCE Token MD5 in this file! Load failed!";
                     return ErrorCode.TokenMismatch;
                 }
             }

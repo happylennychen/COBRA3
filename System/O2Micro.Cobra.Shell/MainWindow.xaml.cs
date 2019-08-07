@@ -119,7 +119,7 @@ namespace O2Micro.Cobra.Shell
                 {
                     Title = "O2MICRO COBRA" + " (" + Registry.GetCurExtensionFileName() + ")";
                     CobraGlobal.CurrentOCEName = Registry.GetCurExtensionFileName();   //Issue 1577 Leon
-                    CobraGlobal.CurrentOCEToken = m_EM_Lib.GetExtensionToken();
+                    m_EM_Lib.GetExtensionToken();
                 }
                 m_EM_Lib.Init();
                 m_EM_Lib.gm.PropertyChanged += new PropertyChangedEventHandler(User_DoSomeOperations);
@@ -694,7 +694,7 @@ namespace O2Micro.Cobra.Shell
                     UpdateAMTPanel();
                     Title = "O2MICRO COBRA" + " (" + newprojname + ")";
                     CobraGlobal.CurrentOCEName = newprojname;   //Issue 1577 Leon
-                    CobraGlobal.CurrentOCEToken = m_EM_Lib.GetExtensionToken();
+                    m_EM_Lib.GetExtensionToken();
 
                     cmg.bshow = false;
                     CallWaitControl(cmg);

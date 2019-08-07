@@ -17,5 +17,6 @@ namespace O2Micro.Cobra.Common
 
         public static string CurrentOCEName = String.Empty;	//Issue1606 Leon
         public static string CurrentOCEToken = String.Empty;    //
+        public static string CurrentOCETokenMD5 = String.Empty;    //
     }
 }

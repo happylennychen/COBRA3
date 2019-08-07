@@ -873,7 +873,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             StringBuilder sb = new StringBuilder();
             string hash = "";
             string SCobraVersion = string.Empty;
-            string SOCEToken = string.Empty;
             string SOCETokenMD5 = string.Empty;
             for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
             {
@@ -894,6 +893,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         warning += "\nCobra you are using: " + SCobraVersion;
                         warning += "\nCobra Version Mismatch! Load failed!";
                         gm.message = warning;
+                        gm.level = 2;
                         CallWarningControl(gm);
                         return false;
                     }
@@ -902,20 +902,16 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 }
                 else if (name == "OCETokenMD5")
                 {
-                    SOCEToken = CobraGlobal.CurrentOCEToken;
-                    using (MD5 md5Hash = MD5.Create())
+                    SOCETokenMD5 = CobraGlobal.CurrentOCETokenMD5;
+                    if (xn.InnerText != SOCETokenMD5)
                     {
-                        if (VerifyMd5Hash(md5Hash, SOCEToken, xn.InnerText))
-                        {
-                            SOCETokenMD5 = xn.InnerText;
-                        }
-                        else
-                        {
-                            string warning = "OCE token md5 mismatch!";
-                            gm.message = warning;
-                            CallWarningControl(gm);
-                            return false;
-                        }
+                        string warning = "OCE Token MD5 in file: " + xn.InnerText;
+                        warning += "\nOCE Token MD5 in OCE: " + SOCETokenMD5;
+                        warning += "\nOCE Mismatch!";
+                        gm.message = warning;
+                        gm.level = 2;
+                        CallWarningControl(gm);
+                        return false;
                     }
                     sb.Append(xn.InnerText);
                 }
@@ -927,9 +923,10 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 }
 
             }
-            if (SCobraVersion == string.Empty || SOCEToken == string.Empty)
+            if (SCobraVersion == string.Empty || SOCETokenMD5 == string.Empty)
             {
-                gm.message = "Cannot find Cobra Version and/or OCE version information in this file! Load failed!";
+                gm.message = "Cannot find Cobra Version and/or OCE Token MD5 in this file! Load failed!";
+                gm.level = 2;
                 CallWarningControl(gm);
                 return false;
             }
@@ -1868,13 +1865,9 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             StringBuilder sb = new StringBuilder();
             
-            string SOCEToken = CobraGlobal.CurrentOCEToken;
+            //string SOCEToken = CobraGlobal.CurrentOCEToken;
 
-            string SOCETokenMD5 = "";
-            using (MD5 md5Hash = MD5.Create())
-            {
-                SOCETokenMD5 = GetMd5Hash(md5Hash, SOCEToken);
-            }
+            string SOCETokenMD5 = CobraGlobal.CurrentOCETokenMD5;
             string SCobraVersion = (from asm in LibInfor.m_assembly_list
                                     where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
                                     select asm).ToArray()[0].Assembly_ver.ToString();

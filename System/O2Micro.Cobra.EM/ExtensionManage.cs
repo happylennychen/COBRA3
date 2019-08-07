@@ -13,6 +13,7 @@ using System.Windows;
 using System.Windows.Controls;
 using O2Micro.Cobra.Common;
 using System.Xml.Linq;
+using System.Security.Cryptography;
 
 namespace O2Micro.Cobra.EM
 {
@@ -368,7 +369,7 @@ namespace O2Micro.Cobra.EM
         }
         #endregion
 
-        public String GetExtensionToken()
+        public void GetExtensionToken()
         {
             Dictionary<string, string> TokenContent = new Dictionary<string, string>(); //存放token的数据结构
 
@@ -399,18 +400,29 @@ namespace O2Micro.Cobra.EM
                            }).ToList();*/
 
             var strpair = (from ele in doc.Descendants("Element")
-                           where ele.Element("Private") != null && ele.Element("Private").Element("SFL") != null && ele.Element("Private").Element("SFL").Attribute("Name").Value == "EFUSE Config"
+                           where ele.Element("Private") != null && ele.Element("Private").Element("SFL") != null && ele.Element("Private").Element("SFL").Attribute("Name").Value == CobraGlobal.Constant.NewEFUSEConfigName
                            select new string[] {
                                ele.Element("Private").Element("SFL").Element("NickName").Value,
-                               ele.Element("PhyRef").Value + "," + ele.Element("RegRef").Value + "," + ele.Element("Private").Element("SFL").Element("EditType").Value + ","+ ele.Element("Private").Element("SFL").Element("Format").Value
+                               ele.Element("PhyRef").Value + "," + ele.Element("RegRef").Value + "," + ele.Element("SubType").Value + "," + ele.Element("Private").Element("SFL").Element("EditType").Value + ","+ ele.Element("Private").Element("SFL").Element("Format").Value
                            }).ToList();
-
+            strpair.OrderBy(o => o[0]).ToList();
+            foreach (var i in strpair)
+            {
+                TokenContent.Add(i[0], i[1]);
+            }
+            strpair = (from ele in doc.Descendants("Element")
+                       where ele.Element("Private") != null && ele.Element("Private").Element("SFL") != null && ele.Element("Private").Element("SFL").Attribute("Name").Value == CobraGlobal.Constant.NewBoardConfigName
+                       select new string[] {
+                               ele.Element("Private").Element("SFL").Element("NickName").Value,
+                               ele.Element("PhyRef").Value + "," + ele.Element("RegRef").Value + "," + ele.Element("SubType").Value + "," + ele.Element("Private").Element("SFL").Element("EditType").Value + ","+ ele.Element("Private").Element("SFL").Element("Format").Value
+                           }).ToList();
+            strpair.OrderBy(o => o[0]).ToList();
             foreach (var i in strpair)
             {
                 TokenContent.Add(i[0], i[1]);
             }
 
-            TokenContent = TokenContent.OrderBy(o => o.Key).ToDictionary(o => o.Key, o => o.Value); //排除顺序影响
+            //TokenContent = TokenContent.OrderBy(o => o.Key).ToDictionary(o => o.Key, o => o.Value); //排除顺序影响
             TokenContent.Add(dllfilename, fi.Length.ToString());
 
             String str = String.Empty;      //以string形式返回Token
@@ -418,7 +430,28 @@ namespace O2Micro.Cobra.EM
             {
                 str += k + ":" + TokenContent[k] + ";";
             }
-            return str;
+            //return str;
+            CobraGlobal.CurrentOCEToken = str;
+
+            using (MD5 md5Hash = MD5.Create())
+            {
+                // Convert the input string to a byte array and compute the hash.
+                byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(str));
+
+                // Create a new Stringbuilder to collect the bytes
+                // and create a string.
+                StringBuilder sBuilder = new StringBuilder();
+
+                // Loop through each byte of the hashed data 
+                // and format each one as a hexadecimal string.
+                for (int i = 0; i < data.Length; i++)
+                {
+                    sBuilder.Append(data[i].ToString("x2"));
+                }
+
+                // Return the hexadecimal string.
+                CobraGlobal.CurrentOCETokenMD5 = sBuilder.ToString();
+            }
         }
     }
 }
