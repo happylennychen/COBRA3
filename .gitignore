@@ -8,6 +8,8 @@
 *.lnk
 *.suo
 *.config
+.vs
+!app.config
 
 # ignore files in the System directory
 System/*.suo
