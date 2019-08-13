@@ -255,23 +255,48 @@ namespace O2Micro.Cobra.SCSPanel
         {
             UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
 
-            ret = Read();
-            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                gm.message = LibErrorCode.GetErrorDescription(ret);
-                gm.bupdate = true;
-                CallWarningControl(gm);
-                return ret;
-            }
 
-            ret = ConvertHexToPhysical();
-            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
+            if (bsubTask)
             {
-                gm.message = LibErrorCode.GetErrorDescription(ret);
-                gm.bupdate = true;
-                CallWarningControl(gm);
-                return ret;
+                msg.owner = this;
+                msg.gm.sflname = sflname;
+                msg.task = TM.TM_COMMAND;
+                msg.sub_task = subTask;
+                msg.task_parameterlist = viewmode.scan_parameterlist;
+                parent.AccessDevice(ref m_Msg);
+                while (msg.bgworker.IsBusy)
+                    System.Windows.Forms.Application.DoEvents();
+                if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                {
+                    gm.level = 2;
+                    gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
+                    CallWarningControl(gm);
+                    parent.bBusy = false;
+                    ret = msg.errorcode;
+                    return ret;
+                }
             }
+            else
+            {
+                ret = Read();
+                if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                {
+                    gm.message = LibErrorCode.GetErrorDescription(ret);
+                    gm.bupdate = true;
+                    CallWarningControl(gm);
+                    return ret;
+                }
+
+                ret = ConvertHexToPhysical();
+                if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                {
+                    gm.message = LibErrorCode.GetErrorDescription(ret);
+                    gm.bupdate = true;
+                    CallWarningControl(gm);
+                    return ret;
+                }
+            }
+            
 
             Dictionary<string, string> records = new Dictionary<string, string>();
             foreach (Parameter param in viewmode.scan_parameterlist.parameterlist)
@@ -290,24 +315,6 @@ namespace O2Micro.Cobra.SCSPanel
             msg.gm.sflname = sflname;
             UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
             msg.task_parameterlist = viewmode.scan_parameterlist;
-
-            if (bsubTask)
-            {
-                msg.task = TM.TM_COMMAND;
-                msg.sub_task = subTask;
-                parent.AccessDevice(ref m_Msg);
-                while (msg.bgworker.IsBusy)
-                    System.Windows.Forms.Application.DoEvents();
-                if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
-                {
-                    gm.level = 2;
-                    gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
-                    CallWarningControl(gm);
-                    parent.bBusy = false;
-                    ret = msg.errorcode;
-                    return ret;
-                }
-            }
 
             msg.task = TM.TM_READ;
             ret = parent.AccessDevice(ref m_Msg);
