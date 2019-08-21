@@ -369,7 +369,7 @@ namespace O2Micro.Cobra.EM
         }
         #endregion
 
-        public void GetExtensionToken()
+        public void GetExtensionToken()		//Issue1741 Leon
         {
             Dictionary<string, string> TokenContent = new Dictionary<string, string>(); //存放token的数据结构
 
