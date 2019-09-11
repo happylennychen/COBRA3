@@ -1,7 +1,7 @@
 ﻿<Window x:Class="O2Micro.Cobra.Shell.EULAWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="EULA" Height="480" Width="640" WindowStyle="SingleBorderWindow" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Topmost="True" Icon="/O2Micro.Cobra.Shell;component/Images/Cobra.ico" ShowInTaskbar="False">
+        Title="O2Micro SOFTWARE LICENSE AGREEMENT" Height="480" Width="640" WindowStyle="SingleBorderWindow" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Topmost="True" Icon="/O2Micro.Cobra.Shell;component/Images/Cobra.ico" ShowInTaskbar="False">
     
     <Grid x:Name="LayoutRoot" Loaded="LayoutRoot_Loaded">
         <Grid.RowDefinitions>

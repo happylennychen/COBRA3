@@ -38,7 +38,7 @@ namespace O2Micro.Cobra.Shell
             FileStream fs = File.Open(path, FileMode.Open);
 
             TextRange textRange = new TextRange(EULATextBox.Document.ContentStart, EULATextBox.Document.ContentEnd);
-            textRange.Load(fs, DataFormats.Rtf);
+            textRange.Load(fs, DataFormats.Text);//DataFormats.Rtf);
 
             fs.Close();
         }

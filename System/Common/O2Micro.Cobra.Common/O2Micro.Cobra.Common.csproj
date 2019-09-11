@@ -79,9 +79,7 @@
     <Compile Include="SharedAPI.cs" />
     <Compile Include="SharedDataType.cs" />
     <Compile Include="SharedFormula.cs" />
-    <Compile Include="WebClient.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="WebClient.cs" />
     <Compile Include="SQLiteDriver.cs" />
     <Compile Include="ZipHelper.cs" />
   </ItemGroup>

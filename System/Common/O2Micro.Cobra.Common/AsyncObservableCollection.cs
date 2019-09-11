@@ -6,15 +6,21 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.ComponentModel;
 using System.Collections.Specialized;
+using System.Windows.Threading;
+using System.Windows.Data;
+using System.Collections;
 
 namespace O2Micro.Cobra.Common
 {
     public class AsyncObservableCollection<T> : ObservableCollection<T>
     {
-        //获取当前线程的SynchronizationContext对象
-        private SynchronizationContext _synchronizationContext = SynchronizationContext.Current;
-        public AsyncObservableCollection() { }
-        public AsyncObservableCollection(IEnumerable<T> list) : base(list) { }
+        public override event NotifyCollectionChangedEventHandler CollectionChanged;
+        private static object _syncLock = new object();
+
+        public AsyncObservableCollection()
+        {
+            enableCollectionSynchronization(this, _syncLock);
+        }
 
         public void Sort<TKey>(Func<T, TKey> keySelector, ListSortDirection direction = ListSortDirection.Ascending)
         {
@@ -46,55 +52,42 @@ namespace O2Micro.Cobra.Common
             {
                 Move(IndexOf(item), sortedItemsList.IndexOf(item));
             }
-        }  
+        }
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
+            using (BlockReentrancy())
+            {
+                var eh = CollectionChanged;
+                if (eh == null) return;
 
-            if (SynchronizationContext.Current == _synchronizationContext)
-            {
-                //如果操作发生在同一个线程中，不需要进行跨线程执行         
-                RaiseCollectionChanged(e);
-            }
-            else
-            {
-                //如果不是发生在同一个线程中
-                //准确说来，这里是在一个非UI线程中，需要进行UI的更新所进行的操作         
-                _synchronizationContext.Post(RaiseCollectionChanged, e);
+                var dispatcher = (from NotifyCollectionChangedEventHandler nh in eh.GetInvocationList()
+                                  let dpo = nh.Target as DispatcherObject
+                                  where dpo != null
+                                  select dpo.Dispatcher).FirstOrDefault();
+
+                if (dispatcher != null && dispatcher.CheckAccess() == false)
+                {
+                    dispatcher.Invoke(DispatcherPriority.DataBind, (Action)(() => OnCollectionChanged(e)));
+                }
+                else
+                {
+                    foreach (NotifyCollectionChangedEventHandler nh in eh.GetInvocationList())
+                        nh.Invoke(this, e);
+                }
             }
         }
 
-        private void RaiseCollectionChanged(object param)
+        private static void enableCollectionSynchronization(IEnumerable collection, object lockObject)
         {
-            try
+            var method = typeof(BindingOperations).GetMethod("EnableCollectionSynchronization",
+                                    new Type[] { typeof(IEnumerable), typeof(object) });
+            if (method != null)
             {
-                // 执行         
-                base.OnCollectionChanged((NotifyCollectionChangedEventArgs)param);
+                // It's .NET 4.5
+                method.Invoke(null, new object[] { collection, lockObject });
             }
-            catch (System.Exception ex)
-            {
-            	
-            }
-        }
-
-        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            if (SynchronizationContext.Current == _synchronizationContext)
-            {
-                // Execute the PropertyChanged event on the current thread             
-                RaisePropertyChanged(e);
-            }
-            else
-            {
-                // Post the PropertyChanged event on the creator thread             
-                _synchronizationContext.Post(RaisePropertyChanged, e);
-            }
-        }
-
-        private void RaisePropertyChanged(object param)
-        {
-            // We are in the creator thread, call the base implementation directly         
-            base.OnPropertyChanged((PropertyChangedEventArgs)param);
         }
     }
+
 }

@@ -101,7 +101,7 @@ namespace O2Micro.Cobra.Common
                 m_register_file = Path.Combine(m_root_folder, "Settings\\setting.xml");
                 if (!File.Exists(m_register_file)) return false;
 
-                m_EULA_file = Path.Combine(m_root_folder, "O2Micro EULA.rtf");
+                m_EULA_file = Path.Combine(m_root_folder, "O2Micro SOFTWARE LICENSE AGREEMENT.txt");//Path.Combine(m_root_folder, "O2Micro EULA.rtf");
                 if (!File.Exists(m_EULA_file)) return false;
 
                 //m_ReadMe_file = Path.Combine(m_root_folder, "Readme.rtf");

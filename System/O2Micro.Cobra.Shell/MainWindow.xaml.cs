@@ -13,13 +13,13 @@ using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Threading;
-using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Xml;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Ipc;
-using Microsoft.Windows.Controls.Ribbon;
+using System.Windows.Controls.Ribbon;
 using O2Micro.Cobra.EM;
 using O2Micro.Cobra.Common;
 using O2Micro.Cobra.AutoMationTest;
@@ -62,6 +62,9 @@ namespace O2Micro.Cobra.Shell
             try
             {
                 InitializeComponent();
+
+                //O2Micro_Cobra_Shell_Window.MaxWidth = SystemParameters.WorkArea.Width;
+                //O2Micro_Cobra_Shell_Window.MaxHeight = SystemParameters.WorkArea.Height;
 
                 #region startup Dialog
                 System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
@@ -297,7 +300,6 @@ namespace O2Micro.Cobra.Shell
             devicebtn.Label = "Bus Setting";
             /*devicebtn.Width = 100;
             devicebtn.Height = 25;*/
-            devicebtn.Template = (ControlTemplate)FindResource("RibbonButtonControlTemplate");
             devicebtn.Click += DeviceOptionsBtn_Click;
             DeviceRibbonControlGroup.Children.Add(devicebtn);
         }
