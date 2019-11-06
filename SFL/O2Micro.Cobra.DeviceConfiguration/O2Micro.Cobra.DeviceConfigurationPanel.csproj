@@ -93,7 +93,7 @@
       <VersionMajor>2</VersionMajor>
       <VersionMinor>4</VersionMinor>
       <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
+      <WrapperTool>tlbimp</WrapperTool>
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
@@ -102,7 +102,7 @@
       <VersionMajor>1</VersionMajor>
       <VersionMinor>6</VersionMinor>
       <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
+      <WrapperTool>tlbimp</WrapperTool>
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
