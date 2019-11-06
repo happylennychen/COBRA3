@@ -1387,7 +1387,7 @@ namespace O2Micro.Cobra.ProductionPanel
                 PromptWarning(LibErrorCode.GetErrorDescription(ret));
             }
             else
-                PromptWarning("Verification Passed!");
+                PromptMessage("Verification Passed!");  //Issue 1825
         }
         #region 通用控件消息响应
         private void msg_PropertyChanged(object sender, PropertyChangedEventArgs e)

@@ -1421,6 +1421,16 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
 
             parent.bBusy = false;
+
+            if (msg.errorcode == LibErrorCode.IDS_ERR_SUCCESSFUL)   //Issue1826 Leon
+            {
+                gm.level = 0;
+                gm.message = "Board Parameters Saved!";
+                CallWarningControl(gm);
+                parent.bBusy = false;
+                return;
+            }
+
             OnRasieBoardConfigChangedEvent();//Issue1593 Leon
         }
         private void WriteCommand(ushort subtask)	//Issue1363 Leon
