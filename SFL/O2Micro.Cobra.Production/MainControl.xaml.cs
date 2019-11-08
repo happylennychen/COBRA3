@@ -9,7 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
+//using System.Windows.Shapes;
 using System.Linq;
 using System.Xml.Linq;
 using System.Xml;
@@ -28,6 +28,7 @@ using System.Security.Cryptography;
 using System.Windows.Forms;
 using System.Threading;
 using System.Runtime.InteropServices;
+using System.Windows.Threading;
 
 namespace O2Micro.Cobra.ProductionPanel
 {
@@ -252,8 +253,39 @@ namespace O2Micro.Cobra.ProductionPanel
             InitialUI();
 
             UpdateUIWithXML();
+
+            PreloadPackFile();      //Issue1828
         }
 
+        private void PreloadPackFile()
+        {
+            DispatcherTimer t = new DispatcherTimer();  //初始化的时候，LibInfor.m_assembly_list里面的值还没准备好，所以得等几秒钟再来加载
+            t.Interval = TimeSpan.FromSeconds(3);
+            t.Tick += (sender, e)=>
+            {
+                t.Stop();
+                string packfilepath = "";
+                if (GetPackFilePath(ref packfilepath))
+                {
+                    string filename = Path.GetFileName(packfilepath);
+                    LoadPackFile(filename, packfilepath);
+                }
+            };
+            t.Start();
+        }
+        private bool GetPackFilePath(ref string path)
+        {
+            string directory = Path.Combine(FolderMap.m_root_folder, "Settings");
+            foreach (string p in Directory.GetFiles(directory))
+            {
+                if (Path.GetExtension(p) == ".pack")
+                {
+                    path = p;
+                    return true;    //若有多个*.pack，实际上只加载第一个找到的
+                }
+            }
+            return false;
+        }
         private void UpdateUIWithXML()
         { 
             #region Hide or Show Configuration Tab//Issue1272 Leon
@@ -384,161 +416,168 @@ namespace O2Micro.Cobra.ProductionPanel
                 }
                 else if (fi.Extension == ".pack")
                 {
-                    bool hasBOARD = false;
-                    bool hasMPT = false;
-
-                    bool needDownload = false;
-                    bool needTest = false;
-
-                    #region Unzip
-                    string tempfolder = System.IO.Path.Combine(FolderMap.m_currentproj_folder, "TempFolder\\");
-
-                    if (Directory.Exists(tempfolder))
-                        Directory.Delete(tempfolder, true);
-
-                    string folderpath = System.IO.Path.GetDirectoryName(openFileDialog.FileName);
-                    GZipResult gret = GZip.Decompress(folderpath, tempfolder, filename);
-                    if (gret.Errors)
-                    {
-                        ShowWarning("Load Failed!", "Unzip package failed.");
-                        return;
-                    }
-                    #endregion
-
-                    #region check package
-                    string[] filenames = Directory.GetFiles(tempfolder);
-                    foreach (string fn in filenames)
-                    {
-                        FileInfo x = new FileInfo(fn);
-                        if (x.Extension == ".cfg")
-                        {
-                            needDownload = true;
-                            CFGFileName = fn;
-                        }
-                        else if (x.Extension == ".board")
-                        {
-                            hasBOARD = true;
-                            BOARDFileName = fn;
-                        }
-                        else if (x.Extension == ".mpt")
-                        {
-                            hasMPT = true;
-                            MPTFileName = fn;
-                        }
-                    }
-
-                    if (
-                            (boardviewmodel.dm_parameterlist!=null && 
-                            boardviewmodel.dm_parameterlist.parameterlist!= null && 
-                            boardviewmodel.dm_parameterlist.parameterlist.Count!=0 && 
-                            !hasBOARD) 
-                            || 
-                            !hasMPT
-                        )
-                    {
-                        ShowWarning("Load Failed!", "Pack file is illegal.");
-                        return;
-                    }
-
-                    FilePath.Content = openFileDialog.FileName; //Issue 950
-                    #endregion
-
-
-                    #region load files
-                    if (hasBOARD)
-                    {
-                        ret = LoadFile(BOARDFileName, ViewModelTypy.BOARD);
-                        if (ret != ErrorCode.Success)
-                        {
-                            ShowWarning("Load Failed!", ErrorMessage[ret]);
-                            return;
-                        }
-                    }
-
-                    ret = LoadMPTFile(MPTFileName, ref needTest);
-                    if (ret != ErrorCode.Success)
-                    {
-                        ShowWarning("Load Failed!", ErrorMessage[ret]);
-                        return;
-                    }
-                    if (needDownload)
-                    {
-                        ret = LoadFile(CFGFileName, ViewModelTypy.CFG);
-                        if (ret != ErrorCode.Success)
-                        {
-                            ShowWarning("Load Failed!", ErrorMessage[ret]);
-                            return;
-                        }
-                    }
-                    #endregion
-
-                    #region UpdateUI
-
-                    InitOperationUI("", false);
-                    InitTestUI(false);
-
-                    if (needDownload & needTest)
-                    {
-                        InitOperationUI("Download and Test", true);
-                        InitTestUI(true);
-                    }
-                    else if (!needDownload & needTest)
-                    {
-                        InitOperationUI("Test", true);
-                        InitTestUI(true);
-                    }
-                    else if (needDownload & !needTest)
-                    {
-                        InitOperationUI("Download", true);
-                        TestInitText.Visibility = System.Windows.Visibility.Visible;
-                    }
-
-                    StatusInitText.Visibility = System.Windows.Visibility.Hidden;
-                    #endregion
-
-                    #region remove temp folder
-                    try
-                    {
-                        Directory.Delete(tempfolder, true);
-                    }
-                    catch
-                    {
-                        ShowWarning("Load Failed!", "Remove temp folder failed.");
-                        return;
-                    }
-                    #endregion
-
-                    #region build Records column
-                    RecordsDataGrid.DataContext = null;
-                    Records.Clear(); 
-                    Records.Columns.Clear();
-                    DataColumn col;
-                    foreach (var pi in ProcessItems)
-                    {
-                        col = new DataColumn();
-                        col.DataType = System.Type.GetType("System.String");
-                        col.ColumnName = pi.Name;
-                        col.AutoIncrement = false;
-                        col.ReadOnly = true;
-                        col.Unique = false;
-                        Records.Columns.Add(col);
-                    }
-                    foreach (var ti in TestItems)
-                    {
-                        col = new DataColumn();
-                        col.DataType = System.Type.GetType("System.String");
-                        col.ColumnName = ti.Name;
-                        col.AutoIncrement = false;
-                        col.ReadOnly = true;
-                        col.Unique = false;
-                        Records.Columns.Add(col);
-                    }
-                    RecordsDataGrid.DataContext = Records;
-                    #endregion
-
-                    ShowMessage("Package file loaded.", "Please click " + OperationButtonName.Text + " button to proceed.");
+                    string fullname = openFileDialog.FileName;
+                    LoadPackFile(filename, fullname);
                 }
             }
+        }
+
+        private void LoadPackFile(string filename, string fullname)
+        {
+            ErrorCode ret = ErrorCode.Success;
+            bool hasBOARD = false;
+            bool hasMPT = false;
+
+            bool needDownload = false;
+            bool needTest = false;
+
+            #region Unzip
+            string tempfolder = System.IO.Path.Combine(FolderMap.m_currentproj_folder, "TempFolder\\");
+
+            if (Directory.Exists(tempfolder))
+                Directory.Delete(tempfolder, true);
+
+            string folderpath = System.IO.Path.GetDirectoryName(fullname);
+            GZipResult gret = GZip.Decompress(folderpath, tempfolder, filename);
+            if (gret.Errors)
+            {
+                ShowWarning("Load Failed!", "Unzip package failed.");
+                return;
+            }
+            #endregion
+
+            #region check package
+            string[] filenames = Directory.GetFiles(tempfolder);
+            foreach (string fn in filenames)
+            {
+                FileInfo x = new FileInfo(fn);
+                if (x.Extension == ".cfg")
+                {
+                    needDownload = true;
+                    CFGFileName = fn;
+                }
+                else if (x.Extension == ".board")
+                {
+                    hasBOARD = true;
+                    BOARDFileName = fn;
+                }
+                else if (x.Extension == ".mpt")
+                {
+                    hasMPT = true;
+                    MPTFileName = fn;
+                }
+            }
+
+            if (
+                    (boardviewmodel.dm_parameterlist != null &&
+                    boardviewmodel.dm_parameterlist.parameterlist != null &&
+                    boardviewmodel.dm_parameterlist.parameterlist.Count != 0 &&
+                    !hasBOARD)
+                    ||
+                    !hasMPT
+                )
+            {
+                ShowWarning("Load Failed!", "Pack file is illegal.");
+                return;
+            }
+
+            FilePath.Content = fullname; //Issue 950
+            #endregion
+
+
+            #region load files
+            if (hasBOARD)
+            {
+                ret = LoadFile(BOARDFileName, ViewModelTypy.BOARD);
+                if (ret != ErrorCode.Success)
+                {
+                    ShowWarning("Load Failed!", ErrorMessage[ret]);
+                    return;
+                }
+            }
+
+            ret = LoadMPTFile(MPTFileName, ref needTest);
+            if (ret != ErrorCode.Success)
+            {
+                ShowWarning("Load Failed!", ErrorMessage[ret]);
+                return;
+            }
+            if (needDownload)
+            {
+                ret = LoadFile(CFGFileName, ViewModelTypy.CFG);
+                if (ret != ErrorCode.Success)
+                {
+                    ShowWarning("Load Failed!", ErrorMessage[ret]);
+                    return;
+                }
+            }
+            #endregion
+
+            #region UpdateUI
+
+            InitOperationUI("", false);
+            InitTestUI(false);
+
+            if (needDownload & needTest)
+            {
+                InitOperationUI("Download and Test", true);
+                InitTestUI(true);
+            }
+            else if (!needDownload & needTest)
+            {
+                InitOperationUI("Test", true);
+                InitTestUI(true);
+            }
+            else if (needDownload & !needTest)
+            {
+                InitOperationUI("Download", true);
+                TestInitText.Visibility = System.Windows.Visibility.Visible;
+            }
+
+            StatusInitText.Visibility = System.Windows.Visibility.Hidden;
+            #endregion
+
+            #region remove temp folder
+            try
+            {
+                Directory.Delete(tempfolder, true);
+            }
+            catch
+            {
+                ShowWarning("Load Failed!", "Remove temp folder failed.");
+                return;
+            }
+            #endregion
+
+            #region build Records column
+            RecordsDataGrid.DataContext = null;
+            Records.Clear();
+            Records.Columns.Clear();
+            DataColumn col;
+            foreach (var pi in ProcessItems)
+            {
+                col = new DataColumn();
+                col.DataType = System.Type.GetType("System.String");
+                col.ColumnName = pi.Name;
+                col.AutoIncrement = false;
+                col.ReadOnly = true;
+                col.Unique = false;
+                Records.Columns.Add(col);
+            }
+            foreach (var ti in TestItems)
+            {
+                col = new DataColumn();
+                col.DataType = System.Type.GetType("System.String");
+                col.ColumnName = ti.Name;
+                col.AutoIncrement = false;
+                col.ReadOnly = true;
+                col.Unique = false;
+                Records.Columns.Add(col);
+            }
+            RecordsDataGrid.DataContext = Records;
+            #endregion
+
+            ShowMessage("Package file loaded.", "Please click " + OperationButtonName.Text + " button to proceed.");
         }
         public enum ViewModelTypy
         {

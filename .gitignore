@@ -8,6 +8,7 @@
 *.lnk
 *.suo
 *.config
+*.pack
 .vs
 !app.config
 
@@ -44,6 +45,7 @@ output/COBRA/*.pdb
 !Microsoft.Windows.Shell.pdb
 !RibbonControlsLibrary.pdb
 output/COBRA/*.exe
+!output/COBRA/Settings/Setting.xml
 
 
 # ignore files in the output/Upgrade directory
