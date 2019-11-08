@@ -139,6 +139,10 @@ namespace O2Micro.Cobra.ProductionPanel
         bool isReentrant = false;   //控制Operation button的重入问题
 
         private UInt16 VerificationTaskID = 0;
+
+        public int TotalCount { get; set; } = 0;
+        public int PassedCount { get; set; } = 0;
+        public int FailedCount { get; set; } = 0;
         #endregion
 
         #region 函数定义
@@ -1380,7 +1384,7 @@ namespace O2Micro.Cobra.ProductionPanel
                 ProductionRecord.Save(ProductionSFLDBName);//Issue1426 Leon
                 #endregion
                 #endregion
-                #region Show Success Message
+                #region Show Success Message and update count
                 bool ProcessResult = true;
                 foreach (var pi in ProcessItems)
                 {
@@ -1394,6 +1398,19 @@ namespace O2Micro.Cobra.ProductionPanel
                 {
                     ShowMessage(OperationButtonName.Text + " Complete!", "All " + ProcessItems.Count.ToString() + " processes complete!");
                 }
+
+                if (ProcessResult == true)
+                {
+                    PassedCount += 1;
+                    PassedCountLabel.Content = PassedCount;
+                }
+                else
+                {
+                    FailedCount += 1;
+                    FailedCountLabel.Content = FailedCount;
+                }
+                TotalCount += 1;
+                TotalCountLabel.Content = TotalCount;
                 #endregion
                 parent.bBusy = false;
 
