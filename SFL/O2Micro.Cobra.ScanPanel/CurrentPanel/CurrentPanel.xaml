@@ -19,6 +19,7 @@
         <src:HeightConverter x:Key="hc"></src:HeightConverter>
         <src:IndexConverter x:Key="ic"></src:IndexConverter>
         <src:FDColorConverter x:Key="FDcc"></src:FDColorConverter>
+        <src:DataColorConverter x:Key="datacolor"></src:DataColorConverter>
         <s:Double x:Key="BarHeight">
             14
         </s:Double>
@@ -39,7 +40,9 @@
                                 <TextBlock Text="0" Canvas.Left="{Binding ElementName=L3a, Path=X1, Converter={StaticResource wc2}, ConverterParameter=2}" ToolTip="Current Zero Point" Height="14">
                                 </TextBlock>
                                 <Canvas Name="listCanvas1" Height="{StaticResource BarHeight}" Width="{Binding ElementName=cvs1, Path=Width, Mode=OneWay}" Margin="0,2" ToolTip="Current" Canvas.Top="14">
-                                    <TextBlock Canvas.Left="{Binding ElementName=L3a, Path=X1, Converter={StaticResource wc2}, ConverterParameter=-4}" Panel.ZIndex="1" Text="{Binding Path=pValue, Mode=OneWay, Converter={StaticResource wc}}"></TextBlock>
+                                <TextBlock Canvas.Left="{Binding ElementName=L3a, Path=X1, Converter={StaticResource wc2}, ConverterParameter=-4}" Panel.ZIndex="1" Text="{Binding Path=pValue, Mode=OneWay, Converter={StaticResource wc}}"
+                                           Foreground="{Binding Path=IsRunning,Converter={StaticResource datacolor}}">
+                                </TextBlock>
                                     <Rectangle Height="{StaticResource BarHeight}">
                                         <Rectangle.Width>
                                             <MultiBinding Converter="{StaticResource cbwc}">
@@ -76,9 +79,9 @@
                                             </MultiBinding>
                                         </Rectangle.Stroke>
                                     </Rectangle>
-                                    <Rectangle Height="{StaticResource BarHeight}" Width="{Binding ElementName=listCanvas1, Path=Width}" Fill="DarkGray" Opacity="{Binding Path=pUsability}" Panel.ZIndex="3"></Rectangle>
+                                    <Rectangle Height="{StaticResource BarHeight}" Width="{Binding ElementName=listCanvas1, Path=Width}" Fill="LightGray" Opacity="{Binding Path=pUsability}" Panel.ZIndex="3"></Rectangle>
                                 </Canvas>
-                                <Line  Name="L1a" Y1="14" Y2="{Binding ElementName=cvs1, Path=Height}" Stroke="Gray" X2="{Binding ElementName=L1a, Path=X1}">
+                                <Line  Name="L1a" Y1="14" Y2="{Binding ElementName=cvs1, Path=Height}" Stroke="LightGray" X2="{Binding ElementName=L1a, Path=X1}">
                                     <Line.X1>
                                         <MultiBinding Converter="{StaticResource bc}">
                                             <Binding Path="pMaxValue" Mode="OneWay"></Binding>
@@ -88,7 +91,7 @@
                                         </MultiBinding>
                                     </Line.X1>
                                 </Line>
-                                <Line  Name="L2a" Y1="14" Y2="{Binding Path=Y2, ElementName=L1a}" Stroke="Gray" X2="{Binding ElementName=L2a, Path=X1}">
+                                <Line  Name="L2a" Y1="14" Y2="{Binding Path=Y2, ElementName=L1a}" Stroke="LightGray" X2="{Binding ElementName=L2a, Path=X1}">
                                     <Line.X1>
                                         <MultiBinding Converter="{StaticResource bc}">
                                             <Binding Path="pMaxValue" Mode="OneWay"></Binding>
@@ -98,7 +101,7 @@
                                         </MultiBinding>
                                     </Line.X1>
                                 </Line>
-                                <Line  Name="L3a" Y1="14" Y2="{Binding Path=Y2, ElementName=L1a}" Stroke="Gray" X2="{Binding ElementName=L3a, Path=X1}">
+                                <Line  Name="L3a" Y1="14" Y2="{Binding Path=Y2, ElementName=L1a}" Stroke="LightGray" X2="{Binding ElementName=L3a, Path=X1}">
                                     <Line.X1>
                                         <MultiBinding Converter="{StaticResource bc}">
                                             <Binding Path="pMaxValue" Mode="OneWay"></Binding>

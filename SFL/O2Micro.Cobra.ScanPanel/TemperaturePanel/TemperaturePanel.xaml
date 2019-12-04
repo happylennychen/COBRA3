@@ -28,6 +28,7 @@
         <s:Double x:Key="IndexHeight">
             14
         </s:Double>
+        <src:DataColorConverter x:Key="datacolor"></src:DataColorConverter>
     </GroupBox.Resources>
     <Grid Name="mainborder" Margin="0">
 
@@ -103,6 +104,7 @@
                                         <TextBlock Name="iTemp"
                                         Canvas.Bottom="{Binding ElementName=itL1, Path=Y2, Converter={StaticResource wc2}, ConverterParameter=-10}" 
                                         Panel.ZIndex="1" 
+                                           Foreground="{Binding Path=IsRunning,Converter={StaticResource datacolor}}"
                                         Text="{Binding Path=pValue, Mode=TwoWay}">
                                         <Canvas.Left>
                                         <MultiBinding Converter="{StaticResource sc}">
@@ -111,7 +113,7 @@
                                         </MultiBinding>
                                     </Canvas.Left>
                                         </TextBlock>
-                                        <Rectangle Canvas.Bottom="0" Width="{Binding ElementName=wbase, Path=Width, Mode=TwoWay}" Fill="Gray">
+                                        <Rectangle Canvas.Bottom="0" Width="{Binding ElementName=wbase, Path=Width, Mode=TwoWay}" Fill="LightGray">
                                             <Rectangle.Height>
                                                 <MultiBinding Converter="{StaticResource bc}">
                                                     <Binding Path="pMaxValue" Mode="OneWay"></Binding>
@@ -131,13 +133,13 @@
                                                 </MultiBinding>
                                             </Rectangle.Stroke>
                                         </Rectangle>
-                                        <Rectangle Width="{Binding ElementName=wbase, Path=Width, Mode=TwoWay}" Height="{Binding ElementName=itlistCanvas, Path=Height}" Fill="DarkGray" Opacity="{Binding Path=pUsability}" Panel.ZIndex="3"></Rectangle>
+                                        <Rectangle Width="{Binding ElementName=wbase, Path=Width, Mode=TwoWay}" Height="{Binding ElementName=itlistCanvas, Path=Height}" Fill="LightGray" Opacity="{Binding Path=pUsability}" Panel.ZIndex="3"></Rectangle>
                                     </Canvas>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <Line  Name="itL1" X1="{StaticResource THWidth}" X2="{Binding ElementName=itcvs, Path=Width}" Stroke="Gray" Y2="{Binding ElementName=itL1, Path=Y1}">
+                    <Line  Name="itL1" X1="{StaticResource THWidth}" X2="{Binding ElementName=itcvs, Path=Width}" Stroke="LightGray" Y2="{Binding ElementName=itL1, Path=Y1}">
                         <Line.Y1>
                             <MultiBinding Converter="{StaticResource bc}">
                                 <Binding Path="pMaxValue" Mode="OneWay"></Binding>
@@ -147,7 +149,7 @@
                             </MultiBinding>
                         </Line.Y1>
                     </Line>
-                    <Line  Name="itL2" X1="{StaticResource THWidth}" X2="{Binding Path=X2, ElementName=itL1}" Stroke="Gray" Y2="{Binding ElementName=itL2, Path=Y1}">
+                    <Line  Name="itL2" X1="{StaticResource THWidth}" X2="{Binding Path=X2, ElementName=itL1}" Stroke="LightGray" Y2="{Binding ElementName=itL2, Path=Y1}">
                         <Line.Y1>
                             <MultiBinding Converter="{StaticResource bc}">
                                 <Binding Path="pMaxValue" Mode="OneWay"></Binding>
@@ -218,6 +220,7 @@
                                         <TextBlock Name="eTemp"
                                         Canvas.Bottom="{Binding ElementName=etL1, Path=Y2, Converter={StaticResource wc2}, ConverterParameter=-10}" 
                                         Panel.ZIndex="1" 
+                                           Foreground="{Binding Path=IsRunning,Converter={StaticResource datacolor}}"
                                         Text="{Binding Path=pValue, Mode=TwoWay}">
                                         <Canvas.Left>
                                         <MultiBinding Converter="{StaticResource sc}">
@@ -226,7 +229,7 @@
                                         </MultiBinding>
                                     </Canvas.Left>
                                         </TextBlock>
-                                        <Rectangle Canvas.Bottom="0" Width="{Binding ElementName=wbase, Path=Width, Mode=TwoWay}" Fill="Gray">
+                                        <Rectangle Canvas.Bottom="0" Width="{Binding ElementName=wbase, Path=Width, Mode=TwoWay}" Fill="LightGray">
                                             <Rectangle.Height>
                                                 <MultiBinding Converter="{StaticResource bc}">
                                                     <Binding Path="pMaxValue" Mode="OneWay"></Binding>
@@ -246,13 +249,13 @@
                                                 </MultiBinding>
                                             </Rectangle.Stroke>
                                         </Rectangle>
-                                        <Rectangle Width="{Binding ElementName=wbase, Path=Width, Mode=TwoWay}" Height="{Binding ElementName=etlistCanvas, Path=Height}" Fill="DarkGray" Opacity="{Binding Path=pUsability}" Panel.ZIndex="3"></Rectangle>
+                                        <Rectangle Width="{Binding ElementName=wbase, Path=Width, Mode=TwoWay}" Height="{Binding ElementName=etlistCanvas, Path=Height}" Fill="LightGray" Opacity="{Binding Path=pUsability}" Panel.ZIndex="3"></Rectangle>
                                     </Canvas>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <Line  Name="etL1" X1="{StaticResource THWidth}" X2="{Binding ElementName=etcvs, Path=Width}" Stroke="Gray" Y2="{Binding ElementName=etL1, Path=Y1}">
+                    <Line  Name="etL1" X1="{StaticResource THWidth}" X2="{Binding ElementName=etcvs, Path=Width}" Stroke="LightGray" Y2="{Binding ElementName=etL1, Path=Y1}">
                         <Line.Y1>
                             <MultiBinding Converter="{StaticResource bc}">
                                 <Binding Path="pMaxValue" Mode="OneWay"></Binding>
@@ -262,7 +265,7 @@
                             </MultiBinding>
                         </Line.Y1>
                     </Line>
-                    <Line  Name="etL2" X1="{StaticResource THWidth}" X2="{Binding Path=X2, ElementName=etL1}" Stroke="Gray" Y2="{Binding ElementName=etL2, Path=Y1}">
+                    <Line  Name="etL2" X1="{StaticResource THWidth}" X2="{Binding Path=X2, ElementName=etL1}" Stroke="LightGray" Y2="{Binding ElementName=etL2, Path=Y1}">
                         <Line.Y1>
                             <MultiBinding Converter="{StaticResource bc}">
                                 <Binding Path="pMaxValue" Mode="OneWay"></Binding>

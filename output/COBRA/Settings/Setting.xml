@@ -2,7 +2,7 @@
 <Root>
   <Part Name="PreProject">
     <PreExtensionBusType BusType="I2C" />
-    <PreExtension Name="OZ8978_A0_X_03_20190906" />
+    <PreExtension Name="OZ7710_C0_C1_X_03_20190523" />
   </Part>
   <Part Name="Device Connection Settings">
     <DeviceList>

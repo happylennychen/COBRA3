@@ -176,6 +176,16 @@ namespace O2Micro.Cobra.ScanPanel
                 OnPropertyChanged("pLabel");
             }
         }
+        private bool _isRunning;
+        public bool IsRunning
+        {
+            get { return _isRunning; }
+            set
+            {
+                _isRunning = value;
+                OnPropertyChanged("IsRunning");
+            }
+        }
         private object m_Parent;
         public object pParent
         {

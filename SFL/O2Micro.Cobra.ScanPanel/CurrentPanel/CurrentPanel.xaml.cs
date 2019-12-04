@@ -158,6 +158,16 @@ namespace O2Micro.Cobra.ScanPanel
                 OnPropertyChanged("pIndexGPIO");
             }
         }
+        private bool _isRunning;
+        public bool IsRunning
+        {
+            get { return _isRunning; }
+            set
+            {
+                _isRunning = value;
+                OnPropertyChanged("IsRunning");
+            }
+        }
         public CellCurrent()
         { 
             pCOCTH = null;
