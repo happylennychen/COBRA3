@@ -120,6 +120,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         }
         public ushort GetMaxValueSubTask { get; set; }	//Issue1593 Leon
         public ushort GetMinValueSubTask { get; set; }	//Issue1593 Leon
+        public string ProductFamily { get; set; }
 
         public event EventHandler BoardConfigChanged;//Issue1593 Leon
 
@@ -168,6 +169,9 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                             }
                             break;
                         }
+                    case "ProductFamily":
+                        ProductFamily = node.InnerText;
+                        break;
                 }
             }
             #endregion
@@ -458,12 +462,13 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             StringBuilder sb = new StringBuilder();
 
-            string SOCEVersion = CobraGlobal.CurrentOCEName;
+
+            string SOCETokenMD5 = CobraGlobal.CurrentOCETokenMD5;
             string SCobraVersion = (from asm in LibInfor.m_assembly_list
                                     where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
                                     select asm).ToArray()[0].Assembly_ver.ToString();
             sb.Append(SCobraVersion);
-            sb.Append(SOCEVersion);
+            sb.Append(SOCETokenMD5);
 
             foreach (SFLModel model in viewmode.sfl_parameterlist)
             {
@@ -561,7 +566,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 //saveFileDialog.Title = "Save Configuration File";
                 //saveFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg|c file (*.c)|*.c|h file (*.h)|*.h||";
                 saveFileDialog.Title = "Save File";       //Issue1513 Leon
-                saveFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg|c file (*.c)|*.c|h file (*.h)|*.h|hex file (*.hex)|*.hex||";
+                saveFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg|c file (*.c)|*.c|h file (*.h)|*.h|hex file (*.hex)|*.hex|ui file (*.ui)|*.ui||";
                 saveFileDialog.DefaultExt = "cfg";
             }
             saveFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
@@ -1045,10 +1050,134 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     if(msg.controlmsg.bcancel == true)
                         SaveHexFile(fullpath);
                     break;
+                case "ui":
+                    SaveUIFile(fullpath);
+                    break;
                 default:
                     SaveCfgFile(fullpath);
                     break;
             }
+        }
+
+        private void SaveUIFile(string fullpath)
+        {
+            FileStream file = new FileStream(fullpath, FileMode.Create);
+            StreamWriter sw = new StreamWriter(file);
+            sw.WriteLine("<?xml version=\"1.0\"?>");
+            sw.WriteLine("<root>");
+            sw.WriteLine("</root>");
+            sw.Close();
+            file.Close();
+            XmlDocument doc = new XmlDocument();
+            doc.Load(fullpath);
+            XmlElement root = doc.DocumentElement;
+
+            StringBuilder sb = new StringBuilder();
+
+            //string SOCEToken = CobraGlobal.CurrentOCEToken;
+
+            string SOCETokenMD5 = CobraGlobal.CurrentOCETokenMD5;
+            string SCobraVersion = (from asm in LibInfor.m_assembly_list
+                                    where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
+                                    select asm).ToArray()[0].Assembly_ver.ToString();
+            sb.Append(SCobraVersion);
+            sb.Append(SOCETokenMD5);
+            if (!string.IsNullOrEmpty(ProductFamily))
+                sb.Append(ProductFamily);
+
+            /*XmlElement E1 = doc.CreateElement("CobraVersion");
+            XmlNode N1 = doc.CreateTextNode(SCobraVersion);
+            root.AppendChild(E1);
+            E1.AppendChild(N1);
+
+            XmlElement E2 = doc.CreateElement("OCEVersion");
+            XmlNode N2 = doc.CreateTextNode(SOCEVersion);
+            root.AppendChild(E2);
+            E2.AppendChild(N2);*/
+            XmlElement CVitem = doc.CreateElement("item");
+            XmlAttribute CVAname = doc.CreateAttribute("Name");
+            XmlText CVTname = doc.CreateTextNode("CobraVersion");
+            XmlText CVTvalue = doc.CreateTextNode(SCobraVersion);
+            root.AppendChild(CVitem);
+            CVitem.SetAttributeNode(CVAname);
+            CVAname.AppendChild(CVTname);
+            CVitem.AppendChild(CVTvalue);
+
+
+            XmlElement OVitem = doc.CreateElement("item");
+            XmlAttribute OVAname = doc.CreateAttribute("Name");
+            XmlText OVTname = doc.CreateTextNode("OCETokenMD5");
+            XmlText OVTvalue = doc.CreateTextNode(SOCETokenMD5);
+            root.AppendChild(OVitem);
+            OVitem.SetAttributeNode(OVAname);
+            OVAname.AppendChild(OVTname);
+            OVitem.AppendChild(OVTvalue);
+
+
+            if (!string.IsNullOrEmpty(ProductFamily))
+            {
+                XmlElement PFitem = doc.CreateElement("item");
+                XmlAttribute PFAname = doc.CreateAttribute("Name");
+                XmlText PFTname = doc.CreateTextNode("ProductFamily");
+                XmlText PFTvalue = doc.CreateTextNode(ProductFamily);
+                root.AppendChild(PFitem);
+                PFitem.SetAttributeNode(PFAname);
+                PFAname.AppendChild(PFTname);
+                PFitem.AppendChild(PFTvalue);
+            }
+
+            foreach (SFLModel model in viewmode.sfl_parameterlist)
+            {
+                if (model == null) continue;
+                string name = model.nickname;
+                sb.Append(name);
+                XmlElement newitem = doc.CreateElement("item");
+                XmlAttribute A = doc.CreateAttribute("Name");
+                XmlText T = doc.CreateTextNode(name);
+                string strval;
+                switch (model.editortype)
+                {
+                    case 0:
+                        {
+                            strval = model.sphydata;
+                            break;
+                        }
+                    case 1:
+                        {
+                            strval = model.itemlist[model.listindex];
+                            break;
+                        }
+                    case 2:
+                        {
+                            strval = String.Format("{0:F1}", model.data);
+                            break;
+                        }
+                    default:
+                        strval = model.sphydata;
+                        break; ;
+                }
+                sb.Append(strval);
+                XmlText v = doc.CreateTextNode(strval);
+                root.AppendChild(newitem);
+                newitem.SetAttributeNode(A);
+                A.AppendChild(T);
+                newitem.AppendChild(v);
+            }
+            string hash;
+            using (MD5 md5Hash = MD5.Create())
+            {
+                hash = GetMd5Hash(md5Hash, sb.ToString());
+            }
+            XmlElement item = doc.CreateElement("item");
+            XmlAttribute Aname = doc.CreateAttribute("Name");
+            XmlText Tname = doc.CreateTextNode("MD5");
+            XmlText Tvalue = doc.CreateTextNode(hash);
+            root.AppendChild(item);
+            item.SetAttributeNode(Aname);
+            Aname.AppendChild(Tname);
+            item.AppendChild(Tvalue);
+
+            doc.Save(fullpath);
         }
 
         private string GetMd5Hash(MD5 md5Hash, string input)
