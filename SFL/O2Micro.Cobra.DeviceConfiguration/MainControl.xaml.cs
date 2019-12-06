@@ -1,34 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Microsoft.Win32;
 using System.Linq;
-using System.Xml.Linq;
 using System.IO;
 using System.Reflection;
 using System.ComponentModel;
-using System.Globalization;
 using System.Xml;
 using System.Threading;
-using System.Windows.Forms;
-using System.Diagnostics;
 using System.Security.Cryptography;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using O2Micro.Cobra.EM;
 using O2Micro.Cobra.Common;
-using O2Micro.Cobra.AutoMationTest;
-using System.Runtime.InteropServices;
 using Excel = Microsoft.Office.Interop.Excel;
 
 namespace O2Micro.Cobra.DeviceConfigurationPanel
@@ -88,7 +73,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         public GeneralMessage gm = new GeneralMessage("Device Configuration SFL", "", 0);
 
         private UIConfig m_UI_Config = new UIConfig();
-        public  UIConfig ui_config
+        public UIConfig ui_config
         {
             get { return m_UI_Config; }
             set { m_UI_Config = value; }
@@ -269,16 +254,16 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                                     switch (sub.Attributes["Visibility"].Value)
                                     {
                                         case "Collapsed":
-                                            btCtrl.visi = Visibility.Collapsed; 
+                                            btCtrl.visi = Visibility.Collapsed;
                                             break;
                                         case "Hidden":
-                                            btCtrl.visi = Visibility.Hidden; 
+                                            btCtrl.visi = Visibility.Hidden;
                                             break;
                                         case "Visible":
                                             btCtrl.visi = Visibility.Visible;
                                             break;
                                         default:
-                                            btCtrl.visi = Visibility.Visible; 
+                                            btCtrl.visi = Visibility.Visible;
                                             break;
                                     }
                                 }
@@ -428,7 +413,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     fullpath = openFileDialog.FileName;
                     int index = fullpath.LastIndexOf('.');
                     string suffix = fullpath.Substring(index + 1).ToLower();
-                    if(suffix == "board" || suffix == "cfg")
+                    if (suffix == "board" || suffix == "cfg")
                         ret = LoadFile(fullpath);
                     else if (suffix == "xlsx")
                     {
@@ -452,7 +437,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         }
 
         private string GetChipName()//Issue1373 Leon
-        { 
+        {
             XmlElement root = EMExtensionManage.m_extDescrip_xmlDoc.DocumentElement;
             return root.GetAttribute("chip");
         }
@@ -505,7 +490,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
         public void SaveBoardConfigFilePath(string fullpath)
         {
-            string settingfilepath = System.IO.Path.Combine(FolderMap.m_currentproj_folder,"settings.xml");
+            string settingfilepath = System.IO.Path.Combine(FolderMap.m_currentproj_folder, "settings.xml");
             FileStream file = new FileStream(settingfilepath, FileMode.Create);
             StreamWriter sw = new StreamWriter(file);
             sw.WriteLine("<?xml version=\"1.0\"?>");
@@ -544,49 +529,68 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 m.message = LibErrorCode.GetErrorDescription(ret);
                 m.level = 2;
                 CallWarningControl(m);
-                    return;
+                return;
             }
 
             string fullpath = "";
             string chipname = GetChipName();    //Issue1373
             string MD5Code = GetMD5Code();//Issue1373 Leon
-            Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();
-            saveFileDialog.FilterIndex = 1;
-            saveFileDialog.RestoreDirectory = true;
             if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
             {
-                saveFileDialog.FileName = chipname+"-"+MD5Code;//Issue1373 Leon
+                Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();
+                saveFileDialog.FilterIndex = 1;
+                saveFileDialog.RestoreDirectory = true;
+
+                saveFileDialog.FileName = chipname + "-" + MD5Code;//Issue1373 Leon
                 saveFileDialog.Title = "Save Board Config file";
                 saveFileDialog.Filter = "Board Config file (*.board)|*.board||";
                 saveFileDialog.DefaultExt = "board";
+
+                saveFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    if (parent == null) return;
+                    else
+                    {
+                        fullpath = saveFileDialog.FileName;
+                        SaveCfgFile(fullpath);
+                    }
+                }
+                else return;
+
+                StatusLabel.Content = fullpath;
+
+                SaveBoardConfigFilePath(fullpath);
             }
             else
             {
+                Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();
+                saveFileDialog.FilterIndex = 1;
+                saveFileDialog.RestoreDirectory = true;
+
                 saveFileDialog.FileName = chipname + "-" + MD5Code;//Issue1373 Leon
                 //saveFileDialog.Title = "Save Configuration File";
                 //saveFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg|c file (*.c)|*.c|h file (*.h)|*.h||";
                 saveFileDialog.Title = "Save File";       //Issue1513 Leon
-                saveFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg|c file (*.c)|*.c|h file (*.h)|*.h|hex file (*.hex)|*.hex|ui file (*.ui)|*.ui||";
+                saveFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg|c file (*.c)|*.c|h file (*.h)|*.h||";
                 saveFileDialog.DefaultExt = "cfg";
-            }
-            saveFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                if (parent == null) return;
-                else
-                {
-                    fullpath = saveFileDialog.FileName;
-                    SaveFile(fullpath);
-                }
-            }
-            else return;
 
-            StatusLabel.Content = fullpath;
-            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.    //Issue1373//Issue 1426 Leon
-            {
-                SaveBoardConfigFilePath(fullpath);
+                saveFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    if (parent == null) return;
+                    else
+                    {
+                        fullpath = saveFileDialog.FileName;
+                        SaveFile(ref fullpath);
+                    }
+                }
+                else return;
+
+                StatusLabel.Content = fullpath;
             }
         }
+
         private void SaveBoardConfigToInternalMemory()//Issue1378 Leon
         {
             foreach (SFLModel model in viewmode.sfl_parameterlist)
@@ -757,7 +761,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 model.berror = false;
 
                 tmp = xn.InnerText;
-                
+
                 if (model.brange)//为正常录入浮点数
                 {
                     switch (model.format)
@@ -1029,10 +1033,10 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             StatusLabel.Content = fullpath;
             return true;
         }
-        internal void SaveFile(string fullpath)
+        internal void SaveFile(ref string fullpath)
         {
             int index = fullpath.LastIndexOf('.');
-            string suffix = fullpath.Substring(index+1);
+            string suffix = fullpath.Substring(index + 1);
             switch (suffix.ToLower())
             {
                 case "c":
@@ -1041,20 +1045,27 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 case "h":
                     SaveHFile(fullpath);
                     break;
-                case "hex":		//Issue1513 Leon
-                    //if(System.Windows.MessageBox.Show("Please make sure the Board Config is configured correctly!", "Warnning!", MessageBoxButton.OK) == MessageBoxResult.OK)
-                    gm.message = "Please make sure the Board Config is configured correctly!";
-                    //gm.level = 0;
+                default:    //cfg file
+                    string originalfilename = System.IO.Path.GetFileNameWithoutExtension(fullpath);
+                    string originalfolder = System.IO.Path.GetDirectoryName(fullpath);
+                    string newfolder = System.IO.Path.Combine(originalfolder, originalfilename + "-" + DateTime.Now.ToString("yyyyMMddhhmmss"));
+                    if (!Directory.Exists(newfolder))
+                        Directory.CreateDirectory(newfolder);
+                    string filename = System.IO.Path.GetFileName(fullpath);
+                    fullpath = System.IO.Path.Combine(newfolder, filename); //cfg file name;
+                    string uifullpath = System.IO.Path.Combine(newfolder, originalfilename + ".ui");
+                    string boardMD5 = "XXXXX";
+                    string hexfullpath = System.IO.Path.Combine(newfolder, originalfilename + "-" + boardMD5 + ".hex");
+
+                    gm.message = "Hex and bin file are to be generated, please make sure the Board Config is configured correctly!";
                     msg.gm.level = 0;
                     CallSelectControl(gm);
-                    if(msg.controlmsg.bcancel == true)
-                        SaveHexFile(fullpath);
-                    break;
-                case "ui":
-                    SaveUIFile(fullpath);
-                    break;
-                default:
-                    SaveCfgFile(fullpath);
+                    if (msg.controlmsg.bcancel == true)
+                    {
+                        SaveCfgFile(fullpath);
+                        SaveUIFile(uifullpath);
+                        SaveHexFile(hexfullpath);
+                    }
                     break;
             }
         }
@@ -1405,18 +1416,18 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             if (!NoMapping)
             {
-	            msg.percent = 60;
-	            msg.task = TM.TM_BLOCK_MAP;
-	            parent.AccessDevice(ref m_Msg);
-	            while (msg.bgworker.IsBusy)
-	                System.Windows.Forms.Application.DoEvents();
-	            if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
-	            {
-	                gm.level = 2;
-	                gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
-	                CallWarningControl(gm);
-	                parent.bBusy = false;
-	                return;
+                msg.percent = 60;
+                msg.task = TM.TM_BLOCK_MAP;
+                parent.AccessDevice(ref m_Msg);
+                while (msg.bgworker.IsBusy)
+                    System.Windows.Forms.Application.DoEvents();
+                if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                {
+                    gm.level = 2;
+                    gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
+                    CallWarningControl(gm);
+                    parent.bBusy = false;
+                    return;
                 }
             }
 
@@ -1481,7 +1492,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     {
                         msg.gm.message = "you are ready to write entirely area,please be care!";
                         msg.controlreq = COMMON_CONTROL.COMMON_CONTROL_SELECT;
-                        if (!msg.controlmsg.bcancel) return; 
+                        if (!msg.controlmsg.bcancel) return;
                     }
 
                     msg.gm.controls = ((System.Windows.Controls.Button)sender).Content.ToString();
@@ -1716,18 +1727,18 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             if (!NoMapping)
             {
-	            msg.percent = 90;
-	            msg.task = TM.TM_BLOCK_MAP;
-	            parent.AccessDevice(ref m_Msg);
-	            while (msg.bgworker.IsBusy)
-	                System.Windows.Forms.Application.DoEvents();
-	            if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
-	            {
-	                gm.level = 2;
-	                gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
-	                CallWarningControl(gm);
-	                parent.bBusy = false;
-	                return;
+                msg.percent = 90;
+                msg.task = TM.TM_BLOCK_MAP;
+                parent.AccessDevice(ref m_Msg);
+                while (msg.bgworker.IsBusy)
+                    System.Windows.Forms.Application.DoEvents();
+                if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                {
+                    gm.level = 2;
+                    gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
+                    CallWarningControl(gm);
+                    parent.bBusy = false;
+                    return;
                 }
             }
 
@@ -2003,7 +2014,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             XmlElement root = doc.DocumentElement;
 
             StringBuilder sb = new StringBuilder();
-            
+
             //string SOCEToken = CobraGlobal.CurrentOCEToken;
 
             string SOCETokenMD5 = CobraGlobal.CurrentOCETokenMD5;
@@ -2107,7 +2118,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         {
             int nline = 0;
 
-            viewmode.WriteDevice(); 
+            viewmode.WriteDevice();
             msg.task_parameterlist = viewmode.dm_parameterlist;
             msg.task = TM.TM_CONVERT_PHYSICALTOHEX;
             parent.AccessDevice(ref m_Msg);
@@ -2145,7 +2156,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     {
                         if (str.ToString().Contains("["))
                         {
-                            typedefDic.Add(str.Substring(0,str.IndexOf('[')), nline);
+                            typedefDic.Add(str.Substring(0, str.IndexOf('[')), nline);
                             btypedef = false;
                         }
                     }
@@ -2160,7 +2171,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     stB.Append(lineList[typedefDic[((string)group.Name).Trim().ToLower()]]);
                     foreach (object md in group.Items)
                     {
-                        mode = (md as  SFLModel);
+                        mode = (md as SFLModel);
                         if (mode != null)
                         {
                             stB.Append('\r');
@@ -2177,7 +2188,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 }
             }
             foreach (string line in lineList)
-                sw.Write(string.Format("{0}{1}",line,"\r\n"));
+                sw.Write(string.Format("{0}{1}", line, "\r\n"));
             sr.Close();
             rf.Close();
             sw.Close();
@@ -2211,7 +2222,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             while ((sLine = sr.ReadLine()) != null)
             {
                 lineList.Add(sLine);
-                sLine = Regex.Replace(sLine, "[\r\n\t]"," " ,RegexOptions.Compiled);
+                sLine = Regex.Replace(sLine, "[\r\n\t]", " ", RegexOptions.Compiled);
                 if (sLine.IndexOf("typedef") != -1)
                 {
                     btypedef = true;
@@ -2239,7 +2250,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     stB.Append(lineList[typedefDic[((string)group.Name).Trim().ToLower()]]);
                     foreach (object md in group.Items)
                     {
-                        mode = (md as  SFLModel);
+                        mode = (md as SFLModel);
                         if (mode != null)
                         {
                             stB.Append('\r');
@@ -2252,7 +2263,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 }
             }
             foreach (string line in lineList)
-                sw.Write(string.Format("{0}{1}",line,"\r\n"));
+                sw.Write(string.Format("{0}{1}", line, "\r\n"));
             sr.Close();
             rf.Close();
             sw.Close();
