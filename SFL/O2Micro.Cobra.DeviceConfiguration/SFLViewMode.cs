@@ -77,7 +77,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             foreach (Parameter param in dm_parameterlist.parameterlist)
             {
                 if (param == null) continue;
-                InitSFLParameter(param);
+                sfl_parameterlist.Add(InitSFLParameter(param, sflname));
             }
 
             foreach (SFLModel mode in sfl_parameterlist)
@@ -105,7 +105,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
             return null;
         }
-        private void InitSFLParameter(Parameter param)
+        public SFLModel InitSFLParameter(Parameter param, string sflname)
         {
             Double errorvalue = -9999;
             UInt16 udata = 0;
@@ -282,7 +282,8 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             param.PropertyChanged += new PropertyChangedEventHandler(Parameter_PropertyChanged);
             model.PropertyChanged += new PropertyChangedEventHandler(SFL_Parameter_PropertyChanged);
-            sfl_parameterlist.Add(model);
+            return model;
+            //sfl_parameterlist.Add(model);
         }
 
         internal void phyTostr(SFLModel p)

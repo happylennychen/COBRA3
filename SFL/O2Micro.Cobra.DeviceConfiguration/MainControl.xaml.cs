@@ -106,6 +106,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         public ushort GetMaxValueSubTask { get; set; }	//Issue1593 Leon
         public ushort GetMinValueSubTask { get; set; }	//Issue1593 Leon
         public string ProductFamily { get; set; }
+        public string BoardConfigLabel { get; set; }
 
         public event EventHandler BoardConfigChanged;//Issue1593 Leon
 
@@ -156,6 +157,9 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         }
                     case "ProductFamily":
                         ProductFamily = node.InnerText;
+                        break;
+                    case "BoardConfigLabel":
+                        BoardConfigLabel = node.InnerText;
                         break;
                 }
             }
@@ -442,7 +446,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             return root.GetAttribute("chip");
         }
 
-        private string GetMD5Code()
+        private string GetMD5Code(List<SFLModel> models)
         {
 
             StringBuilder sb = new StringBuilder();
@@ -455,7 +459,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             sb.Append(SCobraVersion);
             sb.Append(SOCETokenMD5);
 
-            foreach (SFLModel model in viewmode.sfl_parameterlist)
+            foreach (SFLModel model in models)
             {
                 if (model == null) continue;
                 string name = model.nickname;
@@ -485,7 +489,8 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             {
                 hash = GetMd5Hash(md5Hash, sb.ToString());
             }
-            return hash.Substring(hash.Length - 5);
+            //return hash.Substring(hash.Length - 5);
+            return hash;
         }
 
         public void SaveBoardConfigFilePath(string fullpath)
@@ -534,14 +539,14 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             string fullpath = "";
             string chipname = GetChipName();    //Issue1373
-            string MD5Code = GetMD5Code();//Issue1373 Leon
+            string MD5ShortCode = GetShortCode(GetMD5Code(viewmode.sfl_parameterlist.ToList()));
             if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
             {
                 Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();
                 saveFileDialog.FilterIndex = 1;
                 saveFileDialog.RestoreDirectory = true;
 
-                saveFileDialog.FileName = chipname + "-" + MD5Code;//Issue1373 Leon
+                saveFileDialog.FileName = chipname + "-" + MD5ShortCode;//Issue1373 Leon
                 saveFileDialog.Title = "Save Board Config file";
                 saveFileDialog.Filter = "Board Config file (*.board)|*.board||";
                 saveFileDialog.DefaultExt = "board";
@@ -553,7 +558,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     else
                     {
                         fullpath = saveFileDialog.FileName;
-                        SaveCfgFile(fullpath);
+                        SaveBoardFile(fullpath);
                     }
                 }
                 else return;
@@ -568,7 +573,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 saveFileDialog.FilterIndex = 1;
                 saveFileDialog.RestoreDirectory = true;
 
-                saveFileDialog.FileName = chipname + "-" + MD5Code;//Issue1373 Leon
+                saveFileDialog.FileName = chipname + "-" + MD5ShortCode;//Issue1373 Leon
                 //saveFileDialog.Title = "Save Configuration File";
                 //saveFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg|c file (*.c)|*.c|h file (*.h)|*.h||";
                 saveFileDialog.Title = "Save File";       //Issue1513 Leon
@@ -589,6 +594,11 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
                 StatusLabel.Content = fullpath;
             }
+        }
+
+        private string GetShortCode(string fullcode)
+        {
+            return fullcode.Substring(fullcode.Length - 5);
         }
 
         private void SaveBoardConfigToInternalMemory()//Issue1378 Leon
@@ -1045,29 +1055,70 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 case "h":
                     SaveHFile(fullpath);
                     break;
-                default:    //cfg file
-                    string originalfilename = System.IO.Path.GetFileNameWithoutExtension(fullpath);
-                    string originalfolder = System.IO.Path.GetDirectoryName(fullpath);
-                    string newfolder = System.IO.Path.Combine(originalfolder, originalfilename + "-" + DateTime.Now.ToString("yyyyMMddhhmmss"));
-                    if (!Directory.Exists(newfolder))
-                        Directory.CreateDirectory(newfolder);
-                    string filename = System.IO.Path.GetFileName(fullpath);
-                    fullpath = System.IO.Path.Combine(newfolder, filename); //cfg file name;
-                    string uifullpath = System.IO.Path.Combine(newfolder, originalfilename + ".ui");
-                    string boardMD5 = "XXXXX";
-                    string hexfullpath = System.IO.Path.Combine(newfolder, originalfilename + "-" + boardMD5 + ".hex");
-
-                    gm.message = "Hex and bin file are to be generated, please make sure the Board Config is configured correctly!";
-                    msg.gm.level = 0;
-                    CallSelectControl(gm);
-                    if (msg.controlmsg.bcancel == true)
-                    {
-                        SaveCfgFile(fullpath);
-                        SaveUIFile(uifullpath);
-                        SaveHexFile(hexfullpath);
-                    }
+                default:    //*.cfg + *.ui + *.hex + *.bin
+                    SaveFilePackage(ref fullpath);
                     break;
             }
+        }
+
+        private void SaveFilePackage(ref string cfgfullpath)
+        {
+            string originalfilename = System.IO.Path.GetFileNameWithoutExtension(cfgfullpath);
+            string originalfolder = System.IO.Path.GetDirectoryName(cfgfullpath);
+            string newfolder = System.IO.Path.Combine(originalfolder, originalfilename + "-" + DateTime.Now.ToString("yyyyMMddhhmmss"));
+            if (!Directory.Exists(newfolder))
+                Directory.CreateDirectory(newfolder);
+            string filename = System.IO.Path.GetFileName(cfgfullpath);
+            cfgfullpath = System.IO.Path.Combine(newfolder, filename); //cfg file name;
+            string uifullpath = System.IO.Path.Combine(newfolder, originalfilename + ".ui");
+            SaveBoardFile(cfgfullpath);
+            SaveUIFile(uifullpath);
+
+            string boardMD5 = string.Empty;
+            if (!string.IsNullOrEmpty(BoardConfigLabel))
+            {
+                boardMD5 = GetBoardMD5();
+                string hexfullpath = System.IO.Path.Combine(newfolder, originalfilename + "-" + boardMD5 + ".hex");
+
+                gm.message = "Hex and bin file are to be generated, please make sure the Board Config is configured correctly!";
+                msg.gm.level = 0;
+                CallSelectControl(gm);
+                if (msg.controlmsg.bcancel == true)
+                {
+                    SaveHexFile(hexfullpath);
+                }
+            }
+            else
+            {
+                string hexfullpath = System.IO.Path.Combine(newfolder, originalfilename + ".hex");
+                SaveHexFile(hexfullpath);
+            }
+        }
+
+        private string GetBoardMD5()
+        {
+            string BoardLabel = "Board Config";
+            List<SFLModel> models = new List<SFLModel>();
+            var container = parent.GetParamLists(BoardLabel);
+            foreach (Parameter param in container.parameterlist)
+            {
+                if (param == null) continue;
+                models.Add(viewmode.InitSFLParameter(param, BoardLabel));
+            }
+
+            foreach (SFLModel mode in models)
+            {
+                if (mode == null) continue;
+                try
+                {
+                    viewmode.phyTostr(mode);
+                }
+                catch (Exception e)
+                {
+                }
+            }
+
+            return GetShortCode(GetMD5Code(models));
         }
 
         private void SaveUIFile(string fullpath)
@@ -2000,7 +2051,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         #endregion
 
         #region 其他函数
-        private void SaveCfgFile(string fullpath)
+        private void SaveBoardFile(string fullpath)
         {
             FileStream file = new FileStream(fullpath, FileMode.Create);
             StreamWriter sw = new StreamWriter(file);
