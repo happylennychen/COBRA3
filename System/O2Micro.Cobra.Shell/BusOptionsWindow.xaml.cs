@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using O2Micro.Cobra.Common;
 using O2Micro.Cobra.EM;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace O2Micro.Cobra.Shell
 {
@@ -23,10 +24,10 @@ namespace O2Micro.Cobra.Shell
         ComboBox_EditType = 1,
         CheckBox_EditType = 2
     }
-	/// <summary>
-	/// Window1.xaml 的交互逻辑
-	/// </summary>
-	public partial class BusOptionsWindow : Window
+    /// <summary>
+    /// Window1.xaml 的交互逻辑
+    /// </summary>
+    public partial class BusOptionsWindow : Window
     {
         public string BoardConfigsflname; //Issue1374 Leon
         //父对象保存
@@ -37,14 +38,14 @@ namespace O2Micro.Cobra.Shell
             set { m_parent = value; }
         }
 
-		public BusOptionsWindow(object pParent)
-		{
-			this.InitializeComponent();
+        public BusOptionsWindow(object pParent)
+        {
+            this.InitializeComponent();
 
-			// 在此点之下插入创建对象所需的代码。
+            // 在此点之下插入创建对象所需的代码。
             parent = (MainWindow)pParent;
             //parent.m_EM_Lib.EnumerateInterface();
-		}
+        }
 
         private static ObservableCollection<ListCollectionView> m_busoptionslistview = new ObservableCollection<ListCollectionView>();
         public static ObservableCollection<ListCollectionView> busoptionslistview
@@ -57,18 +58,18 @@ namespace O2Micro.Cobra.Shell
         {
             WorkSpace.ItemsSource = Registry.busoptionslist_collectionview;
         }
-        
-		private void CancelBtn_Click(object sender, System.Windows.RoutedEventArgs e)
-		{
-			// 在此处添加事件处理程序实现。
+
+        private void CancelBtn_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            // 在此处添加事件处理程序实现。
             Button o = (Button)sender;
             parent.gm.controls = o.Name;
             parent.gm.message = "Quit Bus Options Window";
 
             //Registry.RestoreDeviceConnectSetting();
-			Hide();
+            Hide();
             Close();
-		}
+        }
         private O2Micro.Cobra.DeviceConfigurationPanel.MainControl BoardConfigSFL;//Issue1374 Leon
         private bool hasBoardConfigSFL()//Issue1374 Leon
         {
@@ -151,11 +152,11 @@ namespace O2Micro.Cobra.Shell
             //Registry.SaveDeviceConnectSetting();
             parent.m_EM_Lib.CreateInterface();
             parent.m_EM_Lib.GetDevicesInfor();
-            
+
             Hide();
             Close();
 
-            if (hasBoardConfigSFL())    //Issue1374 Leon
+            if (hasBoardConfigSFL() && NeedPromptWarning())    //Issue1374 Leon
             {
                 MessageBox.Show("Please check board settings first.");
                 SwitchToBoardConfig();
@@ -169,6 +170,26 @@ namespace O2Micro.Cobra.Shell
 
                 LoadPreviousSettings();
             }
+        }
+
+        private bool NeedPromptWarning()
+        {
+            bool output = true;
+            string xmlfilepath = FolderMap.m_extension_work_folder + FolderMap.m_ext_descrip_xml_name + FolderMap.m_extension_work_ext;
+            XmlDocument doc = new XmlDocument();
+            doc.Load(xmlfilepath);
+            XmlNode xn = doc.DocumentElement.SelectSingleNode("descendant::Part[@Name = 'ProjectConfig']");
+            if (xn != null)
+            {
+                var subxn = xn.SelectSingleNode("SaveAndTestPromptWarning");
+                if(subxn!=null)
+                {
+                    if (subxn.InnerText.ToUpper() == "FALSE")
+                        return false;
+                }
+            }
+
+            return output;
         }
 
         #region 通用控件消息响应
@@ -232,8 +253,8 @@ namespace O2Micro.Cobra.Shell
             ContentPresenter tmp = (ContentPresenter)o.TemplatedParent;
             Options op = (Options)tmp.Content;
             if (op != null)
-                op.sphydata = (op.bcheck == true)?"1":"0";
+                op.sphydata = (op.bcheck == true) ? "1" : "0";
         }
 
-	}
+    }
 }
