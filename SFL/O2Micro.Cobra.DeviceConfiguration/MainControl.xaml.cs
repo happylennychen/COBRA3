@@ -446,7 +446,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             return root.GetAttribute("chip");
         }
 
-        private string GetMD5Code(List<SFLModel> models)
+        private string GetMD5Code(List<SFLModel> models, string product_family = "")
         {
 
             StringBuilder sb = new StringBuilder();
@@ -456,8 +456,15 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             string SCobraVersion = (from asm in LibInfor.m_assembly_list
                                     where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
                                     select asm).ToArray()[0].Assembly_ver.ToString();
+            sb.Append("CobraVersion");
             sb.Append(SCobraVersion);
+            sb.Append("OCETokenMD5");
             sb.Append(SOCETokenMD5);
+            if (!string.IsNullOrEmpty(product_family))
+            {
+                sb.Append("ProductFamily");
+                sb.Append(product_family);
+            }
 
             foreach (SFLModel model in models)
             {
@@ -916,7 +923,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         CallWarningControl(gm);
                         return false;
                     }
-
+                    sb.Append(name);
                     sb.Append(xn.InnerText);
                 }
                 else if (name == "OCETokenMD5")
@@ -932,6 +939,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         CallWarningControl(gm);
                         return false;
                     }
+                    sb.Append(name);
                     sb.Append(xn.InnerText);
                 }
                 else
@@ -1134,28 +1142,11 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             doc.Load(fullpath);
             XmlElement root = doc.DocumentElement;
 
-            StringBuilder sb = new StringBuilder();
-
-            //string SOCEToken = CobraGlobal.CurrentOCEToken;
-
             string SOCETokenMD5 = CobraGlobal.CurrentOCETokenMD5;
             string SCobraVersion = (from asm in LibInfor.m_assembly_list
                                     where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
                                     select asm).ToArray()[0].Assembly_ver.ToString();
-            sb.Append(SCobraVersion);
-            sb.Append(SOCETokenMD5);
-            if (!string.IsNullOrEmpty(ProductFamily))
-                sb.Append(ProductFamily);
 
-            /*XmlElement E1 = doc.CreateElement("CobraVersion");
-            XmlNode N1 = doc.CreateTextNode(SCobraVersion);
-            root.AppendChild(E1);
-            E1.AppendChild(N1);
-
-            XmlElement E2 = doc.CreateElement("OCEVersion");
-            XmlNode N2 = doc.CreateTextNode(SOCEVersion);
-            root.AppendChild(E2);
-            E2.AppendChild(N2);*/
             XmlElement CVitem = doc.CreateElement("item");
             XmlAttribute CVAname = doc.CreateAttribute("Name");
             XmlText CVTname = doc.CreateTextNode("CobraVersion");
@@ -1192,7 +1183,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             {
                 if (model == null) continue;
                 string name = model.nickname;
-                sb.Append(name);
                 XmlElement newitem = doc.CreateElement("item");
                 XmlAttribute A = doc.CreateAttribute("Name");
                 XmlText T = doc.CreateTextNode(name);
@@ -1218,7 +1208,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         strval = model.sphydata;
                         break; ;
                 }
-                sb.Append(strval);
                 XmlText v = doc.CreateTextNode(strval);
                 root.AppendChild(newitem);
                 newitem.SetAttributeNode(A);
@@ -1226,10 +1215,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 newitem.AppendChild(v);
             }
             string hash;
-            using (MD5 md5Hash = MD5.Create())
-            {
-                hash = GetMd5Hash(md5Hash, sb.ToString());
-            }
+            hash = GetMD5Code(viewmode.sfl_parameterlist.ToList(), ProductFamily);
             XmlElement item = doc.CreateElement("item");
             XmlAttribute Aname = doc.CreateAttribute("Name");
             XmlText Tname = doc.CreateTextNode("MD5");
@@ -2064,26 +2050,12 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             doc.Load(fullpath);
             XmlElement root = doc.DocumentElement;
 
-            StringBuilder sb = new StringBuilder();
-
-            //string SOCEToken = CobraGlobal.CurrentOCEToken;
-
             string SOCETokenMD5 = CobraGlobal.CurrentOCETokenMD5;
             string SCobraVersion = (from asm in LibInfor.m_assembly_list
                                     where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
                                     select asm).ToArray()[0].Assembly_ver.ToString();
-            sb.Append(SCobraVersion);
-            sb.Append(SOCETokenMD5);
 
-            /*XmlElement E1 = doc.CreateElement("CobraVersion");
-            XmlNode N1 = doc.CreateTextNode(SCobraVersion);
-            root.AppendChild(E1);
-            E1.AppendChild(N1);
 
-            XmlElement E2 = doc.CreateElement("OCEVersion");
-            XmlNode N2 = doc.CreateTextNode(SOCEVersion);
-            root.AppendChild(E2);
-            E2.AppendChild(N2);*/
             XmlElement CVitem = doc.CreateElement("item");
             XmlAttribute CVAname = doc.CreateAttribute("Name");
             XmlText CVTname = doc.CreateTextNode("CobraVersion");
@@ -2107,7 +2079,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             {
                 if (model == null) continue;
                 string name = model.nickname;
-                sb.Append(name);
                 XmlElement newitem = doc.CreateElement("item");
                 XmlAttribute A = doc.CreateAttribute("Name");
                 XmlText T = doc.CreateTextNode(name);
@@ -2129,7 +2100,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         strval = model.sphydata;
                         break; ;
                 }
-                sb.Append(strval);
                 XmlText v = doc.CreateTextNode(strval);
                 root.AppendChild(newitem);
                 newitem.SetAttributeNode(A);
@@ -2137,10 +2107,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 newitem.AppendChild(v);
             }
             string hash;
-            using (MD5 md5Hash = MD5.Create())
-            {
-                hash = GetMd5Hash(md5Hash, sb.ToString());
-            }
+            hash = GetMD5Code(viewmode.sfl_parameterlist.ToList());
             XmlElement item = doc.CreateElement("item");
             XmlAttribute Aname = doc.CreateAttribute("Name");
             XmlText Tname = doc.CreateTextNode("MD5");

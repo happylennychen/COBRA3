@@ -589,6 +589,7 @@ namespace O2Micro.Cobra.ProductionPanel
                             return ErrorCode.TokenMismatch;
                         }
 
+                        sb.Append(name);
                         sb.Append(xn.InnerText);
                     }
                     else if (name == "OCETokenMD5")
@@ -602,6 +603,7 @@ namespace O2Micro.Cobra.ProductionPanel
                             ErrorMessage[ErrorCode.TokenMismatch] = warning;
                             return ErrorCode.TokenMismatch;
                         }
+                        sb.Append(name);
                         sb.Append(xn.InnerText);
                     }
                     else
