@@ -9,7 +9,7 @@ using O2Micro.Cobra.EM;
 
 namespace O2Micro.Cobra.DeviceConfigurationPanel
 {
-    public class SFLViewMode
+    public class SFLViewModel
     {
         //父对象保存
         private MainControl m_control_parent;
@@ -60,7 +60,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         List<Dictionary<string,string>> fgs= new List<Dictionary<string,string>>();
         #endregion
 
-        public SFLViewMode(object pParent, object parent)
+        public SFLViewModel(object pParent, object parent, string Sflname)
         {
             #region 相关初始化
             device_parent = (Device)pParent;
@@ -69,7 +69,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             control_parent = (MainControl)parent;
             if (control_parent == null) return;
 
-            sflname = control_parent.sflname;
+            sflname = Sflname;
             if (String.IsNullOrEmpty(sflname)) return;
             #endregion
 
@@ -877,7 +877,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         #endregion
 
         #region 行为
-        public UInt32 WriteDevice()
+        public UInt32 UpdateModel()
         {
             foreach (SFLModel model in sfl_parameterlist)
             {

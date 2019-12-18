@@ -24,7 +24,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             set { m_Parent = value; }
         }
 
-        public SFLViewMode VeiwModelParent { set; get; }    //Issue1593 Leon
+        public SFLViewModel VeiwModelParent { set; get; }    //Issue1593 Leon
 
         private string m_NickName;
         public string nickname
