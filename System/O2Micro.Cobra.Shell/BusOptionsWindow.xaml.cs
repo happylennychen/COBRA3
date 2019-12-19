@@ -156,9 +156,12 @@ namespace O2Micro.Cobra.Shell
             Hide();
             Close();
 
-            if (hasBoardConfigSFL() && NeedPromptWarning())    //Issue1374 Leon
+            if (hasBoardConfigSFL())    //Issue1374 Leon
             {
-                MessageBox.Show("Please check board settings first.");
+                if (NeedPromptWarning())
+                {
+                    MessageBox.Show("Please check board settings first.");
+                }
                 SwitchToBoardConfig();
 
                 List<WorkPanelItem> tabs = EMExtensionManage.m_EM_DevicesManage.GetWorkPanelTabItemsByBtnLabel(BoardConfigsflname);
@@ -175,20 +178,9 @@ namespace O2Micro.Cobra.Shell
         private bool NeedPromptWarning()
         {
             bool output = true;
-            string xmlfilepath = FolderMap.m_extension_work_folder + FolderMap.m_ext_descrip_xml_name + FolderMap.m_extension_work_ext;
-            XmlDocument doc = new XmlDocument();
-            doc.Load(xmlfilepath);
-            XmlNode xn = doc.DocumentElement.SelectSingleNode("descendant::Part[@Name = 'ProjectConfig']");
-            if (xn != null)
-            {
-                var subxn = xn.SelectSingleNode("SaveAndTestPromptWarning");
-                if(subxn!=null)
-                {
-                    if (subxn.InnerText.ToUpper() == "FALSE")
-                        return false;
-                }
-            }
-
+            var setting = SharedAPI.GetProjectSettingFromExtension("SaveAndTestPromptWarning");
+            if (setting.ToUpper() == "FALSE")
+                output = false;
             return output;
         }
 

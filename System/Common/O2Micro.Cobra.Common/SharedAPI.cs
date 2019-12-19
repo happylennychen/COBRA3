@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Xml;
 
 namespace O2Micro.Cobra.Common
 {
@@ -636,6 +637,27 @@ namespace O2Micro.Cobra.Common
 
             return jsonDict;
 
+        }
+
+        /// <summary>
+        /// 从Extension XML的ProjectSettings节点获取设定值。SFL和DEM有自己的方式，从特定的地方获取XML中的信息，但是SFL和DEM以外的部分，例如Shell，则可通过此API获取信息
+        /// </summary>
+        public static string GetProjectSettingFromExtension(string setting)
+        {
+            string output = string.Empty;
+            string xmlfilepath = FolderMap.m_extension_work_folder + FolderMap.m_ext_descrip_xml_name + FolderMap.m_extension_work_ext;
+            XmlDocument doc = new XmlDocument();
+            doc.Load(xmlfilepath);
+            XmlNode xn = doc.DocumentElement.SelectSingleNode("descendant::Part[@Name = 'ProjectSettings']");
+            if (xn != null)
+            {
+                var subxn = xn.SelectSingleNode(setting);
+                if (subxn != null)
+                {
+                    output = subxn.InnerText;
+                }
+            }
+            return output;
         }
     }
 }
