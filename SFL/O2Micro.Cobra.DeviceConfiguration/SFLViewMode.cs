@@ -763,6 +763,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                                 phyTostr(p);
                                 return;
                             }
+                            UpdateOneModel(p);
                             //UpdateParam(ref p);
                         }
                         break;
@@ -772,6 +773,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         phyTostr(p);
                         UpdateParam(ref p);
                         p.IsUpdateParamCalled = true;
+                        UpdateOneModel(p);
                         break;
                     }
                 default:
@@ -877,23 +879,33 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         #endregion
 
         #region 行为
-        public UInt32 UpdateModel()
+        public UInt32 UpdateAllModels()
         {
-            foreach (SFLModel model in sfl_parameterlist)
+            UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
+            foreach (SFLModel vm in sfl_parameterlist)
             {
-                if (model.berror && (model.errorcode & LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL) == LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL) 
-                    return LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL_PARAM_INVALID;
-
-                model.IsWriteCalled = true;
-
-                Parameter param = model.parent;
-                if (model.brange)
-                    param.phydata = model.data;
-                else
-                    param.sphydata = model.sphydata;
-
-                model.IsWriteCalled = false;
+                ret = UpdateOneModel(vm);
+                if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                    return ret;
             }
+            return ret;
+        }
+
+        private UInt32 UpdateOneModel(SFLModel vm)
+        {
+            if (vm.berror && (vm.errorcode & LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL) == LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL)
+                return LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL_PARAM_INVALID;
+
+            vm.IsWriteCalled = true;
+
+            Parameter param = vm.parent;
+            if (vm.brange)
+                param.phydata = vm.data;
+            else
+                param.sphydata = vm.sphydata;
+
+            vm.IsWriteCalled = false;
+
             return LibErrorCode.IDS_ERR_SUCCESSFUL;
         }
 

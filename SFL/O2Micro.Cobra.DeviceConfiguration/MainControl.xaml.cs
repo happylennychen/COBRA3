@@ -615,7 +615,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             msg.sm.efusebindata.Clear();
             if (SaveHexSubTask != 0)
             {
-                cfgViewModel.UpdateModel();
+                cfgViewModel.UpdateAllModels();
                 msg.task_parameterlist = cfgViewModel.dm_parameterlist;
                 msg.sub_task = SaveHexSubTask;
                 msg.sub_task_json = fullpath;
@@ -658,7 +658,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         {
             int nline = 0;
 
-            cfgViewModel.UpdateModel();
+            cfgViewModel.UpdateAllModels();
             msg.task_parameterlist = cfgViewModel.dm_parameterlist;
             msg.task = TM.TM_CONVERT_PHYSICALTOHEX;
             parent.AccessDevice(ref m_Msg);
@@ -994,8 +994,8 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     UpdateModelWithNodes(xn, boardViewModel.sfl_parameterlist.ToList());
                 }
             }
-            cfgViewModel.UpdateModel();     //加载完之后，直接让cfg settings生效
-            boardViewModel.UpdateModel();   //加载完之后，直接让board settings生效
+            cfgViewModel.UpdateAllModels();     //加载完之后，直接让cfg settings生效
+            boardViewModel.UpdateAllModels();   //加载完之后，直接让board settings生效
             return true;
         }
 
@@ -1766,7 +1766,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             else
                 parent.bBusy = true;
 
-            ret = cfgViewModel.UpdateModel();
+            ret = cfgViewModel.UpdateAllModels();
             if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
             {
                 gm.level = 2;
@@ -1825,7 +1825,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             else
                 parent.bBusy = true;
 
-            ret = cfgViewModel.UpdateModel();
+            ret = cfgViewModel.UpdateAllModels();
             if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
             {
                 gm.level = 2;
@@ -1868,7 +1868,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             else
                 parent.bBusy = true;
 
-            ret = cfgViewModel.UpdateModel();
+            ret = cfgViewModel.UpdateAllModels();
             if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
             {
                 gm.level = 2;
