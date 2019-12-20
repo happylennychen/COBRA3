@@ -624,7 +624,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 while (msg.bgworker.IsBusy)
                     System.Windows.Forms.Application.DoEvents();
 
-                return GetMd5Hash(GetStringFromBytes(msg.sm.efusebindata));
+                return GetMd5Hash(msg.sm.efusebindata.ToArray());
             }
             else
                 return string.Empty;        //对于Register Config来说，不产生hex文件，也没有BIN_MD5
@@ -1175,6 +1175,16 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             {
                 // Convert the input string to a byte array and compute the hash.
                 data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
+            }
+            return GetStringFromBytes(data.ToList());
+        }
+        private string GetMd5Hash(byte[] binData)
+        {
+            byte[] data;
+            using (MD5 md5Hash = MD5.Create())
+            {
+                // Convert the input string to a byte array and compute the hash.
+                data = md5Hash.ComputeHash(binData);
             }
             return GetStringFromBytes(data.ToList());
         }
