@@ -182,7 +182,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             cfgViewModel = new SFLViewModel(pParent, this, sflname);
             boardViewModel = new SFLViewModel(pParent, this, BoardConfigLabel);
 
-            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+            if (isBoardConfig())
             {
                 SaveBoardConfigToInternalMemory();//Issue1378 Leon
             }
@@ -347,11 +347,11 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         break;
                 }
             }
-            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.	//Issue686//Issue 1426 Leon
-            {
-                WriteBtn.Content = "Apply";
-                ReadBtn.Content = "Reset";
-            }
+            //if (isBoardConfig())
+            //{
+            //    WriteBtn.Content = "Apply";
+            //    ReadBtn.Content = "Reset";
+            //}
         }
 
         public void InitBWork()
@@ -404,7 +404,10 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     break;
             }
         }
-
+        private bool isBoardConfig()
+        {
+            return sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName;//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+        }
         #region Save
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -534,6 +537,12 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             string hexfullpath = System.IO.Path.Combine(newfolder, originalfilename + ".hex");
             string BIN_MD5_STR = SaveHexFile(hexfullpath);
+
+            msg.task = TM.TM_CONVERT_HEXTOPHYSICAL;
+            parent.AccessDevice(ref m_Msg);
+            while (msg.bgworker.IsBusy)
+                System.Windows.Forms.Application.DoEvents();
+
             cfgfullpath = System.IO.Path.Combine(newfolder, filename); //cfg file name;
             SaveConfigFile(cfgfullpath, BIN_MD5_STR);
         }
@@ -813,53 +822,67 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         #region Load
         private void LoadBtn_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            string fullpath = "";
-            Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
-            //if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
-            //{
-            //    openFileDialog.Title = "Load Board Config file";			//Support Production SFL, Leon
-            //    openFileDialog.Filter = "Board Config file (*.board)|*.board|Excel file (*.xlsx)|*.xlsx||";
-            //    openFileDialog.DefaultExt = "board";
-            //}
-            //else
-            //{
-            openFileDialog.Title = "Load Configuration File";
-            openFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg||";
-            openFileDialog.DefaultExt = "cfg";
-            //}
-            openFileDialog.FileName = "default";
-            openFileDialog.FilterIndex = 1;
-            openFileDialog.RestoreDirectory = true;
-            openFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
-            if (openFileDialog.ShowDialog() == true)
+            if (isBoardConfig())    //Load CSV file
             {
-                if (parent == null) return;
+                string fullpath = "";
+                Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
+
+                openFileDialog.Title = "Load CSV File";
+                openFileDialog.Filter = "Device Configuration file (*.csv)|*.csv||";
+                openFileDialog.DefaultExt = "csv";
+                openFileDialog.FileName = "default";
+                openFileDialog.FilterIndex = 1;
+                openFileDialog.RestoreDirectory = true;
+                openFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
+                if (openFileDialog.ShowDialog() == true)
                 {
-                    bool ret = true;
-                    fullpath = openFileDialog.FileName;
-                    int index = fullpath.LastIndexOf('.');
-                    string suffix = fullpath.Substring(index + 1).ToLower();
-                    if (suffix == "board" || suffix == "cfg")
-                        ret = LoadFile(fullpath);
-                    else if (suffix == "xlsx")
+                    if (parent == null) return;
                     {
-                        ret &= LoadBoardConfigFromExcel(fullpath);
-                    }
-                    if (ret == true /*&& (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)*/)
-                    {
-                        StatusLabel.Content = fullpath;
-                        //gm.message = "Board Setting will only take effect after Apply button is clicked!";
-                        //CallWarningControl(gm);
-                    }
+                        bool ret = true;
+                        fullpath = openFileDialog.FileName; 
+                        ret = LoadBoardConfigFromCSV(fullpath);
+                        if (ret == true)
+                        {
+                            StatusLabel.Content = fullpath;
+                        }
 
+                    }
                 }
-            }
-            else
-                return;
-
-            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.    //Issue1373//Issue 1426 Leon
-            {
+                else
+                    return;
                 SaveBoardConfigFilePath(fullpath);//Issue1378 Leon
+            }
+            else// Load CFG file
+            {
+                string fullpath = "";
+                Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
+
+                openFileDialog.Title = "Load Configuration File";
+                openFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg||";
+                openFileDialog.DefaultExt = "cfg";
+
+                openFileDialog.FileName = "default";
+                openFileDialog.FilterIndex = 1;
+                openFileDialog.RestoreDirectory = true;
+                openFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    if (parent == null) return;
+                    {
+                        bool ret = true;
+                        fullpath = openFileDialog.FileName;
+
+                        ret = LoadFile(fullpath);
+
+                        if (ret == true)
+                        {
+                            StatusLabel.Content = fullpath;
+                        }
+
+                    }
+                }
+                else
+                    return;
             }
         }
         internal bool LoadFile(string fullpath)
@@ -1197,7 +1220,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             // Loop through each byte of the hashed data 
             // and format each one as a hexadecimal string.
-            foreach(var d in data)
+            foreach (var d in data)
             {
                 sBuilder.Append(d.ToString("x2"));
             }
@@ -1470,7 +1493,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
         }
 
-        private bool LoadBoardConfigFromExcel(string fullpath)
+        private bool LoadBoardConfigFromCSV(string fullpath)
         {
             bool ret = true;
             var excelApp = new Excel.Application();
@@ -1513,6 +1536,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
                 excelApp = null;
             }
+            boardViewModel.UpdateModel();   //加载完之后，直接让board settings生效
             return ret;
         }
         #endregion
@@ -1551,7 +1575,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             //string timestamp = DateTime.Now.ToString();
             //int log_id = -1;
             //DBManager.NewLog("Com", "Com Log", timestamp, ref log_id);
-            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+            if (isBoardConfig())//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
                 Reset();//Issue1381 Leon
             else if (ReadSubTask != 0)     //当前oce支持subtask特性 Issue1363 Leon
                 ReadCommand(ReadSubTask);
@@ -1732,10 +1756,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     msg.task_parameterlist = cfgViewModel.dm_part_parameterlist;
                     break;
                 case "Button":
-                    if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
-                    {//Issue1381 Leon
-                    }
-                    else
+                    if (!isBoardConfig())
                     {
                         msg.gm.message = "you are ready to write entirely area,please be care!";
                         msg.controlreq = COMMON_CONTROL.COMMON_CONTROL_SELECT;
@@ -1754,7 +1775,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     btn_ctrl.btn_cm.IsOpen = true;
                     return;
             }
-            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+            if (isBoardConfig())
                 Apply();//Issue1381 Leon
             else if (WriteSubTask != 0)		//Issue1363 Leon
                 WriteCommand(WriteSubTask);
