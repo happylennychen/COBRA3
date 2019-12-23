@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using O2Micro.Cobra.EM;
 using O2Micro.Cobra.Common;
 using Excel = Microsoft.Office.Interop.Excel;
+using System.Data;
 
 namespace O2Micro.Cobra.DeviceConfigurationPanel
 {
@@ -1495,49 +1496,43 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
         private bool LoadBoardConfigFromCSV(string fullpath)
         {
-            bool ret = true;
-            var excelApp = new Excel.Application();
-            try
+            var dic = LoadCSVToDic(fullpath);
+            foreach (var row in dic)
             {
-                Excel.Workbook excelWKB = null;
-                Excel._Worksheet excelSHEET = null;
-                excelWKB = excelApp.Workbooks.Open(fullpath);
-                excelSHEET = excelWKB.Sheets[1];
-
-                for (int row = 4; row <= 200; row++)
+                var model = cfgViewModel.GetParameterByName(row.Key);
+                if (model == null)
+                    break;
+                else
                 {
-                    string tmp = ((Excel.Range)excelSHEET.Cells[row, 2]).Text.ToString();
-                    var model = cfgViewModel.GetParameterByName(tmp);
-                    if (model == null)
-                        break;
-                    else
-                    {
-                        model.berror = false;
-
-                        tmp = ((Excel.Range)excelSHEET.Cells[row, 3]).Text.ToString();
-
-                        double dval = 0.0;
-                        if (!Double.TryParse(tmp, out dval))
-                            dval = 0.0;
-                        model.data = dval * 1000;
-                    }
+                    model.berror = false;
+                    model.data = row.Value * 1000;
                 }
             }
-            catch (Exception c)
+            return true;
+        }
+        public Dictionary<string,double> LoadCSVToDic(string filePath)//从csv读取数据返回table
+        {
+            var output = new Dictionary<string, double>();
+            FileStream file = new FileStream(filePath, FileMode.Open);
+            StreamReader sr = new StreamReader(file);
+            List<string> strlist;
+            string strlin;
+            while ((strlin = sr.ReadLine()) != null)
             {
-                System.Windows.MessageBox.Show(c.ToString());
-                ret = false;
+                strlist = GetCSVStrList(strlin);
+                output.Add(strlist[0], Convert.ToDouble(strlist[1]));
             }
-            finally
-            {
-                StatusLabel.Content = fullpath;
-                excelApp.Workbooks.Close();
-                excelApp.Quit();
-                System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
-                excelApp = null;
-            }
-            boardViewModel.UpdateModel();   //加载完之后，直接让board settings生效
-            return ret;
+            sr.Close();
+            file.Close();
+            return output;
+        }
+        private List<string> GetCSVStrList(string strline)  //Load cvs file line to string list
+        {
+            string[] strArray = strline.Split(',');
+            List<string> strlist = new List<string>();
+            foreach (string str in strArray)
+                strlist.Add(str);
+            return strlist;
         }
         #endregion
 
