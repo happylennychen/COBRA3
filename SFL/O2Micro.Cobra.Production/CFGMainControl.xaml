@@ -172,34 +172,20 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition></RowDefinition>
-                        <RowDefinition></RowDefinition>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="25*"></ColumnDefinition>
                         <ColumnDefinition Width="60*"></ColumnDefinition>
                         <ColumnDefinition Width="15*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">Chip Config File</Label>
-                    <TextBox Grid.Column="1" Grid.Row="0" HorizontalAlignment="Stretch"  VerticalAlignment="Center" Name="ParametersFilePath" IsEnabled="False">
+                    <Label Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">Bin File</Label>
+                    <TextBox Grid.Column="1" Grid.Row="0" HorizontalAlignment="Stretch"  VerticalAlignment="Center" Name="BinFilePath" IsEnabled="False">
                     </TextBox>
-                    <Button Name="ChipBrowseButton" Grid.Column="2" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Click="LoadParametersFileButton_Click" Content="Browse...">
+                    <Button Name="ChipBrowseButton" Grid.Column="2" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ChooseBinFileButton_Click" Content="Browse...">
                         <Button.IsEnabled>
                             <MultiBinding Converter="{StaticResource olec}">
                                 <Binding ElementName="WithPowerControl" Path="IsChecked"></Binding>
                                 <Binding ElementName="WithoutPowerControl" Path="IsChecked"></Binding>
-                            </MultiBinding>
-                        </Button.IsEnabled>
-                    </Button>
-
-                    <Label Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" Name="BoardLabel">Board Config File</Label>
-                    <TextBox Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch"  VerticalAlignment="Center" Name="BoardFilePath" IsEnabled="False" Visibility="{Binding ElementName=BoardLabel, Path=Visibility, Mode=OneWay}">
-                    </TextBox>
-                    <Button Name="BoardBrowseButton" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Click="LoadBoardFileButton_Click" Content="Browse..." Visibility="{Binding ElementName=BoardLabel, Path=Visibility, Mode=OneWay}">
-                        <Button.IsEnabled>
-                            <MultiBinding Converter="{StaticResource olec}" UpdateSourceTrigger="PropertyChanged" Mode="OneWay">
-                                <Binding ElementName="WithPowerControl" Path="IsChecked"></Binding>
-                                <Binding ElementName="WithoutPowerControl" Path="IsChecked"></Binding>
-                                <Binding ElementName="TestOnly" Path="IsChecked" Mode="OneWay"></Binding>
                             </MultiBinding>
                         </Button.IsEnabled>
                     </Button>
@@ -211,7 +197,6 @@
                 <ColumnDefinition></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Button HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="100" Grid.Column="0" Click="SaveHexButton_Click"  IsEnabled="{Binding ElementName=SavePackButton, Path=IsEnabled, Mode=OneWay}" Content="Save HEX File" Name="SaveHEXButton"></Button>
             <Button HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="100" Grid.Column="1" Click="SavePackButton_Click" Content="Save Pack File" Name="SavePackButton">
                 <Button.IsEnabled>
                     <MultiBinding Converter="{StaticResource sbec}" UpdateSourceTrigger="PropertyChanged" Mode="OneWay">

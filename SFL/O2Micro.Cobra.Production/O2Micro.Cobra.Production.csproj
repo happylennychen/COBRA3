@@ -57,12 +57,10 @@
     </Compile>
     <Compile Include="CFGViewModel.cs" />
     <Compile Include="Converters.cs" />
-    <Compile Include="CopyFromCFG.cs" />
     <Compile Include="PasswordDialog.xaml.cs">
       <DependentUpon>PasswordDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Services.cs" />
-    <Compile Include="Verification.cs" />
     <Compile Include="ViewModel.cs" />
     <Page Include="CFGMainControl.xaml">
       <SubType>Designer</SubType>

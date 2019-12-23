@@ -2,30 +2,17 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Linq;
-using System.Xml.Linq;
 using System.Xml;
 using System.IO;
 using System.Data;
 using System.ComponentModel;
 using O2Micro.Cobra.EM;
 using O2Micro.Cobra.Common;
-using System.Windows.Controls.Primitives;
-using System.Collections;
-using System.Collections.ObjectModel;
-using System.Reflection;
 //using System.Windows.Threading;
 //using System.Threading;
 using System.Security.Cryptography;
-using System.Windows.Forms;
 using System.Threading;
 using System.Runtime.InteropServices;
 
@@ -99,8 +86,7 @@ namespace O2Micro.Cobra.ProductionPanel
 
         private string Password = string.Empty;
 
-        private string CFGFileName = string.Empty;
-        private string BOARDFileName = string.Empty;
+        private string BinFileName = string.Empty;
         private string MPTFileName = string.Empty;
 
         private AsyncObservableCollection<TestGroup> m_TestGroups = new AsyncObservableCollection<TestGroup>();
@@ -146,7 +132,7 @@ namespace O2Micro.Cobra.ProductionPanel
         public static extern bool Beep(int freq, int duration);
         private void Alarm()
         {
-            for(byte i=0; i<5; i++)
+            for (byte i = 0; i < 5; i++)
             {
                 Beep(800, 300);
                 Beep(500, 300);
@@ -164,51 +150,9 @@ namespace O2Micro.Cobra.ProductionPanel
             ProductionSFLDBName = "Production";
             if (String.IsNullOrEmpty(ProductionSFLDBName)) return;
 
-            string EFsflname = CobraGlobal.Constant.NewEFUSEConfigName;      //Issue1556
-            string BDsflname = CobraGlobal.Constant.NewBoardConfigName;
-
             #region Get SFL Names
-            XmlElement root = EMExtensionManage.m_extDescrip_xmlDoc.DocumentElement;
-            if (root == null) return;
-            XmlNode ProductionNode = root.SelectSingleNode("descendant::Button[@DBModuleName = '" + ProductionSFLDBName + "']");
-            XmlElement xe = (XmlElement)ProductionNode;
-            try
-            {
-                string ExternalSFLNames = xe.GetAttribute("External");
-                if (ExternalSFLNames != "") //M version
-                {
-                    // = new string[2];
-                    string[] strlist = ExternalSFLNames.Split('|');
-                    if (strlist.Count<string>() == 2)   //New
-                    {
-                        EFsflname = strlist[0];
-                        BDsflname = strlist[1];
-                    }
-                    if (strlist.Count<string>() == 3)   //Old
-                    {
-                        EFsflname = strlist[0];
-                        BDsflname = strlist[1];
-                    }
-                }
-                else     //X Y version
-                {
-                    foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
-                    {
-                        if (btn.btnlabel == CobraGlobal.Constant.OldBoardConfigName || btn.btnlabel == CobraGlobal.Constant.NewBoardConfigName)
-                            BDsflname = btn.btnlabel;
-                        else if (btn.btnlabel == CobraGlobal.Constant.OldEFUSEConfigName || btn.btnlabel == CobraGlobal.Constant.NewEFUSEConfigName)
-                            EFsflname = btn.btnlabel;
-                    }
-                }
-            }
-            catch   //other cases
-            {
-
-            }
             #endregion
 
-            cfgviewmodel = new SFLViewModel(pParent, this, EFsflname);
-            boardviewmodel = new SFLViewModel(pParent, this, BDsflname);
             #endregion
 
             #region 初始化Password
@@ -255,11 +199,11 @@ namespace O2Micro.Cobra.ProductionPanel
         }
 
         private void UpdateUIWithXML()
-        { 
+        {
             #region Hide or Show Configuration Tab//Issue1272 Leon
             XmlElement root = EMExtensionManage.m_extDescrip_xmlDoc.DocumentElement;
             if (root == null) return;
-            XmlNode ProductionNode = root.SelectSingleNode("descendant::Button[@DBModuleName = '"+ProductionSFLDBName+"']");
+            XmlNode ProductionNode = root.SelectSingleNode("descendant::Button[@DBModuleName = '" + ProductionSFLDBName + "']");
             XmlElement xe = (XmlElement)ProductionNode;
             string ShowConfig = xe.GetAttribute("ShowConfig");
             if (ShowConfig.ToUpper() == "FALSE")
@@ -267,15 +211,7 @@ namespace O2Micro.Cobra.ProductionPanel
             else
             {
                 CFGTab.Init(this, ProductionSFLName);
-
-                string ShowHEX = xe.GetAttribute("ShowHEX");//Issue1418 Leon
-                if (ShowHEX.ToUpper() == "FALSE")
-                    CFGTab.SaveHEXButton.Visibility = System.Windows.Visibility.Collapsed;
             }
-
-            string ShowVerify = xe.GetAttribute("ShowVerify");
-            if (ShowVerify.ToUpper() == "FALSE")
-                VerificationContainer.Visibility = System.Windows.Visibility.Collapsed;
             #endregion
 
             #region 初始化Verification Button
@@ -367,24 +303,8 @@ namespace O2Micro.Cobra.ProductionPanel
             {
                 string filename = openFileDialog.SafeFileName;
                 FileInfo fi = new FileInfo(filename);
-                if (fi.Extension == ".cfg")
+                if (fi.Extension == ".pack")
                 {
-                    fullpath = openFileDialog.FileName;
-                    ret = LoadFile(fullpath, ViewModelTypy.CFG);
-                    if (ret == ErrorCode.Success)
-                    {
-                        FilePath.Content = fullpath;
-
-                        InitOperationUI("Download", true);
-                    }
-                    else
-                    {
-                        ShowWarning("Load Failed!", ErrorMessage[ret]);
-                    }
-                }
-                else if (fi.Extension == ".pack")
-                {
-                    bool hasBOARD = false;
                     bool hasMPT = false;
 
                     bool needDownload = false;
@@ -410,15 +330,10 @@ namespace O2Micro.Cobra.ProductionPanel
                     foreach (string fn in filenames)
                     {
                         FileInfo x = new FileInfo(fn);
-                        if (x.Extension == ".cfg")
+                        if (x.Extension == ".bin")
                         {
                             needDownload = true;
-                            CFGFileName = fn;
-                        }
-                        else if (x.Extension == ".board")
-                        {
-                            hasBOARD = true;
-                            BOARDFileName = fn;
+                            BinFileName = fn;
                         }
                         else if (x.Extension == ".mpt")
                         {
@@ -426,34 +341,12 @@ namespace O2Micro.Cobra.ProductionPanel
                             MPTFileName = fn;
                         }
                     }
-
-                    if (
-                            (boardviewmodel.dm_parameterlist!=null && 
-                            boardviewmodel.dm_parameterlist.parameterlist!= null && 
-                            boardviewmodel.dm_parameterlist.parameterlist.Count!=0 && 
-                            !hasBOARD) 
-                            || 
-                            !hasMPT
-                        )
-                    {
-                        ShowWarning("Load Failed!", "Pack file is illegal.");
-                        return;
-                    }
-
+                    
                     FilePath.Content = openFileDialog.FileName; //Issue 950
                     #endregion
 
 
                     #region load files
-                    if (hasBOARD)
-                    {
-                        ret = LoadFile(BOARDFileName, ViewModelTypy.BOARD);
-                        if (ret != ErrorCode.Success)
-                        {
-                            ShowWarning("Load Failed!", ErrorMessage[ret]);
-                            return;
-                        }
-                    }
 
                     ret = LoadMPTFile(MPTFileName, ref needTest);
                     if (ret != ErrorCode.Success)
@@ -463,12 +356,14 @@ namespace O2Micro.Cobra.ProductionPanel
                     }
                     if (needDownload)
                     {
-                        ret = LoadFile(CFGFileName, ViewModelTypy.CFG);
+                        //ret = LoadFile(BinFileName, ViewModelTypy.CFG);
+                        ret = PrepareDownloadData(BinFileName);
                         if (ret != ErrorCode.Success)
                         {
                             ShowWarning("Load Failed!", ErrorMessage[ret]);
                             return;
                         }
+                        NewLog();
                     }
                     #endregion
 
@@ -510,7 +405,7 @@ namespace O2Micro.Cobra.ProductionPanel
 
                     #region build Records column
                     RecordsDataGrid.DataContext = null;
-                    Records.Clear(); 
+                    Records.Clear();
                     Records.Columns.Clear();
                     DataColumn col;
                     foreach (var pi in ProcessItems)
@@ -540,183 +435,6 @@ namespace O2Micro.Cobra.ProductionPanel
                 }
             }
         }
-        public enum ViewModelTypy
-        {
-            CFG,
-            BOARD
-        }
-        public ErrorCode LoadFile(string fullpath, ViewModelTypy vmt)
-        {
-            double dval = 0.0;
-            string tmp;
-            SFLParameterModel model = null;
-
-            XmlDocument doc = new XmlDocument();
-            try
-            {
-                doc.Load(fullpath);
-            }
-            catch
-            {
-                return ErrorCode.FileFormatError;
-            }
-            XmlElement root = doc.DocumentElement;
-            StringBuilder sb = new StringBuilder();
-            string hash = "";
-            string SCobraVersion = string.Empty;
-            string SOCETokenMD5 = string.Empty;
-            try
-            {
-                for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
-                {
-                    string name = xn.Attributes[0].Value;
-                    if (name == "MD5")
-                    {
-                        hash = xn.InnerText;
-                        continue;
-                    }
-                    else if (name == "CobraVersion")
-                    {
-                        SCobraVersion = (from asm in LibInfor.m_assembly_list
-                                         where asm.Assembly_Type == ASSEMBLY_TYPE.SHELL
-                                         select asm).ToArray()[0].Assembly_ver.ToString();
-                        if (xn.InnerText != SCobraVersion)
-                        {
-                            string warning = "Cobra Version in file: " + xn.InnerText;
-                            warning += "\nCobra you are using: " + SCobraVersion;
-                            warning += "\nCobra Version Mismatch! Load failed!";
-                            ErrorMessage[ErrorCode.TokenMismatch] = warning;
-                            return ErrorCode.TokenMismatch;
-                        }
-
-                        sb.Append(name);
-                        sb.Append(xn.InnerText);
-                    }
-                    else if (name == "OCETokenMD5")
-                    {
-                        SOCETokenMD5 = CobraGlobal.CurrentOCETokenMD5;
-                        if (xn.InnerText != SOCETokenMD5)
-                        {
-                            string warning = "OCE Token MD5 in file: " + xn.InnerText;
-                            warning += "\nOCE Token MD5 in OCE: " + SOCETokenMD5;
-                            warning += "\nOCE Mismatch!";
-                            ErrorMessage[ErrorCode.TokenMismatch] = warning;
-                            return ErrorCode.TokenMismatch;
-                        }
-                        sb.Append(name);
-                        sb.Append(xn.InnerText);
-                    }
-                    else
-                    {
-                        sb.Append(name);
-                        if (vmt == ViewModelTypy.CFG)
-                            model = cfgviewmodel.GetParameterByName(name);
-                        else if (vmt == ViewModelTypy.BOARD)
-                            model = boardviewmodel.GetParameterByName(name);
-                        if (model == null) continue;
-
-                        model.berror = false;
-
-                        tmp = xn.InnerText;
-                        sb.Append(tmp);
-                        if (model.brange)//为正常录入浮点数
-                        {
-                            switch (model.format)
-                            {
-                                case 0: //Int     
-                                case 1: //float1
-                                case 2: //float2
-                                case 3: //float3
-                                case 4: //float4
-                                    {
-                                        if (!Double.TryParse(tmp, out dval))
-                                            dval = 0.0;
-                                        break;
-                                    }
-                                case 5: //Hex
-                                case 6: //Word
-                                    {
-                                        try
-                                        {
-                                            dval = (Double)Convert.ToInt32(tmp, 16);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            dval = 0.0;
-                                            break;
-                                        }
-                                        break;
-                                    }
-                                default:
-                                    break;
-                            }
-                            model.data = dval;
-                        }
-                        else
-                            model.sphydata = tmp;
-                    }
-                }
-                if (SCobraVersion == string.Empty || SOCETokenMD5 == string.Empty)
-                {
-                    ErrorMessage[ErrorCode.TokenMismatch] = "Cannot find Cobra Version and/or OCE Token MD5 in this file! Load failed!";
-                    return ErrorCode.TokenMismatch;
-                }
-            }
-            catch
-            {
-                return ErrorCode.FileParsingError;
-            }
-            using (MD5 md5Hash = MD5.Create())
-            {
-                if (VerifyMd5Hash(md5Hash, sb.ToString(), hash))
-                {
-                    return ErrorCode.Success;
-                }
-                else
-                {
-                    return ErrorCode.FileIntegrityError;
-                }
-            }
-            //StatusLabel.Content = fullpath;
-        }
-        private string GetMd5Hash(MD5 md5Hash, string input)
-        {
-
-            // Convert the input string to a byte array and compute the hash.
-            byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
-
-            // Create a new Stringbuilder to collect the bytes
-            // and create a string.
-            StringBuilder sBuilder = new StringBuilder();
-
-            // Loop through each byte of the hashed data 
-            // and format each one as a hexadecimal string.
-            for (int i = 0; i < data.Length; i++)
-            {
-                sBuilder.Append(data[i].ToString("x2"));
-            }
-
-            // Return the hexadecimal string.
-            return sBuilder.ToString();
-        }
-        // Verify a hash against a string.
-        private bool VerifyMd5Hash(MD5 md5Hash, string input, string hash)
-        {
-            // Hash the input.
-            string hashOfInput = GetMd5Hash(md5Hash, input);
-
-            // Create a StringComparer an compare the hashes.
-            StringComparer comparer = StringComparer.OrdinalIgnoreCase;
-
-            if (0 == comparer.Compare(hashOfInput, hash))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
         private ErrorCode LoadMPTFile(string fullpath, ref bool needTest)
         {
             XmlDocument doc = new XmlDocument();
@@ -738,11 +456,7 @@ namespace O2Micro.Cobra.ProductionPanel
             {
                 try
                 {
-                    ProcessItem pi = new ProcessItem();
-                    pi.Name = "Prepare Download Data";
-                    pi.Color = Brushes.Gray;
-                    pi.callback = new ProcessItem.CallBack(PrepareDownloadData);
-                    ProcessItems.Add(pi);
+                    ProcessItem pi;
                     foreach (XmlElement xe in ProcessNode.ChildNodes)
                     {
                         pi = new ProcessItem();
@@ -837,11 +551,11 @@ namespace O2Micro.Cobra.ProductionPanel
             {
                 //foreach (TestGroup tg in TestGroups)
                 //{
-                    //tg.Color = Brushes.Gray;
-                    foreach (TestItem ti in /*tg.*/TestItems)
-                    {
-                        ti.Color = Brushes.Gray;
-                    }
+                //tg.Color = Brushes.Gray;
+                foreach (TestItem ti in /*tg.*/TestItems)
+                {
+                    ti.Color = Brushes.Gray;
+                }
                 //}
             }
             TestUI.IsEnabled = isEnabled;
@@ -855,13 +569,36 @@ namespace O2Micro.Cobra.ProductionPanel
             ReadBackCheckButton.IsEnabled = isEnabled;
         }
 
-        private UInt32 PrepareDownloadData(ushort sub_task)
+        private ErrorCode PrepareDownloadData(string binFileName)
         {
-            msg.task_parameterlist.parameterlist = cfgviewmodel.dm_parameterlist.parameterlist;
-            msg.owner = this;
-            msg.gm.sflname = ProductionSFLName;//Issue1426 Leon
-            UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
+            ErrorCode ret = ErrorCode.Success;
+            string binpath = binFileName;
+            Encoding ec = Encoding.UTF8;
+            msg.sm.efusebindata.Clear();
+            using (BinaryReader br = new BinaryReader(File.Open(binpath, FileMode.Open), ec))
+            {
+                try
+                {
+                    while (true)
+                    {
+                        msg.sm.efusebindata.Add(br.ReadByte());
+                    }
+                }
+                catch (Exception e)
+                {
+                    br.Close();
+                    if (!(e is EndOfStreamException))
+                    {
+                        ret = ErrorCode.FileParsingError;
+                    }
 
+                }
+            }
+            return ret;
+        }
+        private UInt32 NewLog()
+        {
+            UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
             #region Database New Log
             if (DBManager.supportdb == true)
             {
@@ -874,56 +611,8 @@ namespace O2Micro.Cobra.ProductionPanel
                     return ret;
                 }
             }
-            #endregion
-
-            ret = boardviewmodel.WriteDevice();
-            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                return ret;
-            }
-            ret = cfgviewmodel.WriteDevice();
-            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                return ret;
-            }
-            msg.brw = false;
-            msg.percent = 10;
-            msg.task = TM.TM_SPEICAL_GETDEVICEINFOR;
-            parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                return msg.errorcode;
-            }
-
-            msg.task = TM.TM_SPEICAL_GETREGISTEINFOR;
-            parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                return msg.errorcode;
-            }
-
-            msg.task = TM.TM_READ;
-            parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                return msg.errorcode;
-            }
-
-            msg.task = TM.TM_CONVERT_PHYSICALTOHEX;
-            parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                return msg.errorcode;
-            }
             return ret;
+            #endregion
         }
         private UInt32 Mapping(ushort sub_task)
         {
@@ -960,11 +649,12 @@ namespace O2Micro.Cobra.ProductionPanel
         private UInt32 ConductTest(ushort sub_task)
         {
             UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
-            ret = boardviewmodel.WriteDevice();
-            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                return ret;
-            }
+            //ret = boardviewmodel.WriteDevice();
+            //if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
+            //{
+            //    return ret;
+            //}
+            MessageBox.Show("Please make sure Board Config are set properly.");
 
             for (byte i = 0; i < 8; i++)
             {
@@ -1038,43 +728,43 @@ namespace O2Micro.Cobra.ProductionPanel
                 string GUID = "0x" + p.guid.ToString("X8");
                 //foreach (TestGroup tg in TestGroups)
                 //{
-                    //tg.isPassed = true;
-                    foreach (TestItem ti in /*tg.*/TestItems)
+                //tg.isPassed = true;
+                foreach (TestItem ti in /*tg.*/TestItems)
+                {
+                    if (ti.GUID.Equals(GUID))
                     {
-                        if (ti.GUID.Equals(GUID))
+                        ti.ReadResult = p.phydata;
+                        if (ti.Tolerance != 0)
                         {
-                            ti.ReadResult = p.phydata;
-                            if (ti.Tolerance != 0)
+                            if ((ti.StandardValue - ti.Tolerance) < ti.ReadResult && ti.ReadResult < (ti.StandardValue + ti.Tolerance))
                             {
-                                if ((ti.StandardValue - ti.Tolerance) < ti.ReadResult && ti.ReadResult < (ti.StandardValue + ti.Tolerance))
-                                {
-                                    ti.isPassed = true;
-                                }
-                                else
-                                {
-                                    ti.isPassed = false;
-                                    //tg.isPassed = false;
-                                    TestResult = false;
-                                    ti.FailedDetail = ti.ReadResult.ToString();
-                                }
+                                ti.isPassed = true;
                             }
                             else
                             {
-                                if (ti.StandardValue == ti.ReadResult)
-                                {
-                                    ti.isPassed = true;
-                                }
-                                else
-                                {
-                                    ti.isPassed = false;
-                                    //tg.isPassed = false;
-                                    TestResult = false;
-                                    ti.FailedDetail = ti.ReadResult.ToString();
-                                }
+                                ti.isPassed = false;
+                                //tg.isPassed = false;
+                                TestResult = false;
+                                ti.FailedDetail = ti.ReadResult.ToString();
                             }
-                            break;
                         }
+                        else
+                        {
+                            if (ti.StandardValue == ti.ReadResult)
+                            {
+                                ti.isPassed = true;
+                            }
+                            else
+                            {
+                                ti.isPassed = false;
+                                //tg.isPassed = false;
+                                TestResult = false;
+                                ti.FailedDetail = ti.ReadResult.ToString();
+                            }
+                        }
+                        break;
                     }
+                }
                 //}
             }
         }
@@ -1083,47 +773,47 @@ namespace O2Micro.Cobra.ProductionPanel
             Thread.Sleep(1000);
             this.Dispatcher.Invoke(new Action(() =>
             {
-                //foreach (TestGroup tg in TestGroups)
-                //{
+                    //foreach (TestGroup tg in TestGroups)
+                    //{
                     foreach (TestItem ti in /*tg.*/TestItems)
+                {
+                    if (ti != null)
                     {
-                        if (ti != null)
-                        {
-                            ti.Color = Brushes.Gray;
-                        }
+                        ti.Color = Brushes.Gray;
                     }
+                }
                     //tg.Color = Brushes.Gray;
                     //}
                     foreach (var pi in ProcessItems)
+                {
+                    if (pi != null)
                     {
-                        if (pi != null)
-                        {
-                            pi.Color = Brushes.Gray;
-                        }
+                        pi.Color = Brushes.Gray;
                     }
-                    UpdateStatus("Ready", Brushes.GreenYellow, "Please click the " + OperationButtonName.Text + " button to proceed.", Brushes.White);
-                    OperationGrid.Visibility = System.Windows.Visibility.Visible;
+                }
+                UpdateStatus("Ready", Brushes.GreenYellow, "Please click the " + OperationButtonName.Text + " button to proceed.", Brushes.White);
+                OperationGrid.Visibility = System.Windows.Visibility.Visible;
             }));
         }
         private void UpdateTestUI()
         {
             //foreach (TestGroup tg in TestGroups)
             //{
-                foreach (TestItem ti in /*tg.*/TestItems)
-                {
-                    if (ti.isPassed == null)
-                        ti.Color = Brushes.Gray;
-                    else if (ti.isPassed == true)
-                        ti.Color = Brushes.Green;
-                    else if (ti.isPassed == false)
-                        ti.Color = Brushes.Red;
-                }
-                /*if (tg.isPassed == null)
-                    tg.Color = Brushes.Gray;
-                else if (tg.isPassed == true)
-                    tg.Color = Brushes.Green;
-                else if (tg.isPassed == false)
-                    tg.Color = Brushes.Red;*/
+            foreach (TestItem ti in /*tg.*/TestItems)
+            {
+                if (ti.isPassed == null)
+                    ti.Color = Brushes.Gray;
+                else if (ti.isPassed == true)
+                    ti.Color = Brushes.Green;
+                else if (ti.isPassed == false)
+                    ti.Color = Brushes.Red;
+            }
+            /*if (tg.isPassed == null)
+                tg.Color = Brushes.Gray;
+            else if (tg.isPassed == true)
+                tg.Color = Brushes.Green;
+            else if (tg.isPassed == false)
+                tg.Color = Brushes.Red;*/
             //}
         }
         private void SaveTestReport()
@@ -1144,7 +834,7 @@ namespace O2Micro.Cobra.ProductionPanel
             if (!Directory.Exists(filepath))
                 Directory.CreateDirectory(filepath);
 
-            string filename = filepath + DateTime.Now.ToString("yyyyMMddHHmmssfff") +result+ ".csv";
+            string filename = filepath + DateTime.Now.ToString("yyyyMMddHHmmssfff") + result + ".csv";
             FileStream file = new FileStream(filename, FileMode.Create);
             StreamWriter sw = new StreamWriter(file);
             string str = "";
@@ -1367,21 +1057,9 @@ namespace O2Micro.Cobra.ProductionPanel
 
         private void ReadBackCheckButton_Click(object sender, RoutedEventArgs e)
         {
-            msg.task_parameterlist.parameterlist = cfgviewmodel.dm_parameterlist.parameterlist;
             msg.owner = this;
             msg.gm.sflname = ProductionSFLName;//Issue1426 Leon
             UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
-
-            ret = boardviewmodel.WriteDevice();
-            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                PromptWarning(LibErrorCode.GetErrorDescription(ret));
-            }
-            ret = cfgviewmodel.WriteDevice();
-            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                PromptWarning(LibErrorCode.GetErrorDescription(ret));
-            }
 
             ret = Command(VerificationTaskID);
             if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
@@ -1422,9 +1100,9 @@ namespace O2Micro.Cobra.ProductionPanel
         {
             //WarningPopControl.Dispatcher.Invoke(new Action(() =>
             //{
-                if (!(bool)WarningCheckBox.IsChecked && level < 1)
-                    return;
-                WarningPopControl.ShowDialog(message,level);
+            if (!(bool)WarningCheckBox.IsChecked && level < 1)
+                return;
+            WarningPopControl.ShowDialog(message, level);
             //}));
         }
         private void PromptWarning(string message)
