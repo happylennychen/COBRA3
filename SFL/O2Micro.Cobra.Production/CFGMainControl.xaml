@@ -201,10 +201,7 @@
                 <Button.IsEnabled>
                     <MultiBinding Converter="{StaticResource sbec}" UpdateSourceTrigger="PropertyChanged" Mode="OneWay">
                         <Binding ElementName="ChipBrowseButton" Path="IsEnabled"></Binding>
-                        <Binding ElementName="ParametersFilePath" Path="IsEnabled"></Binding>
-                        <Binding ElementName="BoardBrowseButton" Path="IsEnabled"></Binding>
-                        <Binding ElementName="BoardFilePath" Path="IsEnabled"></Binding>
-                        <Binding ElementName="BoardFilePath" Path="Visibility"></Binding>
+                        <Binding ElementName="BinFilePath" Path="IsEnabled"></Binding>
                         <Binding ElementName="TestOnly" Path="IsChecked"></Binding>
                     </MultiBinding>
                 </Button.IsEnabled>
