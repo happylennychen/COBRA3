@@ -346,6 +346,9 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     case "EraseBtn":
                         btn.Content = "Erase";
                         break;
+                    case "VerifyBtn":
+                        btn.Content = "Verify";
+                        break;
                 }
             }
             //if (isBoardConfig())
@@ -2116,6 +2119,10 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             parent.bBusy = false;
         }
 
+        private void VerifyBtn_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Verify Button Clicked!");
+        }
         private void MenuItem_Click(object sender, EventArgs e)
         {
             UInt16 udata = 0;
@@ -2294,5 +2301,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 return 0;
         }
         #endregion
+
     }
 }
