@@ -1650,6 +1650,7 @@ namespace O2Micro.Cobra.ScanPanel
             SubTask.IsEnabled = true;
             loglist.IsEnabled = true;
             isReentrant_Run = false;
+            UpdateDataColor(false);
         }
 
 
@@ -1788,7 +1789,7 @@ namespace O2Micro.Cobra.ScanPanel
                         return;
                     }
                     //一切正常，可以开始scan
-
+                    UpdateDataColor(true);
                     PreRead(ref errorcode);
                     if (errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
                     {
@@ -1907,6 +1908,31 @@ namespace O2Micro.Cobra.ScanPanel
                 runBtn.IsChecked = !runBtn.IsChecked;
             }
         }
+
+        private void UpdateDataColor(bool b)
+        {
+            foreach (var v in vPnl.vViewModel.voltageList)
+            {
+                v.IsRunning = b;
+            }
+            foreach(var c in cPnl.cViewModel)
+            {
+                c.IsRunning = b;
+            }
+            foreach(var it in tPnl.tViewModel.itemperatureList)
+            {
+                it.IsRunning = b;
+            }
+            foreach (var et in tPnl.tViewModel.etemperatureList)
+            {
+                et.IsRunning = b;
+            }
+            foreach(var m in mcPnl.pmcViewModel.MiscList)
+            {
+                m.IsRunning = b;
+            }
+        }
+
         private delegate ushort GetSubTaskDelegate();
         private ushort GetSubTask()
         {

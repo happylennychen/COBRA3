@@ -126,17 +126,17 @@ namespace O2Micro.Cobra.ScanPanel
         public object Convert(object[] value, Type typetarget, object param, CultureInfo culture)
         {
             if (value[0] == null || value[1] == null || value[2] == null)   //如果值不存在，则直接返回，返回值已不重要，因为后续不会处理
-                return Brushes.Gray;
+                return Brushes.LightGray;
             Brush b;
             if ((double)value[0] < (double)value[2] || (double)value[1] > (double)value[2])
             {
                 b = Brushes.Red;
             }
             else
-                b = Brushes.Gray;
+                b = Brushes.LightGray;
             if(value[3] != null)
                 if ((bool)value[3])
-                    b = Brushes.Gray;
+                    b = Brushes.LightGray;
             return b;
         }
         public object[] ConvertBack(object value, Type[] typetarget, object param, CultureInfo culture)
@@ -492,6 +492,26 @@ namespace O2Micro.Cobra.ScanPanel
             return ratio;
         }
         public object[] ConvertBack(object value, Type[] typetarget, object param, CultureInfo culture)
+        {
+            return null;
+        }
+    }
+    class DataColorConverter: IValueConverter
+    {
+        public Object Convert(Object value, Type targetType, Object parameter, CultureInfo culture)
+        {
+            SolidColorBrush output;
+            if((bool)value)
+            {
+                output = Brushes.Green;
+            }
+            else
+            {
+                output = Brushes.Black;
+            }
+            return output;
+        }
+        public object ConvertBack(object value, Type typetarget, object param, CultureInfo culture)
         {
             return null;
         }

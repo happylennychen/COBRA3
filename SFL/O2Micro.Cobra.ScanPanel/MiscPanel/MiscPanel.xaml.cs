@@ -108,6 +108,16 @@ namespace O2Micro.Cobra.ScanPanel
             get { return m_Parent; }
             set { m_Parent = value; }
         }
+        private bool _isRunning;
+        public bool IsRunning
+        {
+            get { return _isRunning; }
+            set
+            {
+                _isRunning = value;
+                OnPropertyChanged("IsRunning");
+            }
+        }
 
         public Misc(object parent)
         {

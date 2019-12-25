@@ -164,7 +164,7 @@
                                                         </ItemsControl.ItemsPanel>
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate>
-                                                                <StackPanel Orientation="Horizontal" Background="Gray" Margin="2">
+                                                                <StackPanel Orientation="Horizontal" Background="LightGray" Margin="2">
                                                                     <CheckBox Content="{Binding Path=pKey, Mode=OneWay}" Margin="4" Focusable="false" 
                                                                   IsChecked="{Binding Path=pValue, Mode=TwoWay}" 
                                                                   Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
@@ -229,7 +229,7 @@
                         </TabItem>
                     </TabControl>
                 </Border>
-                <Grid Name="FloatPanel" Panel.ZIndex="3" Background="Gray" Style="{StaticResource AutoHidding}" Canvas.Bottom="35" Canvas.Right="20" MouseLeftButtonDown="FloatPanel_MouseLeftButtonDown">
+                <Grid Name="FloatPanel" Panel.ZIndex="3" Background="LightGray" Style="{StaticResource AutoHidding}" Canvas.Bottom="35" Canvas.Right="20" MouseLeftButtonDown="FloatPanel_MouseLeftButtonDown">
                     <DockPanel LastChildFill="False" Margin="5" Height="60">
                         <ToggleButton Height="28" Width="60" Name="runBtn" DockPanel.Dock="Right" Click="runBtn_Click">Run</ToggleButton>
                         <ComboBox Name="SubTask" Height="28" Width="80" DockPanel.Dock="Right" Margin="0,0,5,0" IsEditable="False" IsReadOnly="True" ItemsSource="{Binding}"></ComboBox>

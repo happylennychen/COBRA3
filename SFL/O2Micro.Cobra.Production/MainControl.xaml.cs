@@ -10,8 +10,8 @@ using System.Data;
 using System.ComponentModel;
 using O2Micro.Cobra.EM;
 using O2Micro.Cobra.Common;
-//using System.Windows.Threading;
-//using System.Threading;
+using System.Windows.Threading;
+using System.Threading;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Runtime.InteropServices;
@@ -124,6 +124,10 @@ namespace O2Micro.Cobra.ProductionPanel
         bool isReentrant = false;   //控制Operation button的重入问题
 
         private UInt16 VerificationTaskID = 0;
+
+        public int TotalCount { get; set; } = 0;
+        public int PassedCount { get; set; } = 0;
+        public int FailedCount { get; set; } = 0;
         #endregion
 
         #region 函数定义
@@ -196,8 +200,39 @@ namespace O2Micro.Cobra.ProductionPanel
             InitialUI();
 
             UpdateUIWithXML();
+
+            PreloadPackFile();      //Issue1828
         }
 
+        private void PreloadPackFile()
+        {
+            DispatcherTimer t = new DispatcherTimer();  //初始化的时候，LibInfor.m_assembly_list里面的值还没准备好，所以得等几秒钟再来加载
+            t.Interval = TimeSpan.FromSeconds(3);
+            t.Tick += (sender, e) =>
+            {
+                t.Stop();
+                string packfilepath = "";
+                if (GetPackFilePath(ref packfilepath))
+                {
+                    string filename = Path.GetFileName(packfilepath);
+                    LoadPackFile(filename, packfilepath);
+                }
+            };
+            t.Start();
+        }
+        private bool GetPackFilePath(ref string path)
+        {
+            string directory = Path.Combine(FolderMap.m_root_folder, "Settings");
+            foreach (string p in Directory.GetFiles(directory))
+            {
+                if (Path.GetExtension(p) == ".pack")
+                {
+                    path = p;
+                    return true;    //若有多个*.pack，实际上只加载第一个找到的
+                }
+            }
+            return false;
+        }
         private void UpdateUIWithXML()
         {
             #region Hide or Show Configuration Tab//Issue1272 Leon
@@ -305,136 +340,144 @@ namespace O2Micro.Cobra.ProductionPanel
                 FileInfo fi = new FileInfo(filename);
                 if (fi.Extension == ".pack")
                 {
-                    bool hasMPT = false;
-
-                    bool needDownload = false;
-                    bool needTest = false;
-
-                    #region Unzip
-                    string tempfolder = System.IO.Path.Combine(FolderMap.m_currentproj_folder, "TempFolder\\");
-
-                    if (Directory.Exists(tempfolder))
-                        Directory.Delete(tempfolder, true);
-
-                    string folderpath = System.IO.Path.GetDirectoryName(openFileDialog.FileName);
-                    GZipResult gret = GZip.Decompress(folderpath, tempfolder, filename);
-                    if (gret.Errors)
-                    {
-                        ShowWarning("Load Failed!", "Unzip package failed.");
-                        return;
-                    }
-                    #endregion
-
-                    #region check package
-                    string[] filenames = Directory.GetFiles(tempfolder);
-                    foreach (string fn in filenames)
-                    {
-                        FileInfo x = new FileInfo(fn);
-                        if (x.Extension == ".bin")
-                        {
-                            needDownload = true;
-                            BinFileName = fn;
-                        }
-                        else if (x.Extension == ".mpt")
-                        {
-                            hasMPT = true;
-                            MPTFileName = fn;
-                        }
-                    }
-                    
-                    FilePath.Content = openFileDialog.FileName; //Issue 950
-                    #endregion
-
-
-                    #region load files
-
-                    ret = LoadMPTFile(MPTFileName, ref needTest);
-                    if (ret != ErrorCode.Success)
-                    {
-                        ShowWarning("Load Failed!", ErrorMessage[ret]);
-                        return;
-                    }
-                    if (needDownload)
-                    {
-                        //ret = LoadFile(BinFileName, ViewModelTypy.CFG);
-                        ret = PrepareDownloadData(BinFileName);
-                        if (ret != ErrorCode.Success)
-                        {
-                            ShowWarning("Load Failed!", ErrorMessage[ret]);
-                            return;
-                        }
-                        NewLog();
-                    }
-                    #endregion
-
-                    #region UpdateUI
-
-                    InitOperationUI("", false);
-                    InitTestUI(false);
-
-                    if (needDownload & needTest)
-                    {
-                        InitOperationUI("Download and Test", true);
-                        InitTestUI(true);
-                    }
-                    else if (!needDownload & needTest)
-                    {
-                        InitOperationUI("Test", true);
-                        InitTestUI(true);
-                    }
-                    else if (needDownload & !needTest)
-                    {
-                        InitOperationUI("Download", true);
-                        TestInitText.Visibility = System.Windows.Visibility.Visible;
-                    }
-
-                    StatusInitText.Visibility = System.Windows.Visibility.Hidden;
-                    #endregion
-
-                    #region remove temp folder
-                    try
-                    {
-                        Directory.Delete(tempfolder, true);
-                    }
-                    catch
-                    {
-                        ShowWarning("Load Failed!", "Remove temp folder failed.");
-                        return;
-                    }
-                    #endregion
-
-                    #region build Records column
-                    RecordsDataGrid.DataContext = null;
-                    Records.Clear();
-                    Records.Columns.Clear();
-                    DataColumn col;
-                    foreach (var pi in ProcessItems)
-                    {
-                        col = new DataColumn();
-                        col.DataType = System.Type.GetType("System.String");
-                        col.ColumnName = pi.Name;
-                        col.AutoIncrement = false;
-                        col.ReadOnly = true;
-                        col.Unique = false;
-                        Records.Columns.Add(col);
-                    }
-                    foreach (var ti in TestItems)
-                    {
-                        col = new DataColumn();
-                        col.DataType = System.Type.GetType("System.String");
-                        col.ColumnName = ti.Name;
-                        col.AutoIncrement = false;
-                        col.ReadOnly = true;
-                        col.Unique = false;
-                        Records.Columns.Add(col);
-                    }
-                    RecordsDataGrid.DataContext = Records;
-                    #endregion
-
-                    ShowMessage("Package file loaded.", "Please click " + OperationButtonName.Text + " button to proceed.");
+                    string fullname = openFileDialog.FileName;
+                    LoadPackFile(filename, fullname);
                 }
             }
         }
+
+        private void LoadPackFile(string filename, string fullname)
+        {
+            ErrorCode ret = ErrorCode.Success;
+            bool hasMPT = false;
+
+            bool needDownload = false;
+            bool needTest = false;
+
+            #region Unzip
+            string tempfolder = System.IO.Path.Combine(FolderMap.m_currentproj_folder, "TempFolder\\");
+
+            if (Directory.Exists(tempfolder))
+                Directory.Delete(tempfolder, true);
+
+            string folderpath = System.IO.Path.GetDirectoryName(fullname);
+            GZipResult gret = GZip.Decompress(folderpath, tempfolder, filename);
+            if (gret.Errors)
+            {
+                ShowWarning("Load Failed!", "Unzip package failed.");
+                return;
+            }
+            #endregion
+
+            #region check package
+            string[] filenames = Directory.GetFiles(tempfolder);
+            foreach (string fn in filenames)
+            {
+                FileInfo x = new FileInfo(fn);
+                if (x.Extension == ".bin")
+                {
+                    needDownload = true;
+                    BinFileName = fn;
+                }
+                else if (x.Extension == ".mpt")
+                {
+                    hasMPT = true;
+                    MPTFileName = fn;
+                }
+            }
+
+            FilePath.Content = fullname; //Issue 950
+            #endregion
+
+
+            #region load files
+
+            ret = LoadMPTFile(MPTFileName, ref needTest);
+            if (ret != ErrorCode.Success)
+            {
+                ShowWarning("Load Failed!", ErrorMessage[ret]);
+                return;
+            }
+            if (needDownload)
+            {
+                //ret = LoadFile(BinFileName, ViewModelTypy.CFG);
+                ret = PrepareDownloadData(BinFileName);
+                if (ret != ErrorCode.Success)
+                {
+                    ShowWarning("Load Failed!", ErrorMessage[ret]);
+                    return;
+                }
+                NewLog();
+            }
+            #endregion
+
+            #region UpdateUI
+
+            InitOperationUI("", false);
+            InitTestUI(false);
+
+            if (needDownload & needTest)
+            {
+                InitOperationUI("Download and Test", true);
+                InitTestUI(true);
+            }
+            else if (!needDownload & needTest)
+            {
+                InitOperationUI("Test", true);
+                InitTestUI(true);
+            }
+            else if (needDownload & !needTest)
+            {
+                InitOperationUI("Download", true);
+                TestInitText.Visibility = System.Windows.Visibility.Visible;
+            }
+
+            StatusInitText.Visibility = System.Windows.Visibility.Hidden;
+            #endregion
+
+            #region remove temp folder
+            try
+            {
+                Directory.Delete(tempfolder, true);
+            }
+            catch
+            {
+                ShowWarning("Load Failed!", "Remove temp folder failed.");
+                return;
+            }
+            #endregion
+
+            #region build Records column
+            RecordsDataGrid.DataContext = null;
+            Records.Clear();
+            Records.Columns.Clear();
+            DataColumn col;
+            foreach (var pi in ProcessItems)
+            {
+                col = new DataColumn();
+                col.DataType = System.Type.GetType("System.String");
+                col.ColumnName = pi.Name;
+                col.AutoIncrement = false;
+                col.ReadOnly = true;
+                col.Unique = false;
+                Records.Columns.Add(col);
+            }
+            foreach (var ti in TestItems)
+            {
+                col = new DataColumn();
+                col.DataType = System.Type.GetType("System.String");
+                col.ColumnName = ti.Name;
+                col.AutoIncrement = false;
+                col.ReadOnly = true;
+                col.Unique = false;
+                Records.Columns.Add(col);
+            }
+            RecordsDataGrid.DataContext = Records;
+            #endregion
+
+            ShowMessage("Package file loaded.", "Please click " + OperationButtonName.Text + " button to proceed.");
+        }
+
         private ErrorCode LoadMPTFile(string fullpath, ref bool needTest)
         {
             XmlDocument doc = new XmlDocument();
@@ -773,18 +816,18 @@ namespace O2Micro.Cobra.ProductionPanel
             Thread.Sleep(1000);
             this.Dispatcher.Invoke(new Action(() =>
             {
-                    //foreach (TestGroup tg in TestGroups)
-                    //{
-                    foreach (TestItem ti in /*tg.*/TestItems)
+                //foreach (TestGroup tg in TestGroups)
+                //{
+                foreach (TestItem ti in /*tg.*/TestItems)
                 {
                     if (ti != null)
                     {
                         ti.Color = Brushes.Gray;
                     }
                 }
-                    //tg.Color = Brushes.Gray;
-                    //}
-                    foreach (var pi in ProcessItems)
+                //tg.Color = Brushes.Gray;
+                //}
+                foreach (var pi in ProcessItems)
                 {
                     if (pi != null)
                     {
@@ -1033,7 +1076,7 @@ namespace O2Micro.Cobra.ProductionPanel
                 ProductionRecord.Save(ProductionSFLDBName);//Issue1426 Leon
                 #endregion
                 #endregion
-                #region Show Success Message
+                #region Show Success Message and update count
                 bool ProcessResult = true;
                 foreach (var pi in ProcessItems)
                 {
@@ -1047,6 +1090,19 @@ namespace O2Micro.Cobra.ProductionPanel
                 {
                     ShowMessage(OperationButtonName.Text + " Complete!", "All " + ProcessItems.Count.ToString() + " processes complete!");
                 }
+
+                if (ProcessResult == true)
+                {
+                    PassedCount += 1;
+                    PassedCountLabel.Content = PassedCount;
+                }
+                else
+                {
+                    FailedCount += 1;
+                    FailedCountLabel.Content = FailedCount;
+                }
+                TotalCount += 1;
+                TotalCountLabel.Content = TotalCount;
                 #endregion
                 parent.bBusy = false;
 
@@ -1113,97 +1169,6 @@ namespace O2Micro.Cobra.ProductionPanel
         {
             DisplaySFLMessage(message, 0);      //Issue951
         }
-        #endregion
-
-        #region DM提供的API
-#if false
-        public uint Command(ParamContainer pc, ushort subtask)
-        {
-            msg.owner = this;
-            msg.gm.sflname = sflname;
-            msg.task = TM.TM_COMMAND;
-            msg.sub_task = subtask;
-            msg.task_parameterlist = pc;
-            uint ret = parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            return m_Msg.errorcode;
-        }
-        public uint Read(ParamContainer pc)
-        {
-            msg.owner = this;
-            msg.gm.sflname = sflname;
-            msg.task = TM.TM_READ;
-            msg.task_parameterlist = pc;
-            //msg.bupdate = false;            //需要从chip读数据
-            uint ret = parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            /*if (m_Msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                msg.bgworker.Dispose();
-                msg.bgworker.CancelAsync();
-            }*/
-            return m_Msg.errorcode;
-        }
-        public uint Write(ParamContainer pc)
-        {
-            msg.owner = this;
-            msg.gm.sflname = sflname;
-            msg.task = TM.TM_WRITE;
-            msg.task_parameterlist = pc;
-            uint ret = parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            return m_Msg.errorcode;
-        }
-        public uint ConvertHexToPhysical(ParamContainer pc)
-        {
-            msg.owner = this;
-            msg.gm.sflname = sflname;
-            msg.task = TM.TM_CONVERT_HEXTOPHYSICAL;
-            msg.task_parameterlist = pc;
-            //msg.bupdate = true;         //不用从chip读，只从img读
-            uint ret = parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            return m_Msg.errorcode;
-        }
-        public uint GetSysInfo()
-        {
-            msg.owner = this;
-            msg.gm.sflname = sflname;
-            msg.task = TM.TM_SPEICAL_GETSYSTEMINFOR;
-            //msg.bupdate = false;            //需要从chip读数据
-            uint ret = parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            return m_Msg.errorcode;
-        }
-        public uint GetDevInfo()
-        {
-            msg.owner = this;
-            msg.gm.sflname = sflname;
-            msg.task = TM.TM_SPEICAL_GETDEVICEINFOR;
-            //msg.bupdate = false;            //需要从chip读数据
-            uint ret = parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            return m_Msg.errorcode;
-        }
-        public uint ClearBit(ParamContainer pc)
-        {
-            msg.owner = this;
-            msg.gm.sflname = sflname;
-            msg.task = TM.TM_BITOPERATION;
-            msg.task_parameterlist = pc;
-            //msg.bupdate = false;            //需要从chip读数据
-            uint ret = parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            return m_Msg.errorcode;
-        }
-#endif
         #endregion
 
         #endregion

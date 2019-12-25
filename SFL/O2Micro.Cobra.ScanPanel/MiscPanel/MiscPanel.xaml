@@ -20,6 +20,7 @@
         <s:Double x:Key="BarHeight">
             14
         </s:Double>
+        <src:DataColorConverter x:Key="datacolor"></src:DataColorConverter>
     </GroupBox.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -38,6 +39,7 @@
                             <Label VerticalContentAlignment="Center" Content=":" 
                             Margin="2" Padding="0" Focusable="false"></Label>
                             <Label VerticalContentAlignment="Center" Content="{Binding Path=pValue, Mode=OneWay}" 
+                                           Foreground="{Binding Path=IsRunning,Converter={StaticResource datacolor}}"
                             Margin="2" Padding="0" Focusable="false"></Label>
                         </StackPanel>
                     </Border>

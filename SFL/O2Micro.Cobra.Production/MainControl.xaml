@@ -120,16 +120,41 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Records">
-                <DataGrid Name="RecordsDataGrid" ItemsSource="{Binding}" Margin="5"
+                <DockPanel LastChildFill="True">
+                    <GroupBox Header="Summary" DockPanel.Dock="Top">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition></ColumnDefinition>
+                                <ColumnDefinition></ColumnDefinition>
+                                <ColumnDefinition></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                <Label HorizontalAlignment="Center">Total</Label>
+                                <Label HorizontalAlignment="Center" FontSize="14" FontWeight="Heavy" x:Name="TotalCountLabel">0</Label>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                <Label HorizontalAlignment="Center">Passed</Label>
+                                <Label HorizontalAlignment="Center" FontSize="14" FontWeight="Heavy" Foreground="Green" x:Name="PassedCountLabel">0</Label>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                <Label HorizontalAlignment="Center">Failed</Label>
+                                <Label HorizontalAlignment="Center" FontSize="14" FontWeight="Heavy" Foreground="Red" x:Name="FailedCountLabel">0</Label>
+                            </StackPanel>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="Record List">
+                        <DataGrid Name="RecordsDataGrid" ItemsSource="{Binding}" Margin="5"
                       AutoGenerateColumns="True" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False"
                       CanUserSortColumns="False" IsReadOnly="True" AreRowDetailsFrozen="False">
-                    <DataGrid.ColumnHeaderStyle>
-                        <Style TargetType="{x:Type DataGridColumnHeader}">
-                            <Setter Property="FontSize" Value="12"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                        </Style>
-                    </DataGrid.ColumnHeaderStyle>
-                </DataGrid>
+                            <DataGrid.ColumnHeaderStyle>
+                                <Style TargetType="{x:Type DataGridColumnHeader}">
+                                    <Setter Property="FontSize" Value="12"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                </Style>
+                            </DataGrid.ColumnHeaderStyle>
+                        </DataGrid>
+                    </GroupBox>
+                </DockPanel>
             </TabItem>
             <TabItem Header="MP Pack Maker" Name="CFGContainer">
                 <src:CFGMainControl x:Name="CFGTab"></src:CFGMainControl>

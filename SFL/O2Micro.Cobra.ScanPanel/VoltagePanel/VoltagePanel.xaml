@@ -25,6 +25,7 @@
         <src:ShiftConverter x:Key="sc"></src:ShiftConverter>
         <s:Double x:Key="THWidth">20</s:Double>
         <s:Double x:Key="IndexHeight">14</s:Double>
+        <src:DataColorConverter x:Key="datacolor"></src:DataColorConverter>
     </GroupBox.Resources>
     <GroupBox.Header>
         <Binding Path="pParent.voltageList" Mode="OneWay" Converter="{StaticResource hdrc}">
@@ -93,7 +94,7 @@
                                 </Label.Background>-->
                             </Label>
                             <Canvas Grid.Row="1" Name="listCanvas" Width="{Binding ElementName=wbase, Path=Width, Mode=TwoWay}" Height="{Binding ElementName=vListBox2, Path=Height, Mode=TwoWay, Converter={StaticResource wc2}, ConverterParameter=42}" Margin="2,0" ToolTip="{Binding Path=pTip}">
-                                <Rectangle Canvas.Bottom="0" Width="{Binding ElementName=listCanvas, Path=Width, Mode=TwoWay}" Fill="Gray">
+                                <Rectangle Canvas.Bottom="0" Width="{Binding ElementName=listCanvas, Path=Width, Mode=TwoWay}" Fill="LightGray">
                                     <Rectangle.Height>
                                         <MultiBinding Converter="{StaticResource bc}">
                                             <Binding Path="pMaxValue" Mode="TwoWay"></Binding>
@@ -113,10 +114,11 @@
                                         </MultiBinding>
                                     </Rectangle.Stroke>
                                 </Rectangle>
-                                <Rectangle Width="{Binding ElementName=listCanvas, Path=Width, Mode=TwoWay}" Height="{Binding ElementName=listCanvas, Path=Height}" Fill="DarkGray" Opacity="{Binding Path=pUsability}" Panel.ZIndex="3"></Rectangle>
+                                <Rectangle Width="{Binding ElementName=listCanvas, Path=Width, Mode=TwoWay}" Height="{Binding ElementName=listCanvas, Path=Height}" Fill="LightGray" Opacity="{Binding Path=pUsability}" Panel.ZIndex="3"></Rectangle>
                             </Canvas>
                             <Canvas Width="{Binding ElementName=wbase, Path=Width, Mode=TwoWay}" Grid.Row="{Binding Path=pIndex, Mode=OneWay, Converter={StaticResource pc}}">
-                                <TextBlock Name="Vol" FontSize="12" Text="{Binding Path=pValue, Mode=TwoWay}" Foreground="{Binding Path=pBleeding, Converter={StaticResource BldC}}">
+                                <TextBlock Name="Vol" FontSize="12" Text="{Binding Path=pValue, Mode=TwoWay}" 
+                                           Foreground="{Binding Path=IsRunning,Converter={StaticResource datacolor}}">
                                     <Canvas.Left>
                                         <MultiBinding Converter="{StaticResource sc}">
                                             <Binding Path="ActualWidth" Mode="TwoWay" ElementName="Vol"></Binding>
@@ -129,7 +131,7 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Line  Name="L1" X1="{StaticResource THWidth}" X2="{Binding ElementName=cvs, Path=Width}" Stroke="Gray" Y2="{Binding ElementName=L1, Path=Y1}">
+            <Line  Name="L1" X1="{StaticResource THWidth}" X2="{Binding ElementName=cvs, Path=Width}" Stroke="LightGray" Y2="{Binding ElementName=L1, Path=Y1}">
                 <Line.Y1>
                     <MultiBinding Converter="{StaticResource bc}">
                         <Binding Path="pMaxValue" Mode="TwoWay"></Binding>
@@ -139,7 +141,7 @@
                     </MultiBinding>
                 </Line.Y1>
             </Line>
-            <Line  Name="L2" X1="{StaticResource THWidth}" X2="{Binding Path=X2, ElementName=L1}" Stroke="Gray" Y2="{Binding ElementName=L2, Path=Y1}">
+            <Line  Name="L2" X1="{StaticResource THWidth}" X2="{Binding Path=X2, ElementName=L1}" Stroke="LightGray" Y2="{Binding ElementName=L2, Path=Y1}">
                 <Line.Y1>
                     <MultiBinding Converter="{StaticResource bc}">
                         <Binding Path="pMaxValue" Mode="TwoWay"></Binding>

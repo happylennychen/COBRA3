@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Root>
+  <Part Name="PreProject">
+    <PreExtensionBusType BusType="I2C" />
+    <PreExtension Name="OZ7710_C0_C1_X_03_20190523" />
+  </Part>
+  <Part Name="Device Connection Settings">
+    <DeviceList>
+      <Device Name="Device1" IsChecked="True" />
+      <Device Name="Device2" IsChecked="False" />
+      <Device Name="Device3" IsChecked="False" />
+      <Device Name="Device4" IsChecked="False" />
+    </DeviceList>
+  </Part>
+</Root>
