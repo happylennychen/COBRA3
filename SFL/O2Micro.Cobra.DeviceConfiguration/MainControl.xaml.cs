@@ -2244,6 +2244,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                                 #region 调用DEM API
                                 msg.owner = this;
                                 msg.gm.sflname = sflname;
+                                msg.funName = "Verify";
                                 var list = new AsyncObservableCollection<Parameter>();
                                 list.Add(p.parent);
                                 msg.task_parameterlist.parameterlist = list;
