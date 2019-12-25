@@ -129,11 +129,11 @@
                 </DataGrid.Columns>
             </DataGrid>
 		</Grid>
-		<Grid x:Name="BottomPanel" Height="40" VerticalAlignment="Bottom">
+		<Grid Height="40" VerticalAlignment="Bottom">
             <DockPanel LastChildFill="True">
                 <Button DockPanel.Dock="Right" x:Name="VerifyBtn" Content="{Binding btn_content}" Style="{DynamicResource btn-deviceConfiguration}" Click="VerifyBtn_Click"
                     IsEnabled="{Binding benable}" Visibility="{Binding visi}"/>
-                <Grid>
+                <Grid x:Name="BottomPanel">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="0.18*"/>
                         <ColumnDefinition Width="0.18*"/>
