@@ -38,10 +38,10 @@ using Microsoft.Research.DynamicDataDisplay.Common;
 using Microsoft.Research.DynamicDataDisplay.ViewportRestrictions;
 namespace O2Micro.Cobra.ScanPanel
 {
-	/// <summary>
-	/// MainControl.xaml 的交互逻辑
+    /// <summary>
+    /// MainControl.xaml 的交互逻辑
     /// </summary>
-	public partial class MainControl
+    public partial class MainControl
     {
         #region 变量定义
         bool isReentrant_Run = false;   //控制Run button的重入
@@ -266,8 +266,8 @@ namespace O2Micro.Cobra.ScanPanel
 
             foreach (DataColumn dc in table.Columns)
             {
-                string str = dc.ColumnName; 
-                if(str != "Time")
+                string str = dc.ColumnName;
+                if (str != "Time")
                     strlist.Add(str);
             }
 
@@ -303,7 +303,7 @@ namespace O2Micro.Cobra.ScanPanel
                         new Pen(br, 2),
                         mk,
                         new PenDescription(strlist[index])));//*/
-                    lAm.Add(Vplotter.AddLineGraph(data,2,strlist[index]));
+                    lAm.Add(Vplotter.AddLineGraph(data, 2, strlist[index]));
                 }
                 else if (group == "1")
                 {
@@ -346,7 +346,7 @@ namespace O2Micro.Cobra.ScanPanel
             {
                 GetSysInfo();
                 int i = 0;
-                if (msg.sm.dic.Count != 0)  
+                if (msg.sm.dic.Count != 0)
                 {
                     foreach (var item in msg.sm.dic)
                     {
@@ -520,7 +520,7 @@ namespace O2Micro.Cobra.ScanPanel
                                 dynamicdatalist.parameterlist.Add(p);
                             else
                                 if (msg.sm.gpios[Convert.ToInt32(GetHashTableValueByKey("GPIO", p.sfllist[sflname].nodetable))] == true)
-                                    dynamicdatalist.parameterlist.Add(p);
+                                dynamicdatalist.parameterlist.Add(p);
                         }
                 }
                 //根据pIndexGPIO来设置pUsability
@@ -537,7 +537,7 @@ namespace O2Micro.Cobra.ScanPanel
                                 dynamicdatalist.parameterlist.Add(p);
                             else
                                 if (msg.sm.gpios[Convert.ToInt32(GetHashTableValueByKey("GPIO", p.sfllist[sflname].nodetable))] == true)
-                                    dynamicdatalist.parameterlist.Add(p);
+                                dynamicdatalist.parameterlist.Add(p);
                         }
                 }
             }
@@ -616,7 +616,11 @@ namespace O2Micro.Cobra.ScanPanel
                     {
                         if (GetHashTableValueByKey("SubGroup", param.sfllist[sflname].nodetable) == "0")
                         {
-                            int i = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable), 16);
+                            int i;
+                            if (!param.sfllist[sflname].nodetable.ContainsKey("Order"))
+                                i = 0;
+                            else
+                                i = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable), 16);
                             cPnl.cViewModel[i].pValue = param.phydata;
                         }
                         /*else if (GetHashTableValueByKey("SubGroup", param.sfllist[sflname].nodetable) == "3")
@@ -862,217 +866,220 @@ namespace O2Micro.Cobra.ScanPanel
                     grp = GetHashTableValueByKey("Group", param.sfllist[sflname].nodetable);
                     switch (grp)
                     {
-                    #region VoltageGroup init
-                    case "0":
-                        subgrp = GetHashTableValueByKey("SubGroup", param.sfllist[sflname].nodetable);
-                        switch (subgrp)
-                        {
-                            case "0":
-                                CellVoltage cv = new CellVoltage(vPnl.vViewModel);
-                                cv.pIndex = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable));
-                                cv.pTip = GetHashTableValueByKey("Description", param.sfllist[sflname].nodetable);
-                                //cv.pUsability = Convert.ToBoolean(GetHashTableValueByKey("Usability", param.sfllist[sflname].nodetable));
-                                cv.pValue = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                                cv.pMaxValue = Convert.ToDouble(GetHashTableValueByKey("MaxValue", param.sfllist[sflname].nodetable));
-                                cv.pMinValue = Convert.ToDouble(GetHashTableValueByKey("MinValue", param.sfllist[sflname].nodetable));
-                                vPnl.vViewModel.voltageList.Add(cv);
-                                voltagelist.Add(param);
-                                break;
-                            case "1":
-                                vPnl.vViewModel.pOVTH = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                                staticdatalist.parameterlist.Add(param);
-                                break;
-                            case "2":
-                                vPnl.vViewModel.pUVTH = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                                staticdatalist.parameterlist.Add(param);
-                                break;
-                            case "3":
-                                CellNum = Convert.ToInt32(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                                staticdatalist.parameterlist.Add(param);
-                                break;
-                            //case "5"://Bleeding在第二次轮询加入，因为第一次cell voltage list可能顺序还不对
-                            //break;
-                        }
-                        break;
-                    #endregion
-                    #region TemperatrueGroup init
-                    case "1":
-                        subgrp = GetHashTableValueByKey("SubGroup", param.sfllist[sflname].nodetable);
-                        CellTemperature ct = new CellTemperature(tPnl.tViewModel);
-                        switch (subgrp)
-                        {
-                            case "0":   //内部温度
-                                ct.pIndex = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable), 16);
-                                ct.pTip = GetHashTableValueByKey("Description", param.sfllist[sflname].nodetable);
-                                ct.pUsability = Convert.ToBoolean(GetHashTableValueByKey("Usability", param.sfllist[sflname].nodetable));
-                                ct.pValue = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                                ct.pMaxValue = Convert.ToDouble(GetHashTableValueByKey("MaxValue", param.sfllist[sflname].nodetable));
-                                ct.pMinValue = Convert.ToDouble(GetHashTableValueByKey("MinValue", param.sfllist[sflname].nodetable));
-                                ct.pLabel = GetHashTableValueByKey("NickName", param.sfllist[sflname].nodetable);
-                                tPnl.tViewModel.itemperatureList.Add(ct);
-                                dynamicdatalist.parameterlist.Add(param);
-                                break;
-                            case "1":   //外部温度
-                                //CellTemperature ct = new CellTemperature(tPnl.tViewModel);
-                                ct.pIndex = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable), 16);
-                                ct.pTip = GetHashTableValueByKey("Description", param.sfllist[sflname].nodetable);
-                                ct.pUsability = Convert.ToBoolean(GetHashTableValueByKey("Usability", param.sfllist[sflname].nodetable));
-                                ct.pValue = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                                ct.pMaxValue = Convert.ToDouble(GetHashTableValueByKey("MaxValue", param.sfllist[sflname].nodetable));
-                                ct.pMinValue = Convert.ToDouble(GetHashTableValueByKey("MinValue", param.sfllist[sflname].nodetable));
-                                ct.pLabel = GetHashTableValueByKey("NickName", param.sfllist[sflname].nodetable);
-                                //string str = GetHashTableValueByKey("GPIO", param.sfllist[sflname].nodetable);
-                                if (GetHashTableValueByKey("GPIO", param.sfllist[sflname].nodetable) == "NoSuchKey")    //如果没有这个节点
-                                    ct.pIndexGPIO = 9999;
-                                else
-                                {
-                                    ct.pIndexGPIO = Convert.ToInt32(GetHashTableValueByKey("GPIO", param.sfllist[sflname].nodetable));
-                                    gpio_update = true; // need to update UI according to gpio
-                                }
-                                tPnl.tViewModel.etemperatureList.Add(ct);
-                                dynamicdatalist.parameterlist.Add(param);
-                                break;
-                            case "2":
-                                tPnl.tViewModel.pIOTTH = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                                staticdatalist.parameterlist.Add(param);
-                                break;
-                            case "3":
-                                tPnl.tViewModel.pIUTTH = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                                staticdatalist.parameterlist.Add(param);
-                                break;
-                            case "4":
-                                ECOT = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable)); //将ECOT值保存到本地
-                                tPnl.tViewModel.pEOTTH = ECOT;
-                                staticdatalist.parameterlist.Add(param);
-                                break;
-                            case "5":
-                                tPnl.tViewModel.pEUTTH = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                                staticdatalist.parameterlist.Add(param);
-                                break;
-                            case "6":        //如果有EDOT
-                                EDOT = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable)); //将EDOT值保存到本地
-                                staticdatalist.parameterlist.Add(param);
-                                break;
-                        }
-                        break;
-                    #endregion*/
-                    #region CurrentGroup init
-                    case "2":
-                        subgrp = GetHashTableValueByKey("SubGroup", param.sfllist[sflname].nodetable);
-                        switch (subgrp)
-                        {
-                            case "0":
-                                CellCurrent cc = new CellCurrent();
-                                cc.pValue = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                                cc.pMaxValue = Convert.ToDouble(GetHashTableValueByKey("MaxValue", param.sfllist[sflname].nodetable));
-                                cc.pMinValue = Convert.ToDouble(GetHashTableValueByKey("MinValue", param.sfllist[sflname].nodetable));
-                                cc.pIndex = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable));
-                                cc.pLabel = GetHashTableValueByKey("NickName", param.sfllist[sflname].nodetable);
-                                cc.pUsability = Convert.ToBoolean(GetHashTableValueByKey("Usability", param.sfllist[sflname].nodetable));  //有电流值，则设为可以显示
-                                if (GetHashTableValueByKey("GPIO", param.sfllist[sflname].nodetable) == "NoSuchKey")    //如果没有这个节点
-                                    cc.pIndexGPIO = 9999;
-                                else
-                                {
-                                    cc.pIndexGPIO = Convert.ToInt32(GetHashTableValueByKey("GPIO", param.sfllist[sflname].nodetable));
-                                    gpio_update = true;
-                                }
-                                cPnl.cViewModel.Add(cc);
-                                dynamicdatalist.parameterlist.Add(param);
-                                break;
-                            /*case "1":
-                                cPnl.cViewModel.pCOCTH = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                                staticdatalist.parameterlist.Add(param);
-                                break;
-                            case "2":
-                                cPnl.cViewModel.pDOCTH = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                                staticdatalist.parameterlist.Add(param);
-                                break;
-                            case "3":
-                                cPnl.cViewModel.pCharge = Convert.ToBoolean(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                                dynamicdatalist.parameterlist.Add(param);
-                                break;
-                            case "4":
-                                cPnl.cViewModel.pDischarge = Convert.ToBoolean(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                                dynamicdatalist.parameterlist.Add(param);
-                                break;*/
-                        }
-                        break;
-                    #endregion//*/
-                    #region FDGroup init
-                    case "3":           //第一次轮询找出所有的FD（但不管timer）
-                        subgrp = GetHashTableValueByKey("SubGroup", param.sfllist[sflname].nodetable);
-                        switch (subgrp)
-                        {
-                            case "0":
-                                FetDisable fd = new FetDisable(fdPnl.pfdViewModel);
-                                fd.pIndex = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable), 16);
-                                fd.pTip = GetHashTableValueByKey("Description", param.sfllist[sflname].nodetable);
-                                fd.pLabel = GetHashTableValueByKey("NickName", param.sfllist[sflname].nodetable);
-                                //cv.pUsability = Convert.ToBoolean(GetHashTableValueByKey("Usability", param.sfllist[sflname].nodetable));
-                                fd.pValue = (Convert.ToInt16(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable)) != 0) ? true : false;
-                                fd.pTimer = null;
-                                fdPnl.pfdViewModel.FetDisableList.Add(fd);
-                                //fdlist.Add(param);
-                                dynamicdatalist.parameterlist.Add(param);
-                                break;
-                        }
-                        break;
-                    #endregion
-                    #region SEGroup init
-                    case "4":
-                        SafetyEvent se = new SafetyEvent(sePnl.pseViewModel);
-                        se.pIndex = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable), 16);
-                        se.pTip = GetHashTableValueByKey("Description", param.sfllist[sflname].nodetable);
-                        se.pLabel = GetHashTableValueByKey("NickName", param.sfllist[sflname].nodetable);
-                        //cv.pUsability = Convert.ToBoolean(GetHashTableValueByKey("Usability", param.sfllist[sflname].nodetable));
-                        se.pValue = (Convert.ToInt16(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable)) != 0) ? true : false;
-                        if (param.sfllist[sflname].nodetable.Contains("BClearable"))
-                            se.pClearable = Convert.ToBoolean(GetHashTableValueByKey("BClearable", param.sfllist[sflname].nodetable));
-                        else
-                            se.pClearable = true;
-                        se.pParam = param;
-                        sePnl.pseViewModel.SafetyEventList.Add(se);
-                        //fdlist.Add(param);
-                        dynamicdatalist.parameterlist.Add(param);
-                        break;
-                    #endregion
-                    #region MISCGroup init
-                    case "6":
-                        Misc mc = new Misc(mcPnl.pmcViewModel);
-                        mc.pIndex = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable), 16);
-                        mc.pTip = GetHashTableValueByKey("Description", param.sfllist[sflname].nodetable);
-                        mc.pLabel = GetHashTableValueByKey("NickName", param.sfllist[sflname].nodetable);
-                        mc.pValue = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
-                        mc.pParam = param;
-                        mcPnl.pmcViewModel.MiscList.Add(mc);
-                        dynamicdatalist.parameterlist.Add(param);
-                        break;
-                    #endregion
-                    #region Special Group
-                    case "7":
-                        /*subgrp = GetHashTableValueByKey("SubGroup", param.sfllist[sflname].nodetable);
-                        switch (subgrp)
-                        {
-                            case "0":
-                                break;
-                            case "1":
-                                break;
-                            case "2":
-                                break;
-                            case "3":
-                                break;
-                            case "4":
-                                break;
-                        }*/
-                        staticdatalist.parameterlist.Add(param);
-                        break;
-                    #endregion
-                }
+                        #region VoltageGroup init
+                        case "0":
+                            subgrp = GetHashTableValueByKey("SubGroup", param.sfllist[sflname].nodetable);
+                            switch (subgrp)
+                            {
+                                case "0":
+                                    CellVoltage cv = new CellVoltage(vPnl.vViewModel);
+                                    cv.pIndex = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable));
+                                    cv.pTip = GetHashTableValueByKey("Description", param.sfllist[sflname].nodetable);
+                                    //cv.pUsability = Convert.ToBoolean(GetHashTableValueByKey("Usability", param.sfllist[sflname].nodetable));
+                                    cv.pValue = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                                    cv.pMaxValue = Convert.ToDouble(GetHashTableValueByKey("MaxValue", param.sfllist[sflname].nodetable));
+                                    cv.pMinValue = Convert.ToDouble(GetHashTableValueByKey("MinValue", param.sfllist[sflname].nodetable));
+                                    vPnl.vViewModel.voltageList.Add(cv);
+                                    voltagelist.Add(param);
+                                    break;
+                                case "1":
+                                    vPnl.vViewModel.pOVTH = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                                    staticdatalist.parameterlist.Add(param);
+                                    break;
+                                case "2":
+                                    vPnl.vViewModel.pUVTH = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                                    staticdatalist.parameterlist.Add(param);
+                                    break;
+                                case "3":
+                                    CellNum = Convert.ToInt32(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                                    staticdatalist.parameterlist.Add(param);
+                                    break;
+                                    //case "5"://Bleeding在第二次轮询加入，因为第一次cell voltage list可能顺序还不对
+                                    //break;
+                            }
+                            break;
+                        #endregion
+                        #region TemperatrueGroup init
+                        case "1":
+                            subgrp = GetHashTableValueByKey("SubGroup", param.sfllist[sflname].nodetable);
+                            CellTemperature ct = new CellTemperature(tPnl.tViewModel);
+                            switch (subgrp)
+                            {
+                                case "0":   //内部温度
+                                    ct.pIndex = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable), 16);
+                                    ct.pTip = GetHashTableValueByKey("Description", param.sfllist[sflname].nodetable);
+                                    ct.pUsability = Convert.ToBoolean(GetHashTableValueByKey("Usability", param.sfllist[sflname].nodetable));
+                                    ct.pValue = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                                    ct.pMaxValue = Convert.ToDouble(GetHashTableValueByKey("MaxValue", param.sfllist[sflname].nodetable));
+                                    ct.pMinValue = Convert.ToDouble(GetHashTableValueByKey("MinValue", param.sfllist[sflname].nodetable));
+                                    ct.pLabel = GetHashTableValueByKey("NickName", param.sfllist[sflname].nodetable);
+                                    tPnl.tViewModel.itemperatureList.Add(ct);
+                                    dynamicdatalist.parameterlist.Add(param);
+                                    break;
+                                case "1":   //外部温度
+                                            //CellTemperature ct = new CellTemperature(tPnl.tViewModel);
+                                    ct.pIndex = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable), 16);
+                                    ct.pTip = GetHashTableValueByKey("Description", param.sfllist[sflname].nodetable);
+                                    ct.pUsability = Convert.ToBoolean(GetHashTableValueByKey("Usability", param.sfllist[sflname].nodetable));
+                                    ct.pValue = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                                    ct.pMaxValue = Convert.ToDouble(GetHashTableValueByKey("MaxValue", param.sfllist[sflname].nodetable));
+                                    ct.pMinValue = Convert.ToDouble(GetHashTableValueByKey("MinValue", param.sfllist[sflname].nodetable));
+                                    ct.pLabel = GetHashTableValueByKey("NickName", param.sfllist[sflname].nodetable);
+                                    //string str = GetHashTableValueByKey("GPIO", param.sfllist[sflname].nodetable);
+                                    if (GetHashTableValueByKey("GPIO", param.sfllist[sflname].nodetable) == "NoSuchKey")    //如果没有这个节点
+                                        ct.pIndexGPIO = 9999;
+                                    else
+                                    {
+                                        ct.pIndexGPIO = Convert.ToInt32(GetHashTableValueByKey("GPIO", param.sfllist[sflname].nodetable));
+                                        gpio_update = true; // need to update UI according to gpio
+                                    }
+                                    tPnl.tViewModel.etemperatureList.Add(ct);
+                                    dynamicdatalist.parameterlist.Add(param);
+                                    break;
+                                case "2":
+                                    tPnl.tViewModel.pIOTTH = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                                    staticdatalist.parameterlist.Add(param);
+                                    break;
+                                case "3":
+                                    tPnl.tViewModel.pIUTTH = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                                    staticdatalist.parameterlist.Add(param);
+                                    break;
+                                case "4":
+                                    ECOT = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable)); //将ECOT值保存到本地
+                                    tPnl.tViewModel.pEOTTH = ECOT;
+                                    staticdatalist.parameterlist.Add(param);
+                                    break;
+                                case "5":
+                                    tPnl.tViewModel.pEUTTH = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                                    staticdatalist.parameterlist.Add(param);
+                                    break;
+                                case "6":        //如果有EDOT
+                                    EDOT = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable)); //将EDOT值保存到本地
+                                    staticdatalist.parameterlist.Add(param);
+                                    break;
+                            }
+                            break;
+                        #endregion*/
+                        #region CurrentGroup init
+                        case "2":
+                            subgrp = GetHashTableValueByKey("SubGroup", param.sfllist[sflname].nodetable);
+                            switch (subgrp)
+                            {
+                                case "0":
+                                    CellCurrent cc = new CellCurrent();
+                                    cc.pValue = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                                    cc.pMaxValue = Convert.ToDouble(GetHashTableValueByKey("MaxValue", param.sfllist[sflname].nodetable));
+                                    cc.pMinValue = Convert.ToDouble(GetHashTableValueByKey("MinValue", param.sfllist[sflname].nodetable));
+                                    if (!param.sfllist[sflname].nodetable.ContainsKey("Order"))
+                                        cc.pIndex = 0;
+                                    else
+                                        cc.pIndex = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable));
+                                    cc.pLabel = GetHashTableValueByKey("NickName", param.sfllist[sflname].nodetable);
+                                    cc.pUsability = Convert.ToBoolean(GetHashTableValueByKey("Usability", param.sfllist[sflname].nodetable));  //有电流值，则设为可以显示
+                                    if (GetHashTableValueByKey("GPIO", param.sfllist[sflname].nodetable) == "NoSuchKey")    //如果没有这个节点
+                                        cc.pIndexGPIO = 9999;
+                                    else
+                                    {
+                                        cc.pIndexGPIO = Convert.ToInt32(GetHashTableValueByKey("GPIO", param.sfllist[sflname].nodetable));
+                                        gpio_update = true;
+                                    }
+                                    cPnl.cViewModel.Add(cc);
+                                    dynamicdatalist.parameterlist.Add(param);
+                                    break;
+                                    /*case "1":
+                                        cPnl.cViewModel.pCOCTH = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                                        staticdatalist.parameterlist.Add(param);
+                                        break;
+                                    case "2":
+                                        cPnl.cViewModel.pDOCTH = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                                        staticdatalist.parameterlist.Add(param);
+                                        break;
+                                    case "3":
+                                        cPnl.cViewModel.pCharge = Convert.ToBoolean(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                                        dynamicdatalist.parameterlist.Add(param);
+                                        break;
+                                    case "4":
+                                        cPnl.cViewModel.pDischarge = Convert.ToBoolean(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                                        dynamicdatalist.parameterlist.Add(param);
+                                        break;*/
+                            }
+                            break;
+                        #endregion//*/
+                        #region FDGroup init
+                        case "3":           //第一次轮询找出所有的FD（但不管timer）
+                            subgrp = GetHashTableValueByKey("SubGroup", param.sfllist[sflname].nodetable);
+                            switch (subgrp)
+                            {
+                                case "0":
+                                    FetDisable fd = new FetDisable(fdPnl.pfdViewModel);
+                                    fd.pIndex = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable), 16);
+                                    fd.pTip = GetHashTableValueByKey("Description", param.sfllist[sflname].nodetable);
+                                    fd.pLabel = GetHashTableValueByKey("NickName", param.sfllist[sflname].nodetable);
+                                    //cv.pUsability = Convert.ToBoolean(GetHashTableValueByKey("Usability", param.sfllist[sflname].nodetable));
+                                    fd.pValue = (Convert.ToInt16(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable)) != 0) ? true : false;
+                                    fd.pTimer = null;
+                                    fdPnl.pfdViewModel.FetDisableList.Add(fd);
+                                    //fdlist.Add(param);
+                                    dynamicdatalist.parameterlist.Add(param);
+                                    break;
+                            }
+                            break;
+                        #endregion
+                        #region SEGroup init
+                        case "4":
+                            SafetyEvent se = new SafetyEvent(sePnl.pseViewModel);
+                            se.pIndex = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable), 16);
+                            se.pTip = GetHashTableValueByKey("Description", param.sfllist[sflname].nodetable);
+                            se.pLabel = GetHashTableValueByKey("NickName", param.sfllist[sflname].nodetable);
+                            //cv.pUsability = Convert.ToBoolean(GetHashTableValueByKey("Usability", param.sfllist[sflname].nodetable));
+                            se.pValue = (Convert.ToInt16(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable)) != 0) ? true : false;
+                            if (param.sfllist[sflname].nodetable.Contains("BClearable"))
+                                se.pClearable = Convert.ToBoolean(GetHashTableValueByKey("BClearable", param.sfllist[sflname].nodetable));
+                            else
+                                se.pClearable = true;
+                            se.pParam = param;
+                            sePnl.pseViewModel.SafetyEventList.Add(se);
+                            //fdlist.Add(param);
+                            dynamicdatalist.parameterlist.Add(param);
+                            break;
+                        #endregion
+                        #region MISCGroup init
+                        case "6":
+                            Misc mc = new Misc(mcPnl.pmcViewModel);
+                            mc.pIndex = Convert.ToInt32(GetHashTableValueByKey("Order", param.sfllist[sflname].nodetable), 16);
+                            mc.pTip = GetHashTableValueByKey("Description", param.sfllist[sflname].nodetable);
+                            mc.pLabel = GetHashTableValueByKey("NickName", param.sfllist[sflname].nodetable);
+                            mc.pValue = Convert.ToDouble(GetHashTableValueByKey("DefValue", param.sfllist[sflname].nodetable));
+                            mc.pParam = param;
+                            mcPnl.pmcViewModel.MiscList.Add(mc);
+                            dynamicdatalist.parameterlist.Add(param);
+                            break;
+                        #endregion
+                        #region Special Group
+                        case "7":
+                            /*subgrp = GetHashTableValueByKey("SubGroup", param.sfllist[sflname].nodetable);
+                            switch (subgrp)
+                            {
+                                case "0":
+                                    break;
+                                case "1":
+                                    break;
+                                case "2":
+                                    break;
+                                case "3":
+                                    break;
+                                case "4":
+                                    break;
+                            }*/
+                            staticdatalist.parameterlist.Add(param);
+                            break;
+                            #endregion
+                    }
 
                     //param.PropertyChanged += new PropertyChangedEventHandler(param_PropertyChanged);  //用RefreshUI替代
                 }
             }
-            catch(System.Exception e)
+            catch (System.Exception e)
             {
                 MessageBox.Show(e.Message);
             }
@@ -1324,7 +1331,7 @@ namespace O2Micro.Cobra.ScanPanel
 
             for (; MissingGroup > 0; MissingGroup--)
             {
-                DeleteColumn(FSWGrid.ColumnDefinitions, MissingGroup-1);
+                DeleteColumn(FSWGrid.ColumnDefinitions, MissingGroup - 1);
             }
 
             if (sePnl_empty == false)
@@ -1454,7 +1461,7 @@ namespace O2Micro.Cobra.ScanPanel
                 logUIdata.logbuf.Rows.Add(row);
             }
             #endregion*/
-        #endregion
+            #endregion
 
             LibInfor.AssemblyRegister(Assembly.GetExecutingAssembly(), ASSEMBLY_TYPE.SFL);
 
@@ -1736,7 +1743,7 @@ namespace O2Micro.Cobra.ScanPanel
             //if (DBManager.GetLogsInforV2(sflname, ref records) != -1)//Issue1428 Leon
             try
             {
-                if(session_id != 0 && session_row_number!=0)
+                if (session_id != 0 && session_row_number != 0)
                     DBManager2.ScanSFLUpdateSessionSize(session_id, session_row_number);
                 DBManager2.ScanSFLGetSessionsInfor(sflname, ref records);
             }
@@ -1853,7 +1860,7 @@ namespace O2Micro.Cobra.ScanPanel
                     string interval = "";
                     if (scanratelist.Count != 0)
                     {
-                         interval= ScanInterval.SelectedItem.ToString();
+                        interval = ScanInterval.SelectedItem.ToString();
                     }
                     else
                     {
@@ -1915,11 +1922,11 @@ namespace O2Micro.Cobra.ScanPanel
             {
                 v.IsRunning = b;
             }
-            foreach(var c in cPnl.cViewModel)
+            foreach (var c in cPnl.cViewModel)
             {
                 c.IsRunning = b;
             }
-            foreach(var it in tPnl.tViewModel.itemperatureList)
+            foreach (var it in tPnl.tViewModel.itemperatureList)
             {
                 it.IsRunning = b;
             }
@@ -1927,7 +1934,7 @@ namespace O2Micro.Cobra.ScanPanel
             {
                 et.IsRunning = b;
             }
-            foreach(var m in mcPnl.pmcViewModel.MiscList)
+            foreach (var m in mcPnl.pmcViewModel.MiscList)
             {
                 m.IsRunning = b;
             }
