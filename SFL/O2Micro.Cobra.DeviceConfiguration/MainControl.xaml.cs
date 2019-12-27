@@ -495,7 +495,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             string originalfilename = System.IO.Path.GetFileNameWithoutExtension(cfgfullpath);
             string originalfolder = System.IO.Path.GetDirectoryName(cfgfullpath);
-            string newfolder = System.IO.Path.Combine(originalfolder, originalfilename + "-" + DateTime.Now.ToString("yyyyMMddhhmmss"));
+            string newfolder = System.IO.Path.Combine(originalfolder, originalfilename + "-" + DateTime.Now.ToString("yyyyMMddHHmmss"));
             if (!Directory.Exists(newfolder))
                 Directory.CreateDirectory(newfolder);
             string filename = System.IO.Path.GetFileName(cfgfullpath);
@@ -1112,8 +1112,9 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             //XmlText filepath = doc.CreateTextNode(fullpath);
             //root.AppendChild(item);
             //item.AppendChild(filepath);
-
-            SharedAPI.XmlAddOneNode(doc, root, COBRA_GLOBAL.Constant.CONFIG_FILE_PATH_NODE, fullpath, );
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            dic.Add(ConstantSettings.OCE_TOKEN_NODE, COBRA_GLOBAL.CurrentOCETokenMD5);
+            SharedAPI.XmlAddOrUpdateOneNode(doc, root, COBRA_GLOBAL.Constant.CONFIG_FILE_PATH_NODE, fullpath, dic);
 
             doc.Save(settingfilepath);
         }

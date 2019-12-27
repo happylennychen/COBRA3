@@ -697,5 +697,38 @@ namespace O2Micro.Cobra.Common
             entry.AppendChild(xe);
             return xe;
         }
+
+        public static XmlNode FindOneNode(XmlDocument doc, string nodeName, Dictionary<string, string> attributes = null)
+        {
+            StringBuilder XPath = new StringBuilder();
+
+            XPath.Append("descendant::");
+            XPath.Append(nodeName);
+
+            if (attributes != null)
+            {
+                XPath.Append("[");
+                foreach (var attr in attributes)
+                {
+                    XPath.Append($"@{attr.Key}='{attr.Value}'");
+                    if (attr.Key != attributes.Keys.Last())
+                        XPath.Append(" and ");
+                }
+                XPath.Append("]");
+            }
+            return doc.DocumentElement.SelectSingleNode(XPath.ToString());
+        }
+
+        public static XmlNode XmlAddOrUpdateOneNode(XmlDocument doc, XmlElement entry, string nodeName, string nodeInnerText, Dictionary<string, string> attributes = null)
+        {
+            var xn = FindOneNode(doc, nodeName, attributes);
+            if (xn != null)
+            {
+                xn.InnerText = nodeInnerText;
+            }
+            else
+                xn = XmlAddOneNode(doc, entry, nodeName, nodeInnerText, attributes);
+            return xn;
+        }
     }
 }
