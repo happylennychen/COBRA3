@@ -659,5 +659,43 @@ namespace O2Micro.Cobra.Common
             }
             return output;
         }
+
+        /// <summary>
+        /// 从Device XML的PRODUCT_FAMILY节点获取设定值。
+        /// </summary>
+        public static string GetProductFamilyFromExtension()
+        {
+            string xmlfilepath = FolderMap.m_extension_work_folder + FolderMap.m_dev_descrip_xml_name + FolderMap.m_extension_work_ext;
+            XmlDocument doc = new XmlDocument();
+            doc.Load(xmlfilepath);
+            return doc.DocumentElement.GetAttribute("PRODUCT_FAMILY");
+        }
+
+        /// <summary>
+        /// 向doc xml的entry节点加入子节点，子节点的信息由参数给出
+        /// </summary>
+        public static XmlElement XmlAddOneNode(XmlDocument doc, XmlElement entry, string nodeName, string nodeInnerText = "", Dictionary<string, string> attributes = null)
+        {
+            XmlElement xe = doc.CreateElement(nodeName);
+
+            if (attributes != null)
+            {
+                foreach (var attr in attributes)
+                {
+                    XmlAttribute xa = doc.CreateAttribute(attr.Key);
+                    XmlText value = doc.CreateTextNode(attr.Value);
+                    xa.AppendChild(value);
+                    xe.SetAttributeNode(xa);
+                }
+            }
+            if (nodeInnerText != string.Empty)
+            {
+                XmlText content = doc.CreateTextNode(nodeInnerText);
+                xe.AppendChild(content);
+            }
+
+            entry.AppendChild(xe);
+            return xe;
+        }
     }
 }

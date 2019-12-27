@@ -75,7 +75,7 @@ namespace O2Micro.Cobra.Shell
         {
             foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
             {
-                if (btn.btnlabel == CobraGlobal.Constant.OldBoardConfigName || btn.btnlabel == CobraGlobal.Constant.NewBoardConfigName)
+                if (btn.btnlabel == COBRA_GLOBAL.Constant.OldBoardConfigName || btn.btnlabel == COBRA_GLOBAL.Constant.NewBoardConfigName)
                 {
                     BoardConfigsflname = btn.btnlabel;
                     return true;
@@ -88,7 +88,7 @@ namespace O2Micro.Cobra.Shell
         {
             foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
             {
-                if (btn.btnlabel == CobraGlobal.Constant.OldBoardConfigName || btn.btnlabel == CobraGlobal.Constant.NewBoardConfigName)
+                if (btn.btnlabel == COBRA_GLOBAL.Constant.OldBoardConfigName || btn.btnlabel == COBRA_GLOBAL.Constant.NewBoardConfigName)
                 {
                     return btn.id;
                 }
@@ -103,13 +103,15 @@ namespace O2Micro.Cobra.Shell
         }
         private string GetPreviousSettingsFilePath()
         {
-            string settingfilepath = System.IO.Path.Combine(FolderMap.m_currentproj_folder, "settings.xml");
+            string settingfilepath = System.IO.Path.Combine(FolderMap.m_currentproj_folder, COBRA_GLOBAL.Constant.SETTINGS_FILE_NAME);
             XmlDocument doc = new XmlDocument();
             doc.Load(settingfilepath);
             XmlElement root = doc.DocumentElement;
-            if (root.FirstChild != null && root.FirstChild.Name == "BoardConfigFileName")
-                return root.FirstChild.InnerText;
-            return "";
+            var node = root.SelectSingleNode(COBRA_GLOBAL.Constant.CONFIG_FILE_PATH_NODE);
+            if (node != null)
+                return node.InnerText;
+            else
+                return "";
         }
         private void LoadPreviousSettings()
         {
@@ -118,18 +120,16 @@ namespace O2Micro.Cobra.Shell
                 string filepath = GetPreviousSettingsFilePath();
                 if (filepath == "")
                 {
-                    BoardConfigSFL.LoadBoardConfigFromInternalMemory();
+                    BoardConfigSFL.LoadConfigFromInternalMemory();
                     return;
                 }
-                BoardConfigSFL.BoardConfigAutoLoadFile(filepath);
+                BoardConfigSFL.Preload(filepath);
             }
             catch (Exception e)
             {
                 MessageBox.Show(e.Message + "The default values will be used in Board Settings.");
-                //set Settings.xml content to ""
-                //Load default
-                BoardConfigSFL.LoadBoardConfigFromInternalMemory();
-                BoardConfigSFL.SaveBoardConfigFilePath("");
+                BoardConfigSFL.LoadConfigFromInternalMemory();
+                BoardConfigSFL.SaveConfigFilePath("");
                 return;
             }
         }

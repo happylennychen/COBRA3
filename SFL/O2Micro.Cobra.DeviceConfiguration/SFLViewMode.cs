@@ -100,7 +100,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             {
                 MainControl o = i.item as MainControl;
                 if(o != null)
-                    if (o.sflname == CobraGlobal.Constant.NewBoardConfigName)
+                    if (o.sflname == COBRA_GLOBAL.Constant.NewBoardConfigName)
                         return o;
             }
             return null;
@@ -271,7 +271,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         break;
                 }
             }
-            if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+            if (sflname == COBRA_GLOBAL.Constant.OldBoardConfigName || sflname == COBRA_GLOBAL.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
                 model.bsubmenu = false;
             else
                 model.bsubmenu = (model.brone | model.bwone);

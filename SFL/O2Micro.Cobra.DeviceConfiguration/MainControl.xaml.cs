@@ -75,7 +75,15 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         public SFLViewModel cfgViewModel { get; set; }
 
         public SFLViewModel boardViewModel { get; set; }
-
+        public List<SFLModel> TotalList
+        {
+            get
+            {
+                var list = cfgViewModel.sfl_parameterlist.ToList();
+                list.AddRange(boardViewModel.sfl_parameterlist.ToList());
+                return list;
+            }
+        }
         private BackgroundWorker m_BackgroundWorker;// 申明后台对象
         private ControlMessage m_CtrlMg = new ControlMessage();
 
@@ -170,7 +178,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         break;
                 }
             }
-            GetProductFamily();
+            ProductFamily = SharedAPI.GetProductFamilyFromExtension();
             #endregion
 
             InitalUI();
@@ -183,10 +191,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             cfgViewModel = new SFLViewModel(pParent, this, sflname);
             boardViewModel = new SFLViewModel(pParent, this, BoardConfigLabel);
 
-            if (isBoardConfig())
-            {
-                SaveBoardConfigToInternalMemory();//Issue1378 Leon
-            }
+            SaveConfigToInternalMemory();//Issue1378 Leon
 
             PasswordPopControl.SetParent(mDataGrid);
             WarningPopControl.SetParent(mDataGrid);
@@ -221,14 +226,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 GroupedCustomers = new ListCollectionView(cfgViewModel.sfl_parameterlist);
             GroupedCustomers.GroupDescriptions.Add(new PropertyGroupDescription("catalog"));
             mDataGrid.ItemsSource = GroupedCustomers;
-        }
-
-        private void GetProductFamily()
-        {
-            string xmlfilepath = FolderMap.m_extension_work_folder + FolderMap.m_dev_descrip_xml_name + FolderMap.m_extension_work_ext;
-            XmlDocument doc = new XmlDocument();
-            doc.Load(xmlfilepath);
-            ProductFamily = doc.DocumentElement.GetAttribute(ConstantSettings.PRODUCT_FAMILY_NODE);
         }
 
         public void InitalUI()
@@ -346,7 +343,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         btn.Content = "Erase";
                         break;
                 }
-            }            
+            }
             if (ui_config.GetBtnControlByName("VerifyBtn") == null)
             {
                 VerifyBtn.Visibility = Visibility.Collapsed;    //默认隐藏
@@ -405,7 +402,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         }
         private bool isBoardConfig()
         {
-            return sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName;//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
+            return sflname == COBRA_GLOBAL.Constant.OldBoardConfigName || sflname == COBRA_GLOBAL.Constant.NewBoardConfigName;//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
         }
         #region Save
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
@@ -423,43 +420,12 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
             string fullpath = "";
             string chipname = GetChipName();    //Issue1373
-                                                //string MD5ShortCode = GetShortCode(GetUIMD5Code(viewmode.sfl_parameterlist.ToList()));
-                                                //if (sflname == CobraGlobal.Constant.OldBoardConfigName || sflname == CobraGlobal.Constant.NewBoardConfigName)//support them both in COBRA2.00.15, so all old and new OCEs will work fine.//Issue 1426 Leon
-                                                //{
-                                                //    Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();
-                                                //    saveFileDialog.FilterIndex = 1;
-                                                //    saveFileDialog.RestoreDirectory = true;
 
-            //    saveFileDialog.FileName = chipname + "-" + MD5ShortCode;//Issue1373 Leon
-            //    saveFileDialog.Title = "Save Board Config file";
-            //    saveFileDialog.Filter = "Board Config file (*.board)|*.board||";
-            //    saveFileDialog.DefaultExt = "board";
-
-            //    saveFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
-            //    if (saveFileDialog.ShowDialog() == true)
-            //    {
-            //        if (parent == null) return;
-            //        else
-            //        {
-            //            fullpath = saveFileDialog.FileName;
-            //            SaveBoardFile(fullpath);
-            //        }
-            //    }
-            //    else return;
-
-            //    StatusLabel.Content = fullpath;
-
-            //    SaveBoardConfigFilePath(fullpath);
-            //}
-            //else
-            //{
             Microsoft.Win32.SaveFileDialog saveFileDialog = new Microsoft.Win32.SaveFileDialog();
             saveFileDialog.FilterIndex = 1;
             saveFileDialog.RestoreDirectory = true;
 
             saveFileDialog.FileName = chipname;// + "-" + DateTime.Now.ToString("yyyyMMddHHmmss");//Issue1373 Leon
-                                               //saveFileDialog.Title = "Save Configuration File";
-                                               //saveFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg|c file (*.c)|*.c|h file (*.h)|*.h||";
             saveFileDialog.Title = "Save File";       //Issue1513 Leon
             saveFileDialog.Filter = "Device Configuration file (*.cfg)|*.cfg|c file (*.c)|*.c|h file (*.h)|*.h||";
             saveFileDialog.DefaultExt = "cfg";
@@ -472,12 +438,12 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 {
                     fullpath = saveFileDialog.FileName;
                     SaveFile(ref fullpath);
+                    SaveConfigFilePath(fullpath);//Issue1378 Leon
                 }
             }
             else return;
 
             StatusLabel.Content = fullpath;
-            //}
         }
 
         private UInt32 ParameterValidityCheck()   //Issue1607 Leon  check parameter validity before save
@@ -559,62 +525,39 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             doc.Load(cfgfullpath);
             XmlElement root = doc.DocumentElement;
 
-            string SOCETokenMD5 = CobraGlobal.CurrentOCETokenMD5;
+            string SOCETokenMD5 = COBRA_GLOBAL.CurrentOCETokenMD5;
             string SCFGVersion = ConstantSettings.CFG_VERSION_INT.ToString();
-            XmlAddOneNode(doc, root, ConstantSettings.CFG_VERSION_NODE, SCFGVersion);
+            SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.CFG_VERSION_NODE, SCFGVersion);
 
-            XmlAddOneNode(doc, root, ConstantSettings.OCE_TOKEN_NODE, SOCETokenMD5);
+            SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.OCE_TOKEN_NODE, SOCETokenMD5);
 
-            XmlAddOneNode(doc, root, ConstantSettings.PRODUCT_FAMILY_NODE, ProductFamily);
+            SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.PRODUCT_FAMILY_NODE, ProductFamily);
 
-            XmlAddOneNode(doc, root, ConstantSettings.BIN_MD5_NODE, BIN_MD5_STR);
+            SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.BIN_MD5_NODE, BIN_MD5_STR);
 
             var cfgList = cfgViewModel.sfl_parameterlist.ToList();
             CreateSubNodes(doc, root, ConstantSettings.CFG_NODE, cfgList);
             var boardList = boardViewModel.sfl_parameterlist.ToList();
             CreateSubNodes(doc, root, ConstantSettings.BOARD_NODE, boardList);
 
-            List<SFLModel> totalList = new List<SFLModel>(cfgList);
-            totalList.AddRange(boardList);
-
             string hash;
-            hash = GetUIMD5Code(totalList, BIN_MD5_STR);
-            XmlAddOneNode(doc, root, ConstantSettings.MD5_NODE, hash);
+            hash = GetUIMD5Code(TotalList, BIN_MD5_STR);
+            SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.MD5_NODE, hash);
 
             doc.Save(cfgfullpath);
         }
 
         private void CreateSubNodes(XmlDocument doc, XmlElement entry, string nodeName, List<SFLModel> list)
         {
-            var cfgentry = XmlAddOneNode(doc, entry, nodeName);
+            var cfgentry = SharedAPI.XmlAddOneNode(doc, entry, nodeName);
             foreach (SFLModel model in list)
             {
                 if (model == null) continue;
-                string strval;
-                switch (model.editortype)
-                {
-                    case 0:
-                        {
-                            strval = model.sphydata;
-                            break;
-                        }
-                    case 1: //ComboBox
-                        {
-                            strval = model.itemlist[model.listindex];
-                            break;
-                        }
-                    case 2:
-                        {
-                            strval = String.Format("{0:F1}", model.data);
-                            break;
-                        }
-                    default:
-                        strval = model.sphydata;
-                        break; ;
-                }
+                string strval = string.Empty;
+                model.GetStringValue(ref strval);
                 var dic = new Dictionary<string, string>();
                 dic.Add("Name", model.nickname);
-                XmlAddOneNode(doc, cfgentry, "item", strval, dic);
+                SharedAPI.XmlAddOneNode(doc, cfgentry, "item", strval, dic);
             }
         }
 
@@ -636,30 +579,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
             else
                 return string.Empty;        //对于Register Config来说，不产生hex文件，也没有BIN_MD5
-        }
-
-        private XmlElement XmlAddOneNode(XmlDocument doc, XmlElement entry, string nodeName, string nodeInnerText = "", Dictionary<string, string> attributes = null)
-        {
-            XmlElement xe = doc.CreateElement(nodeName);
-
-            if (attributes != null)
-            {
-                foreach (var attr in attributes)
-                {
-                    XmlAttribute xa = doc.CreateAttribute(attr.Key);
-                    XmlText value = doc.CreateTextNode(attr.Value);
-                    xa.AppendChild(value);
-                    xe.SetAttributeNode(xa);
-                }
-            }
-            if (nodeInnerText != string.Empty)
-            {
-                XmlText content = doc.CreateTextNode(nodeInnerText);
-                xe.AppendChild(content);
-            }
-
-            entry.AppendChild(xe);
-            return xe;
         }
 
         private void SaveCFile(string fullpath)
@@ -838,7 +757,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     if (parent == null) return;
                     {
                         bool ret = true;
-                        fullpath = openFileDialog.FileName; 
+                        fullpath = openFileDialog.FileName;
                         ret = LoadBoardConfigFromCSV(fullpath);
                         if (ret == true)
                         {
@@ -849,7 +768,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 }
                 else
                     return;
-                SaveBoardConfigFilePath(fullpath);//Issue1378 Leon
             }
             else// Load CFG file
             {
@@ -877,6 +795,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         {
                             StatusLabel.Content = fullpath;
                         }
+                        SaveConfigFilePath(fullpath);//Issue1378 Leon
 
                     }
                 }
@@ -924,7 +843,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             #endregion
             #region OCEToken Check
             string OCETokenMD5FromRuntime = string.Empty;
-            OCETokenMD5FromRuntime = CobraGlobal.CurrentOCETokenMD5;
+            OCETokenMD5FromRuntime = COBRA_GLOBAL.CurrentOCETokenMD5;
             if (OCETokenMD5FromRuntime == string.Empty)
             {
                 gm.message = "Cannot get OCE Token MD5! Load failed!";
@@ -1023,76 +942,18 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
         private void UpdateModelWithNodes(XmlNode xn, List<SFLModel> list)
         {
-            double dval = 0.0;
             string tmp;
             SFLModel model;
             foreach (XmlElement xe in xn.ChildNodes)
             {
                 string name = xe.GetAttribute("Name");
-                model = cfgViewModel.GetParameterByName(name);
+                //model = cfgViewModel.GetParameterByName(name);
                 model = list.SingleOrDefault(o => o.nickname == name);
                 if (model == null) continue;
 
-                model.berror = false;
-                model.errorcode = LibErrorCode.IDS_ERR_SUCCESSFUL;
-
                 tmp = xe.InnerText;
 
-                if (model.brange)//为正常录入浮点数
-                {
-                    if (model.editortype == 1)//combobox
-                    {
-                        dval = model.itemlist.IndexOf(tmp);     //tmp本身不是index，而是index对应的item。而model的值是index
-                    }
-                    else//editbox
-                    {
-                        switch (model.format)
-                        {
-                            case 0: //Int     
-                            case 1: //float1
-                            case 2: //float2
-                            case 3: //float3
-                            case 4: //float4
-                                {
-                                    if (!Double.TryParse(tmp, out dval))
-                                        dval = 0.0;
-                                    break;
-                                }
-                            case 5: //Hex
-                            case 6: //Word
-                            case 7: //Dword
-                                {
-                                    try
-                                    {
-                                        dval = (Double)Convert.ToInt32(tmp, 16);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        dval = 0.0;
-                                        break;
-                                    }
-                                    break;
-                                }
-                            case 8: //Date
-                                {
-                                    try
-                                    {
-                                        dval = SharedFormula.DateToUInt32(tmp);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        break;
-                                    }
-                                    break;
-                                }
-                            default:
-                                break;
-                        }
-                    }
-                    model.data = dval;
-                }
-                else
-                    model.sphydata = tmp;
+                model.UpdateFromStringValue(tmp);
             }
         }
 
@@ -1113,7 +974,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             StringBuilder sb = new StringBuilder();
 
 
-            string SOCETokenMD5 = CobraGlobal.CurrentOCETokenMD5;
+            string SOCETokenMD5 = COBRA_GLOBAL.CurrentOCETokenMD5;
             string SCFGVersion = ConstantSettings.CFG_VERSION_INT.ToString();
             sb.Append(ConstantSettings.CFG_VERSION_NODE);
             sb.Append(SCFGVersion);
@@ -1230,266 +1091,65 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         #endregion
 
         #region Borad Config Related
-        public void SaveBoardConfigFilePath(string fullpath)
+        public void SaveConfigFilePath(string fullpath)
         {
-            string settingfilepath = System.IO.Path.Combine(FolderMap.m_currentproj_folder, "settings.xml");
-            FileStream file = new FileStream(settingfilepath, FileMode.Create);
-            StreamWriter sw = new StreamWriter(file);
-            sw.WriteLine("<?xml version=\"1.0\"?>");
-            sw.WriteLine("<root>");
-            sw.WriteLine("</root>");
-            sw.Close();
-            file.Close();
+            string settingfilepath = System.IO.Path.Combine(FolderMap.m_currentproj_folder, COBRA_GLOBAL.Constant.SETTINGS_FILE_NAME);
+            if (!Directory.Exists(settingfilepath))
+            {
+                FileStream file = new FileStream(settingfilepath, FileMode.Create);
+                StreamWriter sw = new StreamWriter(file);
+                sw.WriteLine("<?xml version=\"1.0\"?>");
+                sw.WriteLine("<root>");
+                sw.WriteLine("</root>");
+                sw.Close();
+                file.Close();
+            }
             XmlDocument doc = new XmlDocument();
             doc.Load(settingfilepath);
             XmlElement root = doc.DocumentElement;
 
-            XmlElement item = doc.CreateElement("BoardConfigFileName");
-            XmlText filepath = doc.CreateTextNode(fullpath);
-            root.AppendChild(item);
-            item.AppendChild(filepath);
+            //XmlElement item = doc.CreateElement("BoardConfigFileName");
+            //XmlText filepath = doc.CreateTextNode(fullpath);
+            //root.AppendChild(item);
+            //item.AppendChild(filepath);
+
+            SharedAPI.XmlAddOneNode(doc, root, COBRA_GLOBAL.Constant.CONFIG_FILE_PATH_NODE, fullpath, );
 
             doc.Save(settingfilepath);
         }
 
-        private void SaveBoardConfigToInternalMemory()//Issue1378 Leon
+        private void SaveConfigToInternalMemory()//Issue1378 Leon
         {
-            foreach (SFLModel model in cfgViewModel.sfl_parameterlist)
+            foreach (SFLModel model in TotalList)
             {
-                if (model == null) continue;
                 string name = model.nickname;
-                string strval;
-                switch (model.editortype)
-                {
-                    case 0:
-                        {
-                            strval = model.sphydata;
-                            break;
-                        }
-                    case 1:
-                    case 2:
-                        {
-                            strval = String.Format("{0:F1}", model.data);
-                            break;
-                        }
-                    default:
-                        strval = model.sphydata;
-                        break; ;
-                }
+                string strval = string.Empty;
+                model.GetStringValue(ref strval);
                 BCImg.Add(name, strval);
             }
         }
 
-        public void LoadBoardConfigFromInternalMemory()//Issue1378 Leon
+        public bool LoadConfigFromInternalMemory()//Issue1378 Leon
         {
-            double dval = 0.0;
-            string tmp;
-            SFLModel model;
-            foreach (var item in BCImg)
+            foreach (SFLModel model in TotalList)
             {
-                string name = item.Key;
-                model = cfgViewModel.GetParameterByName(name);
-                if (model == null) continue;
-
-                model.berror = false;
-
-                tmp = item.Value;
-
-                if (model.brange)//为正常录入浮点数
+                if (BCImg.ContainsKey(model.nickname))
                 {
-                    switch (model.format)
-                    {
-                        case 0: //Int     
-                        case 1: //float1
-                        case 2: //float2
-                        case 3: //float3
-                        case 4: //float4
-                            {
-                                if (!Double.TryParse(tmp, out dval))
-                                    dval = 0.0;
-                                break;
-                            }
-                        case 5: //Hex
-                        case 6: //Word
-                        case 7: //Dword
-                            {
-                                try
-                                {
-                                    dval = (Double)Convert.ToInt32(tmp, 16);
-                                }
-                                catch (Exception e)
-                                {
-                                    dval = 0.0;
-                                    break;
-                                }
-                                break;
-                            }
-                        case 8: //Date
-                            {
-                                try
-                                {
-                                    dval = SharedFormula.DateToUInt32(tmp);
-                                }
-                                catch (Exception e)
-                                {
-                                    break;
-                                }
-                                break;
-                            }
-                        default:
-                            break;
-                    }
-                    model.data = dval;
+                    var str = BCImg[model.nickname];
+                    model.UpdateFromStringValue(str);
                 }
                 else
-                    model.sphydata = tmp;
+                {
+                    return false;
+                }
             }
-            Apply();
+            return true;
         }
 
-        public void BoardConfigAutoLoadFile(string fullpath)
+        public void Preload(string fullpath)
         {
-            double dval = 0.0;
-            string tmp;
-            SFLModel model;
-            if (!File.Exists(fullpath))
-            {
-                //gm.message = "The previously saved file path is invalid! The default values will be used in Board Settings.";
-                //CallWarningControl(gm);
-                throw new NotImplementedException("The previously saved file path is invalid! ");
-            }
-            XmlDocument doc = new XmlDocument();
-            try
-            {
-                doc.Load(fullpath);
-            }
-            catch
-            {
-                //gm.message = "File format error! The default values will be used in Board Settings.";
-                //CallWarningControl(gm);
-                throw new NotImplementedException("File format error! ");
-            }
-
-            XmlElement root = doc.DocumentElement;
-
-            StringBuilder sb = new StringBuilder();
-            string hashinXML = "";
-            for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
-            {
-                string name = xn.Attributes[0].Value;
-                if (name == "MD5")
-                {
-                    hashinXML = xn.InnerText;
-                    continue;
-                }
-                sb.Append(name);
-                tmp = xn.InnerText;
-                sb.Append(tmp);
-            }
-            if (hashinXML == "")         //没有MD5
-            {
-                gm.message = "Warning, this configuration file dosen't have MD5 verification code. You can still use it but we suggest you upgrade it by save to another file.";
-                CallWarningControl(gm);
-            }
-            else
-            {
-                string hashOfXML = GetMd5Hash(sb.ToString());
-                if (hashOfXML == hashinXML)
-                {
-                    ;
-                }
-                else
-                {
-                    throw new NotImplementedException("File illegal, MD5 check failed. ");
-                }
-            }
-
-            for (XmlNode xn = root.FirstChild; xn is XmlNode; xn = xn.NextSibling)
-            {
-                //tmp = xn.Name.Replace("H","0x");
-                //selfid = Convert.ToUInt32(tmp, 16);
-                string name = xn.Attributes[0].Value;
-                if (name == "MD5")
-                {
-                    hashinXML = xn.InnerText;
-                    continue;
-                }
-                model = cfgViewModel.GetParameterByName(name);
-                if (model == null) continue;
-
-                model.berror = false;
-
-                tmp = xn.InnerText;
-
-                if (model.brange)//为正常录入浮点数
-                {
-                    switch (model.format)
-                    {
-                        case 0: //Int     
-                        case 1: //float1
-                        case 2: //float2
-                        case 3: //float3
-                        case 4: //float4
-                            {
-                                if (!Double.TryParse(tmp, out dval))
-                                    dval = 0.0;
-                                break;
-                            }
-                        case 5: //Hex
-                        case 6: //Word
-                        case 7: //Dword
-                            {
-                                try
-                                {
-                                    dval = (Double)Convert.ToInt32(tmp, 16);
-                                }
-                                catch (Exception e)
-                                {
-                                    dval = 0.0;
-                                    break;
-                                }
-                                break;
-                            }
-                        case 8: //Date
-                            {
-                                try
-                                {
-                                    dval = SharedFormula.DateToUInt32(tmp);
-                                }
-                                catch (Exception e)
-                                {
-                                    break;
-                                }
-                                break;
-                            }
-                        default:
-                            break;
-                    }
-                    model.data = dval;
-                }
-                else
-                    model.sphydata = tmp;
-            }
-            StatusLabel.Content = fullpath;
-        }
-
-        // Verify a hash against a string.
-        private bool VerifyMd5Hash(string input, string hash)
-        {
-            // Hash the input.
-            string hashOfInput = GetMd5Hash(input);
-
-            // Create a StringComparer an compare the hashes.
-            StringComparer comparer = StringComparer.OrdinalIgnoreCase;
-
-            if (0 == comparer.Compare(hashOfInput, hash))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            if (LoadFile(fullpath))
+                StatusLabel.Content = fullpath;
         }
 
         private bool LoadBoardConfigFromCSV(string fullpath)
@@ -1508,7 +1168,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
             return true;
         }
-        public Dictionary<string,double> LoadCSVToDic(string filePath)//从csv读取数据返回table
+        public Dictionary<string, double> LoadCSVToDic(string filePath)//从csv读取数据返回table
         {
             var output = new Dictionary<string, double>();
             FileStream file = new FileStream(filePath, FileMode.Open);
@@ -1577,7 +1237,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         }
         private void Reset()//Issue1373 Leon
         {
-            LoadBoardConfigFromInternalMemory();
+            LoadConfigFromInternalMemory();
         }
         private void ReadCommand(ushort subtask)	//Issue1363 Leon    Let DEM deal with the process, not SFL
         {
@@ -1768,71 +1428,10 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     btn_ctrl.btn_cm.IsOpen = true;
                     return;
             }
-            if (isBoardConfig())
-                Apply();//Issue1381 Leon
-            else if (WriteSubTask != 0)		//Issue1363 Leon
+            if (WriteSubTask != 0)		//Issue1363 Leon
                 WriteCommand(WriteSubTask);
             else
                 write();
-        }
-        private void Apply()//Issue1381 Leon
-        {
-            UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
-            if (parent.bBusy)
-            {
-                gm.level = 1;
-                gm.controls = "Write To Device button!";
-                gm.message = LibErrorCode.GetErrorDescription(LibErrorCode.IDS_ERR_EM_THREAD_BKWORKER_BUSY);
-                gm.bupdate = true;
-                CallWarningControl(gm);
-                return;
-            }
-            else
-                parent.bBusy = true;
-
-            ret = cfgViewModel.UpdateAllModels();
-            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                gm.level = 2;
-                gm.message = LibErrorCode.GetErrorDescription(ret);
-                CallWarningControl(gm);
-                parent.bBusy = false;
-                return;
-            }
-            StatusLabel.Content = "";
-
-            msg.percent = 30;
-            msg.task = TM.TM_CONVERT_PHYSICALTOHEX;
-            parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-
-            msg.percent = 70;
-            msg.task = TM.TM_WRITE;
-            parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                gm.level = 2;
-                gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
-                CallWarningControl(gm);
-                parent.bBusy = false;
-                return;
-            }
-
-            parent.bBusy = false;
-
-            if (msg.errorcode == LibErrorCode.IDS_ERR_SUCCESSFUL)   //Issue1826 Leon
-            {
-                gm.level = 0;
-                gm.message = "Board Parameters Saved!";
-                CallWarningControl(gm);
-                parent.bBusy = false;
-                return;
-            }
-
-            OnRasieBoardConfigChangedEvent();//Issue1593 Leon
         }
         private void WriteCommand(ushort subtask)	//Issue1363 Leon
         {

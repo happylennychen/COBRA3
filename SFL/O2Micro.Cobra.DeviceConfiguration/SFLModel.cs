@@ -321,5 +321,95 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 return;
             }
         }
+
+        public bool UpdateFromStringValue(string strval)
+        {
+            double dval = 0.0;
+
+            berror = false;
+            errorcode = LibErrorCode.IDS_ERR_SUCCESSFUL;
+
+            if (brange)//为正常录入浮点数
+            {
+                if (editortype == 1)//combobox
+                {
+                    dval = itemlist.IndexOf(strval);     //tmp本身不是index，而是index对应的item。而model的值是index
+                }
+                else//editbox
+                {
+                    switch (format)
+                    {
+                        case 0: //Int     
+                        case 1: //float1
+                        case 2: //float2
+                        case 3: //float3
+                        case 4: //float4
+                            {
+                                if (!Double.TryParse(strval, out dval))
+                                    dval = 0.0;
+                                break;
+                            }
+                        case 5: //Hex
+                        case 6: //Word
+                        case 7: //Dword
+                            {
+                                try
+                                {
+                                    dval = (Double)Convert.ToInt32(strval, 16);
+                                }
+                                catch (Exception e)
+                                {
+                                    dval = 0.0;
+                                    break;
+                                }
+                                break;
+                            }
+                        case 8: //Date
+                            {
+                                try
+                                {
+                                    dval = SharedFormula.DateToUInt32(strval);
+                                }
+                                catch (Exception e)
+                                {
+                                    break;
+                                }
+                                break;
+                            }
+                        default:
+                            break;
+                    }
+                }
+                data = dval;
+            }
+            else
+                sphydata = strval;
+            return true;
+        }
+        public bool GetStringValue(ref string strval)
+        {
+            switch (editortype)
+            {
+                case 0:
+                    {
+                        strval = sphydata;
+                        break;
+                    }
+                case 1: //ComboBox
+                    {
+                        strval = itemlist[listindex];
+                        break;
+                    }
+                case 2:
+                    {
+                        strval = String.Format("{0:F1}", data);
+                        break;
+                    }
+                default:
+                    strval = sphydata;
+                    break; ;
+            }
+            return true;
+        }
     }
 }

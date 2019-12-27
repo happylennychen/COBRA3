@@ -490,10 +490,16 @@ namespace O2Micro.Cobra.ProductionPanel
                 return ErrorCode.FileFormatError;
             }
             XmlElement root = doc.DocumentElement;
-            XmlNode TestNode = root.SelectSingleNode("Test");
-            XmlNode ProcessNode = root.SelectSingleNode("Process");
 
+            #region Check Product family
+            var node = root.SelectSingleNode(COBRA_GLOBAL.Constant.PRODUCT_FAMILY_NODE);     //Issue 1906
+            if (node == null)
+                return ErrorCode.FileIntegrityError;
+            if (node.InnerText != SharedAPI.GetProductFamilyFromExtension())
+                return ErrorCode.TokenMismatch;
+            #endregion
             #region Load ProcessItems
+            XmlNode ProcessNode = root.SelectSingleNode("Process");
             ProcessItems.Clear();
             if (ProcessNode != null)
             {
@@ -523,6 +529,7 @@ namespace O2Micro.Cobra.ProductionPanel
             #endregion
 
             #region Load TestItems
+            XmlNode TestNode = root.SelectSingleNode("Test");
             TestGroups.Clear();
             TestItems.Clear();
             if (TestNode != null)

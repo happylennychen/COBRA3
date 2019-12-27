@@ -121,7 +121,7 @@ namespace O2Micro.Cobra.EM
             if (Registry.GetCurExtensionFileName().Length == 0) return false;
             FolderMap.m_curextensionfile_name = Registry.GetCurExtensionFileName();
 #if debug
-            string projectname = "KALL14";
+            string projectname = "KALL10";
 #endif
 #if x
             string xmlxpath = FolderMap.m_main_folder.Remove(FolderMap.m_main_folder.LastIndexOf("output\\"));
@@ -400,7 +400,7 @@ namespace O2Micro.Cobra.EM
                            }).ToList();*/
 
             var strpair = (from ele in doc.Descendants("Element")
-                           where ele.Element("Private") != null && ele.Element("Private").Element("SFL") != null && ele.Element("Private").Element("SFL").Attribute("Name").Value == CobraGlobal.Constant.NewEFUSEConfigName
+                           where ele.Element("Private") != null && ele.Element("Private").Element("SFL") != null && ele.Element("Private").Element("SFL").Attribute("Name").Value == COBRA_GLOBAL.Constant.NewEFUSEConfigName
                            select new string[] {
                                ele.Element("Private").Element("SFL").Element("NickName").Value,
                                ele.Element("PhyRef").Value + "," + ele.Element("RegRef").Value + "," + ele.Element("SubType").Value + "," + ele.Element("Private").Element("SFL").Element("EditType").Value + ","+ ele.Element("Private").Element("SFL").Element("Format").Value
@@ -411,7 +411,7 @@ namespace O2Micro.Cobra.EM
                 TokenContent.Add(i[0], i[1]);
             }
             strpair = (from ele in doc.Descendants("Element")
-                       where ele.Element("Private") != null && ele.Element("Private").Element("SFL") != null && ele.Element("Private").Element("SFL").Attribute("Name").Value == CobraGlobal.Constant.NewBoardConfigName
+                       where ele.Element("Private") != null && ele.Element("Private").Element("SFL") != null && ele.Element("Private").Element("SFL").Attribute("Name").Value == COBRA_GLOBAL.Constant.NewBoardConfigName
                        select new string[] {
                                ele.Element("Private").Element("SFL").Element("NickName").Value,
                                ele.Element("PhyRef").Value + "," + ele.Element("RegRef").Value + "," + ele.Element("SubType").Value + "," + ele.Element("Private").Element("SFL").Element("EditType").Value + ","+ ele.Element("Private").Element("SFL").Element("Format").Value
@@ -431,7 +431,7 @@ namespace O2Micro.Cobra.EM
                 str += k + ":" + TokenContent[k] + ";";
             }
             //return str;
-            CobraGlobal.CurrentOCEToken = str;
+            COBRA_GLOBAL.CurrentOCEToken = str;
 
             using (MD5 md5Hash = MD5.Create())
             {
@@ -450,7 +450,7 @@ namespace O2Micro.Cobra.EM
                 }
 
                 // Return the hexadecimal string.
-                CobraGlobal.CurrentOCETokenMD5 = sBuilder.ToString();
+                COBRA_GLOBAL.CurrentOCETokenMD5 = sBuilder.ToString();
             }
         }
     }
