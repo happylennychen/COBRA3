@@ -491,11 +491,11 @@ namespace O2Micro.Cobra.ProductionPanel
             }
             XmlElement root = doc.DocumentElement;
 
-            #region Check Product family
-            var node = root.SelectSingleNode(COBRA_GLOBAL.Constant.PRODUCT_FAMILY_NODE);     //Issue 1906
+            #region Check Chip Name
+            var node = root.SelectSingleNode(COBRA_GLOBAL.Constant.CHIP_NAME_NODE);     //Issue 1906
             if (node == null)
                 return ErrorCode.FileIntegrityError;
-            if (node.InnerText != SharedAPI.GetProductFamilyFromExtension())
+            if (node.InnerText != SharedAPI.GetChipNameFromExtension())
                 return ErrorCode.TokenMismatch;
             #endregion
             #region Load ProcessItems

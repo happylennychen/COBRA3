@@ -438,7 +438,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 {
                     fullpath = saveFileDialog.FileName;
                     SaveFile(ref fullpath);
-                    SaveConfigFilePath(fullpath);//Issue1378 Leon
+                    Registry.SaveConfigFilePath(fullpath);//Issue1378 Leon
                 }
             }
             else return;
@@ -567,7 +567,9 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             if (SaveHexSubTask != 0)
             {
                 cfgViewModel.UpdateAllModels();
+
                 msg.task_parameterlist = cfgViewModel.dm_parameterlist;
+                msg.gm.sflname = sflname;
                 msg.sub_task = SaveHexSubTask;
                 msg.sub_task_json = fullpath;
                 msg.task = TM.TM_COMMAND;
@@ -795,7 +797,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         {
                             StatusLabel.Content = fullpath;
                         }
-                        SaveConfigFilePath(fullpath);//Issue1378 Leon
+                        Registry.SaveConfigFilePath(fullpath);//Issue1378 Leon
 
                     }
                 }
@@ -882,15 +884,15 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             {
                 ;
             }
-            if (ProductFamilyInXML != ProductFamilyRuntime)
+            if (ProductFamilyInXML != ProductFamilyRuntime) //能否加载cfg文件，只看CFG Version, OCEToken和MD5
             {
-                string warning = "Product Family in file: " + ProductFamilyInXML;
-                warning += "\nProduct Family you are using: " + ProductFamilyRuntime;
-                warning += "\nProduct Family Mismatch! Load failed!";
-                gm.message = warning;
-                gm.level = 2;
-                CallWarningControl(gm);
-                return false;
+                //string warning = "Product Family in file: " + ProductFamilyInXML;
+                //warning += "\nProduct Family you are using: " + ProductFamilyRuntime;
+                //warning += "\nProduct Family Mismatch! Load failed!";
+                //gm.message = warning;
+                //gm.level = 2;
+                //CallWarningControl(gm);
+                //return false;
             }
 
             #endregion
@@ -1091,34 +1093,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         #endregion
 
         #region Borad Config Related
-        public void SaveConfigFilePath(string fullpath)
-        {
-            string settingfilepath = System.IO.Path.Combine(FolderMap.m_currentproj_folder, COBRA_GLOBAL.Constant.SETTINGS_FILE_NAME);
-            if (!Directory.Exists(settingfilepath))
-            {
-                FileStream file = new FileStream(settingfilepath, FileMode.Create);
-                StreamWriter sw = new StreamWriter(file);
-                sw.WriteLine("<?xml version=\"1.0\"?>");
-                sw.WriteLine("<root>");
-                sw.WriteLine("</root>");
-                sw.Close();
-                file.Close();
-            }
-            XmlDocument doc = new XmlDocument();
-            doc.Load(settingfilepath);
-            XmlElement root = doc.DocumentElement;
-
-            //XmlElement item = doc.CreateElement("BoardConfigFileName");
-            //XmlText filepath = doc.CreateTextNode(fullpath);
-            //root.AppendChild(item);
-            //item.AppendChild(filepath);
-            Dictionary<string, string> dic = new Dictionary<string, string>();
-            dic.Add(ConstantSettings.OCE_TOKEN_NODE, COBRA_GLOBAL.CurrentOCETokenMD5);
-            SharedAPI.XmlAddOrUpdateOneNode(doc, root, COBRA_GLOBAL.Constant.CONFIG_FILE_PATH_NODE, fullpath, dic);
-
-            doc.Save(settingfilepath);
-        }
-
         private void SaveConfigToInternalMemory()//Issue1378 Leon
         {
             foreach (SFLModel model in TotalList)

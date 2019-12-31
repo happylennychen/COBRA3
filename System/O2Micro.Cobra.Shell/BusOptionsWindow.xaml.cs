@@ -29,7 +29,6 @@ namespace O2Micro.Cobra.Shell
     /// </summary>
     public partial class BusOptionsWindow : Window
     {
-        public string BoardConfigsflname; //Issue1374 Leon
         //父对象保存
         private MainWindow m_parent;
         public MainWindow parent
@@ -70,69 +69,6 @@ namespace O2Micro.Cobra.Shell
             Hide();
             Close();
         }
-        private O2Micro.Cobra.DeviceConfigurationPanel.MainControl BoardConfigSFL;//Issue1374 Leon
-        private bool hasBoardConfigSFL()//Issue1374 Leon
-        {
-            foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
-            {
-                if (btn.btnlabel == COBRA_GLOBAL.Constant.OldBoardConfigName || btn.btnlabel == COBRA_GLOBAL.Constant.NewBoardConfigName)
-                {
-                    BoardConfigsflname = btn.btnlabel;
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private int GetBoardConfigIndex()//Issue1374 Leon
-        {
-            foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
-            {
-                if (btn.btnlabel == COBRA_GLOBAL.Constant.OldBoardConfigName || btn.btnlabel == COBRA_GLOBAL.Constant.NewBoardConfigName)
-                {
-                    return btn.id;
-                }
-            }
-            return -1;
-        }
-        private void SwitchToBoardConfig()
-        {
-            int index = GetBoardConfigIndex();
-            if (index >= 0)
-                parent.FeatureBtnList.SelectedIndex = index;
-        }
-        private string GetPreviousSettingsFilePath()
-        {
-            string settingfilepath = System.IO.Path.Combine(FolderMap.m_currentproj_folder, COBRA_GLOBAL.Constant.SETTINGS_FILE_NAME);
-            XmlDocument doc = new XmlDocument();
-            doc.Load(settingfilepath);
-            XmlElement root = doc.DocumentElement;
-            var node = root.SelectSingleNode(COBRA_GLOBAL.Constant.CONFIG_FILE_PATH_NODE);
-            if (node != null)
-                return node.InnerText;
-            else
-                return "";
-        }
-        private void LoadPreviousSettings()
-        {
-            try
-            {
-                string filepath = GetPreviousSettingsFilePath();
-                if (filepath == "")
-                {
-                    BoardConfigSFL.LoadConfigFromInternalMemory();
-                    return;
-                }
-                BoardConfigSFL.Preload(filepath);
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message + "The default values will be used in Board Settings.");
-                BoardConfigSFL.LoadConfigFromInternalMemory();
-                BoardConfigSFL.SaveConfigFilePath("");
-                return;
-            }
-        }
         private void SaveAndTestBtn_Click(object sender, RoutedEventArgs e)
         {
             Button o = (Button)sender;
@@ -156,22 +92,42 @@ namespace O2Micro.Cobra.Shell
             Hide();
             Close();
 
-            if (hasBoardConfigSFL())    //Issue1374 Leon
+            if (isSFLExist(COBRA_GLOBAL.Constant.NewBoardConfigName))    //Issue1374 Leon
             {
                 if (NeedPromptWarning())
                 {
                     MessageBox.Show("Please check board settings first.");
                 }
-                SwitchToBoardConfig();
+                SwitchToSFL(COBRA_GLOBAL.Constant.NewBoardConfigName);
+            }
 
-                List<WorkPanelItem> tabs = EMExtensionManage.m_EM_DevicesManage.GetWorkPanelTabItemsByBtnLabel(BoardConfigsflname);
-                for (int i = 0; i < tabs.Count; i++)
+            string filepath;
+            var ret = Registry.GetConfigFilePath(out filepath);
+            if (filepath == "" || ret == false)
+            {
+                return;
+            }
+            else
+            {
+                if (isSFLExist(COBRA_GLOBAL.Constant.NewEFUSEConfigName) || isSFLExist(COBRA_GLOBAL.Constant.NewRegisterConfigName))
                 {
-                    WorkPanelItem wpi = tabs[i];
-                    BoardConfigSFL = (O2Micro.Cobra.DeviceConfigurationPanel.MainControl)wpi.item;
-                }
+                    if (MessageBox.Show("Do you want to load previously saved or loaded settings?", "Warning", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                    {
+                        if (isSFLExist(COBRA_GLOBAL.Constant.NewEFUSEConfigName))
+                        {
+                            var sfl = GetSFL(COBRA_GLOBAL.Constant.NewEFUSEConfigName);
+                            if (sfl != null)
+                                LoadPreviousSettings(sfl, filepath);
+                        }
 
-                LoadPreviousSettings();
+                        if (isSFLExist(COBRA_GLOBAL.Constant.NewRegisterConfigName))
+                        {
+                            var sfl = GetSFL(COBRA_GLOBAL.Constant.NewRegisterConfigName);
+                            if (sfl != null)
+                                LoadPreviousSettings(sfl, filepath);
+                        }
+                    }
+                }
             }
         }
 
@@ -247,6 +203,61 @@ namespace O2Micro.Cobra.Shell
             if (op != null)
                 op.sphydata = (op.bcheck == true) ? "1" : "0";
         }
+
+        #region Load Previous Setting
+        private bool isSFLExist(string sflname)//Issue1374 Leon
+        {
+            foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
+            {
+                if (btn.btnlabel == sflname)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private int GetSFLIndex(string sflname)//Issue1374 Leon
+        {
+            foreach (var btn in EMExtensionManage.m_EM_DevicesManage.btnPanelList)
+            {
+                if (btn.btnlabel == sflname)
+                {
+                    return btn.id;
+                }
+            }
+            return -1;
+        }
+        private DeviceConfigurationPanel.MainControl GetSFL(string sflname)
+        {
+            DeviceConfigurationPanel.MainControl output = null;
+            List<WorkPanelItem> tabs = EMExtensionManage.m_EM_DevicesManage.GetWorkPanelTabItemsByBtnLabel(sflname);
+            for (int i = 0; i < tabs.Count; i++)
+            {
+                WorkPanelItem wpi = tabs[i];
+                output = (O2Micro.Cobra.DeviceConfigurationPanel.MainControl)wpi.item;
+            }
+            return output;
+        }
+        private void SwitchToSFL(string sflname)
+        {
+            int index = GetSFLIndex(sflname);
+            if (index >= 0)
+                parent.FeatureBtnList.SelectedIndex = index;
+        }
+        private void LoadPreviousSettings(DeviceConfigurationPanel.MainControl sfl, string filepath)
+        {
+            try
+            {
+                sfl.Preload(filepath);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Load Previews Settings failed.");
+                return;
+            }
+        }
+        #endregion
 
     }
 }

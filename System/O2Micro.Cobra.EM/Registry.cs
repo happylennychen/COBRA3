@@ -34,13 +34,13 @@ namespace O2Micro.Cobra.EM
             set { busoptionslistview = m_busoptionslistview; }
         }
 
-/*
-        private static List<ListCollectionView> m_busoptionslist_collectionview = new List<ListCollectionView>();
-        public static List<ListCollectionView> busoptionslist_collectionview
-        {
-            get { return m_busoptionslist_collectionview; }
-            set { busoptionslist_collectionview = m_busoptionslist_collectionview; }
-        }*/
+        /*
+                private static List<ListCollectionView> m_busoptionslist_collectionview = new List<ListCollectionView>();
+                public static List<ListCollectionView> busoptionslist_collectionview
+                {
+                    get { return m_busoptionslist_collectionview; }
+                    set { busoptionslist_collectionview = m_busoptionslist_collectionview; }
+                }*/
 
         private static List<BusOptionListCollectionView> m_busoptionslist_collectionview = new List<BusOptionListCollectionView>();
         public static List<BusOptionListCollectionView> busoptionslist_collectionview
@@ -51,7 +51,11 @@ namespace O2Micro.Cobra.EM
 
         public static bool LoadRegistryFile()
         {
-            if (!File.Exists(FolderMap.m_register_file)) return false;
+            if (!File.Exists(FolderMap.m_register_file))
+            {
+                System.Windows.MessageBox.Show("Failed to load registry file!");
+                return false;
+            }
 
             m_register_xmlDoc.Load(FolderMap.m_register_file);
             m_root = m_register_xmlDoc.DocumentElement;
@@ -107,19 +111,19 @@ namespace O2Micro.Cobra.EM
                         m_BusType = BUS_TYPE.BUS_TYPE_SPI;
                         break;
                     }
-					//(A141020)Francis
-				case "SVID":
-					{
-						m_BusType = BUS_TYPE.BUS_TYPE_SVID;
-						break;
-					}
-					//(E141020)
+                //(A141020)Francis
+                case "SVID":
+                    {
+                        m_BusType = BUS_TYPE.BUS_TYPE_SVID;
+                        break;
+                    }
+                //(E141020)
                 case "RS232":
                     {
                         m_BusType = BUS_TYPE.BUS_TYPE_RS232;
                         break;
                     }
-				default:
+                default:
                     {
                         m_BusType = BUS_TYPE.BUS_TYPE_I2C;
                         break;
@@ -143,7 +147,7 @@ namespace O2Micro.Cobra.EM
             for (int i = 0; i < m_busoptionslistview.Count; i++)
             {
                 busoptions = m_busoptionslistview[i];
-                if(busoptions == null) return false;
+                if (busoptions == null) return false;
             }
             return true;
         }
@@ -198,7 +202,7 @@ namespace O2Micro.Cobra.EM
                 busobject.DeviceName = busobject.Name;
 
                 m_busoptionslist.Add(busobject);
-                if(busobject.DeviceIsCheck)
+                if (busobject.DeviceIsCheck)
                     m_busoptionslistview.Add(busobject);
                 devicenum++;
             }
@@ -231,19 +235,19 @@ namespace O2Micro.Cobra.EM
                         busnode = node.SelectSingleNode("//Bus[@Type= 'SPI']");
                         break;
                     }
-					//(A141021)Francis
-				case BUS_TYPE.BUS_TYPE_SVID:
-					{
-						busnode = node.SelectSingleNode("//Bus[@Type= 'SVID']");
-						break;
-					}
-					//(E141021)
+                //(A141021)Francis
+                case BUS_TYPE.BUS_TYPE_SVID:
+                    {
+                        busnode = node.SelectSingleNode("//Bus[@Type= 'SVID']");
+                        break;
+                    }
+                //(E141021)
                 case BUS_TYPE.BUS_TYPE_RS232:
                     {
                         busnode = node.SelectSingleNode("//Bus[@Type= 'RS232']");
                         break;
                     }
-				default:
+                default:
                     {
                         busnode = node.SelectSingleNode("//Bus[@Type= 'I2C']");
                         break;
@@ -291,42 +295,97 @@ namespace O2Micro.Cobra.EM
             return null;
         }
 
-		#region new xml node in setting.xml <Part Name="PreProduction">
-		//(A130801)Francis, support new xml node in setting.xml, for <Part Name="PreProduction">
-		public static bool GetCurPreProductionNode(string strNode, ref string strName)
-		{
-			string strTarget = "//Part[@Name= 'PreProduction']/";
+        #region new xml node in setting.xml <Part Name="PreProduction">
+        //(A130801)Francis, support new xml node in setting.xml, for <Part Name="PreProduction">
+        public static bool GetCurPreProductionNode(string strNode, ref string strName)
+        {
+            string strTarget = "//Part[@Name= 'PreProduction']/";
 
-			strTarget += strNode;
-			XmlNode node = m_root.SelectSingleNode(strTarget);
+            strTarget += strNode;
+            XmlNode node = m_root.SelectSingleNode(strTarget);
 
-			if (node == null)
-				return false;
-			else
-			{
-				strName = node.Attributes["Name"].Value;
-				return true;
-			}
-		}
+            if (node == null)
+                return false;
+            else
+            {
+                strName = node.Attributes["Name"].Value;
+                return true;
+            }
+        }
 
-		public static bool SaveCurPreProductionNode(string strNode, string strName)
-		{
-			string strTarget = "//Part[@Name= 'PreProduction']/";
+        public static bool SaveCurPreProductionNode(string strNode, string strName)
+        {
+            string strTarget = "//Part[@Name= 'PreProduction']/";
 
-			strTarget += strNode;
-			XmlNode node = m_root.SelectSingleNode(strTarget);
+            strTarget += strNode;
+            XmlNode node = m_root.SelectSingleNode(strTarget);
 
-			if (node == null)
-				return false;
-			else
-			{
-				node.Attributes["Name"].Value = strName;
-				m_register_xmlDoc.Save(FolderMap.m_register_file);
-				return true;
-			}
-		}
-		//(E130801)
-		#endregion
+            if (node == null)
+                return false;
+            else
+            {
+                node.Attributes["Name"].Value = strName;
+                m_register_xmlDoc.Save(FolderMap.m_register_file);
+                return true;
+            }
+        }
+        //(E130801)
+        #endregion
 
-	}
+        #region CFG file path        
+        public static bool SaveConfigFilePath(string fullpath)
+        {
+            bool output = false;
+            try
+            {
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("Name", COBRA_GLOBAL.Constant.CONFIG_FILE_PATH_NODE);
+                var partNode = SharedAPI.FindOneNode(m_register_xmlDoc, "Part", dic);
+                if (partNode == null)
+                {
+                    partNode = SharedAPI.XmlAddOneNode(m_register_xmlDoc, m_root, "Part", "", dic);
+                    SharedAPI.XmlAddOneNode(m_register_xmlDoc, (XmlElement)partNode, COBRA_GLOBAL.CurrentOCEName, fullpath);
+                }
+                else
+                {
+                    SharedAPI.XmlAddOrUpdateOneNode(m_register_xmlDoc, (XmlElement)partNode, COBRA_GLOBAL.CurrentOCEName, fullpath);
+                }
+                m_register_xmlDoc.Save(FolderMap.m_register_file);
+                output = true;
+            }
+            catch(Exception e)
+            {
+                System.Windows.MessageBox.Show(e.Message);
+                output = false;
+            }
+            return output;
+        }
+        public static bool GetConfigFilePath(out string fullpath)
+        {
+            bool output = false;
+            try
+            {
+                var node = SharedAPI.FindOneNode(m_register_xmlDoc, COBRA_GLOBAL.CurrentOCEName);
+                if (node != null)
+                {
+                    fullpath = node.InnerText;
+                    output = true;
+                }
+                else
+                {
+                    output = false;
+                    fullpath = string.Empty;
+                }
+            }
+            catch (Exception e)
+            {
+                System.Windows.MessageBox.Show(e.Message);
+                output = false;
+                fullpath = string.Empty;
+            }
+            return output;
+
+        }
+        #endregion
+    }
 }

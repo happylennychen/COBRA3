@@ -13,8 +13,11 @@ namespace O2Micro.Cobra.Common
             public const string NewBoardConfigName = "Board Config";
             public const string OldEFUSEConfigName = "EfuseConfig";		//Issue1556 Leon
             public const string NewEFUSEConfigName = "EFUSE Config";
+            public const string NewRegisterConfigName = "Register Config";
             public const string PRODUCT_FAMILY_NODE = "PRODUCT_FAMILY";
-            public const string SETTINGS_FILE_NAME = "settings.xml";
+            public const string OCE_TOKEN_NODE = "OCE_TOKEN";
+            public const string CHIP_NAME_NODE = "chip";
+            public const string SETTINGS_FILE_NAME = "Setting.xml";
             public const string CONFIG_FILE_PATH_NODE = "ConfigFilePath";
         }
 

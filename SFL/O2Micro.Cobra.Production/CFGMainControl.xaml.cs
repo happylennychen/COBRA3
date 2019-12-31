@@ -178,7 +178,7 @@ namespace O2Micro.Cobra.ProductionPanel
                 XmlDocument doc = new XmlDocument();
                 doc.Load(MPTFilePath);
                 XmlElement root = doc.DocumentElement;
-                SharedAPI.XmlAddOneNode(doc, doc.DocumentElement, COBRA_GLOBAL.Constant.PRODUCT_FAMILY_NODE, SharedAPI.GetProductFamilyFromExtension());//Issue1906
+                SharedAPI.XmlAddOneNode(doc, doc.DocumentElement, COBRA_GLOBAL.Constant.CHIP_NAME_NODE, SharedAPI.GetChipNameFromExtension());//Issue1906
                 #region Download Part
                 if ((bool)DownloadOnly.IsChecked || (bool)DownloadAndTest.IsChecked)
                 {

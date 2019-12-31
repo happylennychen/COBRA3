@@ -668,7 +668,15 @@ namespace O2Micro.Cobra.Common
             string xmlfilepath = FolderMap.m_extension_work_folder + FolderMap.m_dev_descrip_xml_name + FolderMap.m_extension_work_ext;
             XmlDocument doc = new XmlDocument();
             doc.Load(xmlfilepath);
-            return doc.DocumentElement.GetAttribute("PRODUCT_FAMILY");
+            return doc.DocumentElement.GetAttribute(COBRA_GLOBAL.Constant.PRODUCT_FAMILY_NODE);
+        }
+
+        public static string GetChipNameFromExtension()
+        {
+            string xmlfilepath = FolderMap.m_extension_work_folder + FolderMap.m_dev_descrip_xml_name + FolderMap.m_extension_work_ext;
+            XmlDocument doc = new XmlDocument();
+            doc.Load(xmlfilepath);
+            return doc.DocumentElement.GetAttribute(COBRA_GLOBAL.Constant.CHIP_NAME_NODE);
         }
 
         /// <summary>
