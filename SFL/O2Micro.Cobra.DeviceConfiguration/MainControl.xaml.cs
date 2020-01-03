@@ -26,7 +26,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         CheckBox_EditType = 2
     }
 
-    public static class ConstantSettings
+    public static class ConstantSettings	//Leon: 在DeviceConfig这边用到的一些常量
     {
         public readonly static string CFG_VERSION_NODE = "CFG_VERSION";
         public readonly static string OCE_TOKEN_NODE = "OCE_TOKEN";
@@ -72,9 +72,9 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             set { m_Msg = value; }
         }
 
-        public SFLViewModel cfgViewModel { get; set; }
+        public SFLViewModel cfgViewModel { get; set; }	//原来的viewmode改名用以区分
 
-        public SFLViewModel boardViewModel { get; set; }
+        public SFLViewModel boardViewModel { get; set; }	//board部分的vm
         public List<SFLModel> TotalList
         {
             get
@@ -765,7 +765,11 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         {
                             StatusLabel.Content = fullpath;
                         }
-
+                        else
+                        {
+                            gm.message = "Load failed! Please check the file format.";
+                            CallWarningControl(gm);
+                        }
                     }
                 }
                 else
@@ -1129,12 +1133,14 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
 
         private bool LoadBoardConfigFromCSV(string fullpath)
         {
+            if (!CSVFileCheck(fullpath))
+                return false;
             var dic = LoadCSVToDic(fullpath);
             foreach (var row in dic)
             {
                 var model = cfgViewModel.GetParameterByName(row.Key);
                 if (model == null)
-                    break;
+                    continue;
                 else
                 {
                     model.berror = false;
@@ -1143,6 +1149,27 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
             return true;
         }
+
+        private bool CSVFileCheck(string fullpath)
+        {
+            var output = false;
+            if (!Directory.Exists(fullpath))
+                return output;
+            FileStream file = new FileStream(fullpath, FileMode.Open);
+            StreamReader sr = new StreamReader(file);
+            List<string> strlist;
+            string strlin;
+            while ((strlin = sr.ReadLine()) != null)
+            {
+                strlist = GetCSVStrList(strlin);
+                if (strlist.Count != 2)
+                    return output;
+            }
+            sr.Close();
+            file.Close();
+            return true;
+        }
+
         public Dictionary<string, double> LoadCSVToDic(string filePath)//从csv读取数据返回table
         {
             var output = new Dictionary<string, double>();
@@ -1703,6 +1730,8 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             {
                 ExcelFilePath = openFileDialog.FileName;
             }
+            else
+            { return; }
 
             //cfgviewmodel.WriteDevice();
 

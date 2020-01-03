@@ -622,28 +622,10 @@ namespace O2Micro.Cobra.ProductionPanel
         private ErrorCode PrepareDownloadData(string binFileName)
         {
             ErrorCode ret = ErrorCode.Success;
-            string binpath = binFileName;
-            Encoding ec = Encoding.UTF8;
             msg.sm.efusebindata.Clear();
-            using (BinaryReader br = new BinaryReader(File.Open(binpath, FileMode.Open), ec))
-            {
-                try
-                {
-                    while (true)
-                    {
-                        msg.sm.efusebindata.Add(br.ReadByte());
-                    }
-                }
-                catch (Exception e)
-                {
-                    br.Close();
-                    if (!(e is EndOfStreamException))
-                    {
-                        ret = ErrorCode.FileParsingError;
-                    }
-
-                }
-            }
+            msg.sm.efusebindata = SharedAPI.LoadBinFileToList(binFileName);
+            if(msg.sm.efusebindata.Count == 0)
+                ret = ErrorCode.FileParsingError;
             return ret;
         }
         private UInt32 NewLog()

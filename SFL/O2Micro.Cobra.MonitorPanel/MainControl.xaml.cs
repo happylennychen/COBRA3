@@ -464,7 +464,7 @@ namespace O2Micro.Cobra.MonitorPanel
 
                             UpdateVoltageDisplay(CellNum);
 
-                            /*从dynamicdatalist中删除所有voltage cell，然后根据CellNum来重新添加*/      //为了KALL系列最高CELL特殊性注释掉
+                            /*从dynamicdatalist中删除所有voltage cell，然后根据CellNum来重新添加*/      //为了OZ77系列最高CELL特殊性注释掉
                             /*AsyncObservableCollection<Parameter> plist = new AsyncObservableCollection<Parameter>();
                             plist = parent.GetParamLists(sflname).parameterlist;
                             foreach (Parameter p in plist)

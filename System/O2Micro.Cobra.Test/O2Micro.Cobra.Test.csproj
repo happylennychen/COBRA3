@@ -59,12 +59,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Azalea14Test.cs" />
+    <Compile Include="OZ7710Test.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common\O2Micro.Cobra.Common\O2Micro.Cobra.Common.csproj">
+      <Project>{e8ab3957-5744-4656-b21c-a8d8131bb9d2}</Project>
+      <Name>O2Micro.Cobra.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DEM\O2Micro.Cobra.Azalea14\O2Micro.Cobra.Azalea14.csproj">
       <Project>{6fe0d090-f648-4d8a-8047-5403a9ecc4e3}</Project>
       <Name>O2Micro.Cobra.Azalea14</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DEM\O2Micro.Cobra.KALL10\O2Micro.Cobra.KALL10.csproj">
+      <Project>{3b1b823e-c69d-4f27-9459-41ba1df1c538}</Project>
+      <Name>O2Micro.Cobra.KALL10</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\O2Micro.Cobra.Communication\O2Micro.Cobra.Communication.csproj">
+      <Project>{0115f8ca-9808-4661-981b-f34034cc4808}</Project>
+      <Name>O2Micro.Cobra.Communication</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

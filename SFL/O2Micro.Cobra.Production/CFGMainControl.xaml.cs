@@ -54,6 +54,8 @@ namespace O2Micro.Cobra.ProductionPanel
 
         private string BinFileName = "";
         private string MPTFileName = "";
+
+        private UInt16 CheckBinFileTaskID = 0;
         #endregion
 
         private string GetHashTableValueByKey(string str, Hashtable htable)
@@ -77,6 +79,7 @@ namespace O2Micro.Cobra.ProductionPanel
 
             sflname = name;
             if (String.IsNullOrEmpty(sflname)) return;
+            msg = parent.msg;
             #endregion
             #region 解析XML获取Items
             #region 解析DeviceDescriptor
@@ -119,6 +122,23 @@ namespace O2Micro.Cobra.ProductionPanel
                 MessageBox.Show(e.Message);
             }
 
+            #endregion
+            #region 初始化 BinFileCheck SubTaskID
+            string str_option = String.Empty;
+            XmlNodeList nodelist = parent.parent.GetUINodeList(parent.ProductionSFLDBName);
+            foreach (XmlNode node in nodelist)
+            {
+                str_option = node.Name;
+                switch (str_option)
+                {
+                    case "BinFileCheck":
+                        {
+                            XmlElement xe1 = (XmlElement)(node);
+                            this.CheckBinFileTaskID = Convert.ToUInt16(xe1.GetAttribute("SubTaskID"));
+                            break;
+                        }
+                }
+            }
             #endregion
             #endregion
 
@@ -357,10 +377,29 @@ namespace O2Micro.Cobra.ProductionPanel
             openFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
             if (openFileDialog.ShowDialog() == true)
             {
-                BinFilePath.Text = openFileDialog.FileName;
-                BinFilePath.IsEnabled = true;
-                BinFileName = openFileDialog.SafeFileName;
+                var ret = CheckBinFile(CheckBinFileTaskID, openFileDialog.FileName);
+                if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                    LibErrorCode.GetErrorDescription(ret);
+                else
+                {
+                    BinFilePath.Text = openFileDialog.FileName;
+                    BinFilePath.IsEnabled = true;
+                    BinFileName = openFileDialog.SafeFileName;
+                }
             }
+        }
+
+        private UInt32 CheckBinFile(ushort checkBinFileTaskID, string fileName)
+        {
+            msg.task = TM.TM_COMMAND;
+            msg.sub_task = checkBinFileTaskID;
+            msg.sub_task_json = fileName;
+            parent.parent.AccessDevice(ref m_Msg);
+            while (msg.bgworker.IsBusy)
+                System.Windows.Forms.Application.DoEvents();
+            if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                return msg.errorcode;
+            return LibErrorCode.IDS_ERR_SUCCESSFUL;
         }
         #endregion
 

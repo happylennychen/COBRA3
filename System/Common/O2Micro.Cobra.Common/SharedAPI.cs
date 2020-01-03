@@ -661,7 +661,7 @@ namespace O2Micro.Cobra.Common
         }
 
         /// <summary>
-        /// 从Device XML的PRODUCT_FAMILY节点获取设定值。
+        /// 从Device XML的PRODUCT_FAMILY属性获取设定值。
         /// </summary>
         public static string GetProductFamilyFromExtension()
         {
@@ -671,6 +671,9 @@ namespace O2Micro.Cobra.Common
             return doc.DocumentElement.GetAttribute(COBRA_GLOBAL.Constant.PRODUCT_FAMILY_NODE);
         }
 
+        /// <summary>
+        /// 从Device XML的chip属性获取设定值。
+        /// </summary>
         public static string GetChipNameFromExtension()
         {
             string xmlfilepath = FolderMap.m_extension_work_folder + FolderMap.m_dev_descrip_xml_name + FolderMap.m_extension_work_ext;
@@ -737,6 +740,31 @@ namespace O2Micro.Cobra.Common
             else
                 xn = XmlAddOneNode(doc, entry, nodeName, nodeInnerText, attributes);
             return xn;
+        }
+
+        public static List<byte> LoadBinFileToList(string filepath)
+        {
+            Encoding ec = Encoding.UTF8;
+            List<byte> blist = new List<byte>();
+            using (BinaryReader br = new BinaryReader(File.Open(filepath, FileMode.Open), ec))
+            {
+                try
+                {
+                    while (true)
+                    {
+                        blist.Add(br.ReadByte());
+                    }
+                }
+                catch (Exception e)
+                {
+                    br.Close();
+                    if (!(e is EndOfStreamException))
+                    {
+                        blist.Clear();
+                    }
+                    return blist;
+                }
+            }
         }
     }
 }

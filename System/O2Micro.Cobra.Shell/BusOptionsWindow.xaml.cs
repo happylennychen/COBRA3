@@ -1,20 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.ComponentModel;
 using System.Collections.ObjectModel;
 using O2Micro.Cobra.Common;
 using O2Micro.Cobra.EM;
-using System.Xml;
-using System.Xml.Linq;
+using System.IO;
 
 namespace O2Micro.Cobra.Shell
 {
@@ -109,24 +101,31 @@ namespace O2Micro.Cobra.Shell
             }
             else
             {
-                if (isSFLExist(COBRA_GLOBAL.Constant.NewEFUSEConfigName) || isSFLExist(COBRA_GLOBAL.Constant.NewRegisterConfigName))
+                if (Directory.Exists(filepath))
                 {
-                    if (MessageBox.Show("Do you want to load previously saved or loaded settings?", "Warning", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                    if (isSFLExist(COBRA_GLOBAL.Constant.NewEFUSEConfigName) || isSFLExist(COBRA_GLOBAL.Constant.NewRegisterConfigName))
                     {
-                        if (isSFLExist(COBRA_GLOBAL.Constant.NewEFUSEConfigName))
+                        if (MessageBox.Show("Do you want to load previously saved or loaded settings?", "Warning", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                         {
-                            var sfl = GetSFL(COBRA_GLOBAL.Constant.NewEFUSEConfigName);
-                            if (sfl != null)
-                                LoadPreviousSettings(sfl, filepath);
-                        }
+                            if (isSFLExist(COBRA_GLOBAL.Constant.NewEFUSEConfigName))
+                            {
+                                var sfl = GetSFL(COBRA_GLOBAL.Constant.NewEFUSEConfigName);
+                                if (sfl != null)
+                                    LoadPreviousSettings(sfl, filepath);
+                            }
 
-                        if (isSFLExist(COBRA_GLOBAL.Constant.NewRegisterConfigName))
-                        {
-                            var sfl = GetSFL(COBRA_GLOBAL.Constant.NewRegisterConfigName);
-                            if (sfl != null)
-                                LoadPreviousSettings(sfl, filepath);
+                            if (isSFLExist(COBRA_GLOBAL.Constant.NewRegisterConfigName))
+                            {
+                                var sfl = GetSFL(COBRA_GLOBAL.Constant.NewRegisterConfigName);
+                                if (sfl != null)
+                                    LoadPreviousSettings(sfl, filepath);
+                            }
                         }
                     }
+                }
+                else  //文件已经被删除了
+                {
+                    Registry.DeleteConfigFilePath();
                 }
             }
         }
@@ -235,7 +234,7 @@ namespace O2Micro.Cobra.Shell
             for (int i = 0; i < tabs.Count; i++)
             {
                 WorkPanelItem wpi = tabs[i];
-                output = (O2Micro.Cobra.DeviceConfigurationPanel.MainControl)wpi.item;
+                output = (DeviceConfigurationPanel.MainControl)wpi.item;
             }
             return output;
         }

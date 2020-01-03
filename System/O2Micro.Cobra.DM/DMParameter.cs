@@ -43,7 +43,7 @@ namespace O2Micro.Cobra.DM
             if (GetXElementValueByName(node, "RegRef") != null)
                 regref = Convert.ToDouble(GetXElementValueByName(node, "RegRef"));
 
-            //Added by Leon, for KALL 10/14/17 projects
+            //Added by Leon, for OZ7710/14/17 projects
             if (GetXElementValueByName(node, "Offset") != null)
                 offset = Convert.ToDouble(GetXElementValueByName(node, "Offset"));
             //Added by Leon

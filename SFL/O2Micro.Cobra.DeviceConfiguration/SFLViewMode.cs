@@ -60,7 +60,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         List<Dictionary<string,string>> fgs= new List<Dictionary<string,string>>();
         #endregion
 
-        public SFLViewModel(object pParent, object parent, string Sflname)
+        public SFLViewModel(object pParent, object parent, string Sflname)	//Leon: updated to support Board Config
         {
             #region 相关初始化
             device_parent = (Device)pParent;
@@ -105,7 +105,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
             return null;
         }
-        public SFLModel InitSFLParameter(Parameter param, string sflname)
+        public SFLModel InitSFLParameter(Parameter param, string sflname)	//Leon: updated to support Board Config
         {
             Double errorvalue = -9999;
             UInt16 udata = 0;
@@ -763,7 +763,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                                 phyTostr(p);
                                 return;
                             }
-                            UpdateOneModel(p);
+                            UpdateOneModel(p);	//Leon Issue 1941: UI更新就更新DM Parameter
                             //UpdateParam(ref p);
                         }
                         break;
@@ -773,7 +773,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                         phyTostr(p);
                         UpdateParam(ref p);
                         p.IsUpdateParamCalled = true;
-                        UpdateOneModel(p);
+                        UpdateOneModel(p);	//Leon Issue 1941: UI更新就更新DM Parameter
                         break;
                     }
                 default:
@@ -879,7 +879,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         #endregion
 
         #region 行为
-        public UInt32 UpdateAllModels()
+        public UInt32 UpdateAllModels()	//原WriteDevice, Leon updated
         {
             UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
             foreach (SFLModel vm in sfl_parameterlist)

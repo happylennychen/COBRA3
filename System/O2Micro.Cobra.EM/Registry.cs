@@ -34,13 +34,6 @@ namespace O2Micro.Cobra.EM
             set { busoptionslistview = m_busoptionslistview; }
         }
 
-        /*
-                private static List<ListCollectionView> m_busoptionslist_collectionview = new List<ListCollectionView>();
-                public static List<ListCollectionView> busoptionslist_collectionview
-                {
-                    get { return m_busoptionslist_collectionview; }
-                    set { busoptionslist_collectionview = m_busoptionslist_collectionview; }
-                }*/
 
         private static List<BusOptionListCollectionView> m_busoptionslist_collectionview = new List<BusOptionListCollectionView>();
         public static List<BusOptionListCollectionView> busoptionslist_collectionview
@@ -53,7 +46,7 @@ namespace O2Micro.Cobra.EM
         {
             if (!File.Exists(FolderMap.m_register_file))
             {
-                System.Windows.MessageBox.Show("Failed to load registry file!");
+                System.Windows.MessageBox.Show("Failed to load registry file!");	//Leon add this warnning.
                 return false;
             }
 
@@ -353,7 +346,7 @@ namespace O2Micro.Cobra.EM
                 m_register_xmlDoc.Save(FolderMap.m_register_file);
                 output = true;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 System.Windows.MessageBox.Show(e.Message);
                 output = false;
@@ -385,6 +378,31 @@ namespace O2Micro.Cobra.EM
             }
             return output;
 
+        }
+        public static bool DeleteConfigFilePath()
+        {
+            bool output = false;
+            try
+            {
+                Dictionary<string, string> dic = new Dictionary<string, string>();
+                dic.Add("Name", COBRA_GLOBAL.Constant.CONFIG_FILE_PATH_NODE);
+                var oceNode = SharedAPI.FindOneNode(m_register_xmlDoc, COBRA_GLOBAL.CurrentOCEName);
+                if (oceNode == null)
+                {
+                }
+                else
+                {
+                    oceNode.ParentNode.RemoveChild(oceNode);
+                }
+                m_register_xmlDoc.Save(FolderMap.m_register_file);
+                output = true;
+            }
+            catch (Exception e)
+            {
+                System.Windows.MessageBox.Show(e.Message);
+                output = false;
+            }
+            return output;
         }
         #endregion
     }
