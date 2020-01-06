@@ -2,7 +2,7 @@
 <Root>
   <Part Name="PreProject">
     <PreExtensionBusType BusType="I2C" />
-    <PreExtension Name="OZ7710_C0_C1_Y_03_20191226" />
+    <PreExtension Name="OZ7710_C0_C1_X_03_20191226" />
   </Part>
   <Part Name="Device Connection Settings">
     <DeviceList>
@@ -13,5 +13,6 @@
     </DeviceList>
   </Part>
   <Part Name="ConfigFilePath">
+    <OZ7710_C0_C1_X_03_20191226>C:\Users\leon.chen\Documents\COBRA Documents\OZ7710_C0_C1_X_03_20191226\OZ7710-20200106162820\OZ7710.cfg</OZ7710_C0_C1_X_03_20191226>
   </Part>
 </Root>

@@ -101,7 +101,7 @@ namespace O2Micro.Cobra.Shell
             }
             else
             {
-                if (Directory.Exists(filepath))
+                if (File.Exists(filepath))
                 {
                     if (isSFLExist(COBRA_GLOBAL.Constant.NewEFUSEConfigName) || isSFLExist(COBRA_GLOBAL.Constant.NewRegisterConfigName))
                     {

@@ -1153,7 +1153,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         private bool CSVFileCheck(string fullpath)
         {
             var output = false;
-            if (!Directory.Exists(fullpath))
+            if (!File.Exists(fullpath))
                 return output;
             FileStream file = new FileStream(fullpath, FileMode.Open);
             StreamReader sr = new StreamReader(file);
