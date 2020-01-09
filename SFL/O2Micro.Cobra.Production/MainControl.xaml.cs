@@ -1158,6 +1158,11 @@ namespace O2Micro.Cobra.ProductionPanel
         {
             DisplaySFLMessage(message, 0);      //Issue951
         }
+
+        public void UnMaskWarning(string warning)
+        {
+            WarningPopControl.ShowDialog(warning, 2);
+        }
         #endregion
 
         #endregion

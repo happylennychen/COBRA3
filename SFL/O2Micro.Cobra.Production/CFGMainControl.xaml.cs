@@ -379,7 +379,10 @@ namespace O2Micro.Cobra.ProductionPanel
             {
                 var ret = CheckBinFile(CheckBinFileTaskID, openFileDialog.FileName);
                 if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
-                    LibErrorCode.GetErrorDescription(ret);
+                {
+                    string errstring = LibErrorCode.GetErrorDescription(ret);
+                    parent.UnMaskWarning(errstring);
+                }
                 else
                 {
                     BinFilePath.Text = openFileDialog.FileName;

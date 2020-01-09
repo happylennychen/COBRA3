@@ -837,9 +837,9 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
             if (CFGVersionInXML != ConstantSettings.CFG_VERSION_INT.ToString())
             {
-                string warning = "Cobra Version in file: " + CFGVersionInXML;
-                warning += "\nCobra you are using: " + ConstantSettings.CFG_VERSION_INT.ToString();
-                warning += "\nCobra Version Mismatch! Load failed!";
+                string warning = "CFG Version in file: " + CFGVersionInXML;
+                warning += "\nCFG Version you are using: " + ConstantSettings.CFG_VERSION_INT.ToString();
+                warning += "\nCFG Version Mismatch! Load failed!";
                 gm.message = warning;
                 gm.level = 2;
                 CallWarningControl(gm);
