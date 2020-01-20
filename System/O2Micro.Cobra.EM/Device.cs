@@ -76,7 +76,7 @@ namespace O2Micro.Cobra.EM
                 Device device = obj as Device;
                 return this.index.CompareTo(device.index);
             }
-            throw new NotImplementedException("obj is not a Student!");
+            throw new NotImplementedException("obj is not a Device!");
         }
         #endregion
 

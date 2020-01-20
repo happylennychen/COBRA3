@@ -14,7 +14,10 @@ namespace O2Micro.Cobra.ExperPanel
 	{
 		public bool bCustMode { get; set; }		//if true, able to show in Customer mode
 		public byte yTotal { get; set; }
-		public byte yIndex { get; set; }
+		
+		//(M191220)Francis, modify for 16bit index display
+		//public byte yIndex { get; set; }
+		public UInt16 u16Index { get; set; }
 		public byte yBitStart { get; set; }
 		public byte yLength { get; set; }
 		public byte yValue { get; set; }
@@ -33,7 +36,9 @@ namespace O2Micro.Cobra.ExperPanel
 		{
 			bCustMode = false;
 			yTotal = 8;
-			yIndex = 0xFF;
+			//(M191220)Francis, modify for 16bit index display
+			//yIndex = 0xFF;
+			u16Index = 0xFFFF;
 			yBitStart = 0xFF;
 			yLength = 0xFF;
 			yValue = 0xFF;
@@ -497,27 +502,50 @@ namespace O2Micro.Cobra.ExperPanel
 			//foreach (KeyValuePair<string, Reg> dicreg in pmrExpMdlParent.reglist)
 			foreach (KeyValuePair<string, Reg> tmpreg in pmrtmp.reglist)
 			{
-				//if (tmpreg.Key.Equals("High"))
+				////if (tmpreg.Key.Equals("High"))
+				////{
+				//	//if (tmpreg.Value.address != u16RegNum)
+				//	//{
+				//		//break;
+				//	//}
+				////}
+				//if (tmpreg.Value.address == u16RegNum)
 				//{
-					//if (tmpreg.Value.address != u16RegNum)
-					//{
-						//break;
-					//}
+				//	Reg newReg = new Reg();
+				//	newReg.address = tmpreg.Value.address;
+				//	newReg.bitsnumber = tmpreg.Value.bitsnumber;
+				//	newReg.startbit = tmpreg.Value.startbit;
+				//	//regtmp = dicreg.Value;
+				//	//regtmp.startbit = 0;
+				//	//regtmp.bitsnumber = yRegLength;	//force 8-bits or 16-bits length
+				//	//dicreg.Value.address = pmrtmp.reglist
+				//	//dicreg.Value.startbit = 0;
+				//	//dicreg.Value.bitsnumber = yRegLength;
+				//	//pmrExpMdlParent.reglist.Add(tmpreg.Key, newReg);
+				//	pmrExpMdlParent.reglist.Add("Low", newReg);
 				//}
-				if (tmpreg.Value.address == u16RegNum)
+				if (tmpreg.Key.ToLower().Equals("low"))
 				{
-					Reg newReg = new Reg();
-					newReg.address = tmpreg.Value.address;
-					newReg.bitsnumber = tmpreg.Value.bitsnumber;
-					newReg.startbit = tmpreg.Value.startbit;
-					//regtmp = dicreg.Value;
-					//regtmp.startbit = 0;
-					//regtmp.bitsnumber = yRegLength;	//force 8-bits or 16-bits length
-					//dicreg.Value.address = pmrtmp.reglist
-					//dicreg.Value.startbit = 0;
-					//dicreg.Value.bitsnumber = yRegLength;
-					//pmrExpMdlParent.reglist.Add(tmpreg.Key, newReg);
-					pmrExpMdlParent.reglist.Add("Low", newReg);
+					//debug usage
+					//if ((xmlDatatg.yIndex != SharedFormula.LoByte(inreg.Value.address)) ||
+					//(xmlDatatg.yBitStart != SharedFormula.LoByte(inreg.Value.startbit)) ||
+					//(xmlDatatg.yLength != SharedFormula.LoByte(inreg.Value.bitsnumber)))
+					//{
+					//MessageBox.Show(string.Format("index=0x{0:2X}, bit=0x{1:2X}, length=0x{2:2X}", xmlDatatg.yIndex, xmlDatatg.yBitStart, xmlDatatg.yLength));
+					//}
+					Reg newReg_low = new Reg();
+					newReg_low.address = tmpreg.Value.address;
+					newReg_low.bitsnumber = tmpreg.Value.bitsnumber;
+					newReg_low.startbit = tmpreg.Value.startbit;
+					pmrExpMdlParent.reglist.Add("Low", newReg_low);
+				}
+				else if (tmpreg.Key.ToLower().Equals("high"))
+				{
+					Reg newReg_hi = new Reg();
+					newReg_hi.address = tmpreg.Value.address;
+					newReg_hi.bitsnumber = tmpreg.Value.bitsnumber;
+					newReg_hi.startbit = tmpreg.Value.startbit;
+					pmrExpMdlParent.reglist.Add("High", newReg_hi);
 				}
 			}
 			foreach (KeyValuePair<string, Reg> dicreg in pmrExpMdlParent.reglist)

@@ -81,7 +81,6 @@ namespace O2Micro.Cobra.ExperPanel
         // <param name="name"></param>
         public ExperControl(object pParent, string name)
         {
-            FolderMap.WriteFile(string.Format("Start Expert Initialization! "));
             InitializeComponent();
 
             #region Initialization of private/public members
@@ -506,7 +505,6 @@ namespace O2Micro.Cobra.ExperPanel
         {
             AsyncObservableCollection<ExperModel> tmpCollect = null;
             //if SFL is hidding, no need to do sync
-            FolderMap.WriteFile(string.Format("Finished render, show up of Expert {0}", e.NewValue.ToString()));
             if (e.NewValue.ToString().ToLower().Equals("false"))
                 return;
             WaitControlExperSetup(true, 50, "Synchronizing with chip...");
@@ -575,9 +573,9 @@ namespace O2Micro.Cobra.ExperPanel
         {
             int iIndex = 0;
             //ExperModel expTmp = null;
-            byte yTmp;
+            UInt16 yTmp;
 
-            if (!byte.TryParse(txtGoto.Text, NumberStyles.HexNumber, null, out yTmp))
+            if (!UInt16.TryParse(txtGoto.Text, NumberStyles.HexNumber, null, out yTmp))
                 return;
 
             ICollectionView lstt = dtgRegistersPresent.ItemsSource as ICollectionView;

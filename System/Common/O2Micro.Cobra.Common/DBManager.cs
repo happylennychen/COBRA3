@@ -29,6 +29,7 @@ namespace O2Micro.Cobra.Common
         private static DateTime curDt = DateTime.Now;
         private static DateTime startDt = DateTime.Now;
         private static TimeSpan ts = curDt - startDt;
+        private static UInt32 log_cnt = 0;
 
         #region 数据库中与当前工程或进程关联的某系数据
         private static Dictionary<string, int> currentLogID = new Dictionary<string, int>();
@@ -310,7 +311,7 @@ namespace O2Micro.Cobra.Common
                     sqls.Add("CREATE TABLE IF NOT EXISTS Projects(project_id INTEGER PRIMARY KEY, product_id INTEGER NOT NULL, user_type TEXT NOT NULL, date TEXT NOT NULL, bus_type TEXT NOT NULL, UNIQUE(product_id, user_type, date));");
                     sqls.Add("CREATE TABLE IF NOT EXISTS Modules(module_id INTEGER PRIMARY KEY, module_name VARCHAR(30) NOT NULL, UNIQUE(module_name));");
                     sqls.Add("CREATE TABLE IF NOT EXISTS TableTypes(table_type INTEGER PRIMARY KEY, project_id INTEGER NOT NULL, module_id INTEGER NOT NULL, UNIQUE(project_id, module_id));");
-                    sqls.Add("CREATE TABLE IF NOT EXISTS Logs(log_id INTEGER PRIMARY KEY, table_type INTEGER NOT NULL, log_info VARCHAR(30), timestamp VARCHAR(17) NOT NULL, device_num VARCHAR(10));");//Issue1406 Leon
+                    sqls.Add("CREATE TABLE IF NOT EXISTS Logs(log_id INTEGER PRIMARY KEY, table_type INTEGER NOT NULL, log_info VARCHAR(30),log_size INTEGER NULL, timestamp VARCHAR(17) NOT NULL, device_num VARCHAR(10));");//Issue1406 Leon
                     sqls.Add("CREATE TABLE IF NOT EXISTS Bus_I2C(project_id INTEGER, device_id INTEGER, frequency INTEGER NOT NULL, address INTEGER NOT NULL, pec_enable BOOLEAN NOT NULL, UNIQUE(project_id, device_id));");
                     //todo: Bus_SPI Bus_I2C2 Bus_???
                     SQLiteResult sret = SQLiteDriver.ExecuteNonQueryTransaction(sqls);
@@ -451,6 +452,7 @@ namespace O2Micro.Cobra.Common
             {
                 if (DBManager.supportdb == true)
                 {
+                    log_cnt = 0;
                     int module_id = DBManager.GetModuleIDFromModules(module_name);
                     if (module_id == -1)
                         return -1;
@@ -609,6 +611,7 @@ namespace O2Micro.Cobra.Common
                     ts = curDt - startDt;
                     if (ts.TotalSeconds > 15)
                     {
+                        log_cnt += (UInt32)sqls.Count;
                         SQLiteDriver.ExecuteNonQueryTransaction(sqls);
                         sqls.Clear();
                         startDt = DateTime.Now;
@@ -739,6 +742,7 @@ namespace O2Micro.Cobra.Common
                     SQLiteResult sret;
                     if (sqls.Count != 0)
                     {
+                        log_cnt += (UInt32)sqls.Count;
                         sret = SQLiteDriver.ExecuteNonQueryTransaction(sqls);
                         if (sret.I != 0)
                             return sret.I;
@@ -752,12 +756,24 @@ namespace O2Micro.Cobra.Common
                         return -1;
 
                     Dictionary<string, string> conditions = new Dictionary<string, string>();
-                    conditions.Add("table_type", table_type.ToString());
+                    Dictionary<string, string> dcolumns = new Dictionary<string, string>();
+                    int row = -1;
+                    if (currentLogID.ContainsKey(module_name))
+                    {
+                        conditions.Add("log_id", currentLogID[module_name].ToString());
+                        conditions.Add("table_type", table_type.ToString());
+                        dcolumns.Add("log_size", log_cnt.ToString());
+                        sret = SQLiteDriver.DBUpdate("Logs", conditions, dcolumns, ref row);
+                    }
+                    dcolumns.Clear();
+                    conditions.Clear();
                     List<string> datacolumns = new List<string>();
+                    conditions.Add("table_type", table_type.ToString());
                     datacolumns.Add("log_id");
+                    datacolumns.Add("log_size");
                     datacolumns.Add("timestamp");
 
-                    int row = -1;
+                    row = -1;
                     List<List<string>> datavalues = new List<List<string>>();
                     sret = SQLiteDriver.DBSelect("Logs", conditions, datacolumns, ref datavalues, ref row);
                     if (sret.I == 0 && datavalues.Count != 0)
@@ -765,8 +781,11 @@ namespace O2Micro.Cobra.Common
                         foreach (var datavalue in datavalues)
                         {
                             int log_id = Convert.ToInt32(datavalue[0]);
-                            string timestamp = datavalue[1];
-                            int log_size = GetLogSize(log_id);
+                            int log_size = 0;
+                            Int32.TryParse(datavalue[1], out log_size);
+                            string timestamp = datavalue[2];
+                            //string timestamp = datavalue[1];
+                            //int log_size = GetLogSize(log_id);
                             List<string> item = new List<string>();
                             item.Add(timestamp);
                             item.Add(log_size.ToString());
@@ -858,7 +877,6 @@ namespace O2Micro.Cobra.Common
                     return 0;
             }
         }
-
         #region support multiple device//Issue1406 Leon
         public static int NewLog(string module_name, string log_info, string timestamp, string device_num, ref int log_id)
         {

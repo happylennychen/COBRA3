@@ -177,8 +177,10 @@ namespace O2Micro.Cobra.ExperPanel
 						}
 					case "Index":
 						{
-							xmlData.yIndex = Convert.ToByte(de.Value.ToString(), 16);
-                            yValid++;
+							//(M191220)Francis, modify for 16bit index display
+							//xmlData.yIndex = Convert.ToByte(de.Value.ToString(), 16);
+							xmlData.u16Index = Convert.ToUInt16(de.Value.ToString(), 16);
+							yValid++;
 							break;
 						}
 					case "BitStart":
@@ -293,7 +295,9 @@ namespace O2Micro.Cobra.ExperPanel
 			byte yTotalLeng = (byte)(xmldataIn.yTotal & 0x18);
 			byte yLoHi = (byte)(xmldataIn.yTotal & 0xE0);
 			int iLoopParse = 0;
-			byte yTargetIndex = 0;
+			//(M191220)Francis, modify for 16bit index display
+			//byte yTargetIndex = 0;
+			UInt16 u16TargetIndex = 0;
 			byte i, j;
 			AsyncObservableCollection<ExperModel> Listtmp = null;
 
@@ -331,21 +335,28 @@ namespace O2Micro.Cobra.ExperPanel
 				//if bit 7 of BitTotal == 0; high part of threshold are increasing
 				if (yLoHi == 0)
 				{
-					yTargetIndex = (byte)(xmldataIn.yIndex + j);
+					//(M191220)Francis, modify for 16bit index display
+					//yTargetIndex = (byte)(xmldataIn.yIndex + j);
+					u16TargetIndex = (UInt16)(xmldataIn.u16Index + j);
 				}
 				else
-				{	//if bit 7 of BitTotal == 1; high part of threshold are decreasing
-					yTargetIndex = (byte)(xmldataIn.yIndex - j);
+				{   //if bit 7 of BitTotal == 1; high part of threshold are decreasing
+					//(M191220)Francis, modify for 16bit index display
+					//yTargetIndex = (byte)(xmldataIn.yIndex - j);
+					u16TargetIndex = (UInt16)(xmldataIn.u16Index - j);
 				}
 
 				//mdltemp = SearchExpModelByIndex((UInt16)(yTargetIndex), Listtmp);
-				mdltemp = SearchExpModelByIndex((UInt16)(yTargetIndex), xmldataIn, Listtmp);
+				//(M191220)Francis, modify for 16bit index display
+				//mdltemp = SearchExpModelByIndex((UInt16)(yTargetIndex), xmldataIn, Listtmp);
+				mdltemp = SearchExpModelByIndex((UInt16)(u16TargetIndex), xmldataIn, Listtmp);
 
 				//test
-				if ((yTargetIndex >= 0x30) && (yTargetIndex <= 0x3f))
+				//(M191220)Francis, modify for 16bit index display
+				if ((u16TargetIndex >= 0x30) && (u16TargetIndex <= 0x3f))
 				{
-					yTargetIndex -= 1;
-					yTargetIndex += 1;
+					u16TargetIndex -= 1;
+					u16TargetIndex += 1;
 				}
 
 				if (mdltemp == null)
@@ -423,8 +434,10 @@ namespace O2Micro.Cobra.ExperPanel
 
 				if (bAdd)
 				{
-					mdltemp.u16RegNum = yTargetIndex;
-					mdltemp.strRegNum = string.Format("Index 0x{0:X2}", mdltemp.u16RegNum);
+					//(M191220)Francis, modify for 16bit index display
+					//mdltemp.u16RegNum = yTargetIndex;
+					mdltemp.u16RegNum = u16TargetIndex;
+					mdltemp.strRegNum = string.Format("Index__{0:X4}", mdltemp.u16RegNum);
 					mdltemp.yRegLength = yTotalLeng;
 					mdltemp.strTestXpr = xmldataIn.strTestMode;
 					mdltemp.strGroupReg = xmldataIn.strGroup;
@@ -1644,7 +1657,9 @@ namespace O2Micro.Cobra.ExperPanel
                     //{
                         //MessageBox.Show(string.Format("index=0x{0:2X}, bit=0x{1:2X}, length=0x{2:2X}", xmlDatatg.yIndex, xmlDatatg.yBitStart, xmlDatatg.yLength));
                     //}
-                    xmlDatatg.yIndex = SharedFormula.LoByte(inreg.Value.address);
+					//(M191220)Francis, modify for 16bit index display
+                    //xmlDatatg.yIndex = SharedFormula.LoByte(inreg.Value.address);
+					xmlDatatg.u16Index = (UInt16)SharedFormula.LoByte(inreg.Value.address);
                     xmlDatatg.yBitStart = SharedFormula.LoByte(inreg.Value.startbit);
                     xmlDatatg.yLength = SharedFormula.LoByte(inreg.Value.bitsnumber);
                     yValid = 3;

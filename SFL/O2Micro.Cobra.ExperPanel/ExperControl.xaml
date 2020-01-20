@@ -38,7 +38,7 @@
                   Background="{Binding Path=bMarkReg, Converter={StaticResource Bool2BrushBackground},Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" >
                   <!--Background="{StaticResource ExperBkgrndColor}"-->
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="82" />
                     <ColumnDefinition Width="20" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
@@ -567,7 +567,7 @@
                   Background="{Binding Path=bMarkReg, Converter={StaticResource Bool2BrushBackground},Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" >
                   <!--Background="{StaticResource ExperBkgrndColor}"-->
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="82" />
                     <ColumnDefinition Width="20" />
                     <ColumnDefinition Width="*" MaxWidth="640"/>
                 </Grid.ColumnDefinitions>
@@ -897,7 +897,7 @@
                             <ColumnDefinition Width="0.4*" />
                         </Grid.ColumnDefinitions>
                         <Button x:Name="btnGoto" FontFamily="Arial" Grid.Column="0" Content="Go Reg" Click="btnGoto_Click"/>
-                        <TextBox x:Name="txtGoto" FontFamily="Arial" Grid.Column="1" Margin="2,2,5,2" MaxLength="2"
+                        <TextBox x:Name="txtGoto" FontFamily="Arial" Grid.Column="1" Margin="2,2,5,2" MaxLength="4"
                                  BorderThickness="2" BorderBrush="Black" KeyDown="txtGoto_KeyDown" 
                                  InputMethod.PreferredImeState="Off"/>
                     </Grid>

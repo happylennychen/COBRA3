@@ -26,6 +26,7 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Prefer32Bit>false</Prefer32Bit>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -80,7 +81,7 @@
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\..\System\Common\O2Micro.Cobra.ControlLibrary\O2Micro.Cobra.ControlLibrary\O2Micro.Cobra.ControlLibrary.csproj">
-      <Project>{4D8A39E7-2BF2-4228-BF46-2F2A10D0545F}</Project>
+      <Project>{4d8a39e7-2bf2-4228-bf46-2f2a10d0545f}</Project>
       <Name>O2Micro.Cobra.ControlLibrary</Name>
       <Private>False</Private>
     </ProjectReference>

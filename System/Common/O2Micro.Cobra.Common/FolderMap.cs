@@ -34,6 +34,7 @@ namespace O2Micro.Cobra.Common
         public static string m_customer_folder = "";
         public static string m_EULA_file = "";
         public static string m_ReadMe_file = "";
+        public static object locker = new object();
 
         //Upgrade Folder
         public static string m_center_folder = "";
@@ -116,9 +117,12 @@ namespace O2Micro.Cobra.Common
 
         public static void WriteFile(string info)
         {
-            info += ": " + DateTime.Now.ToString() + ":" + DateTime.Now.Millisecond.ToString() + "\r\n";
-            m_stream_writer.Write(info);
-            m_stream_writer.Flush();
+            lock (locker)
+            {
+                info += ": " + DateTime.Now.ToString() + ":" + DateTime.Now.Millisecond.ToString() + "\r\n";
+                m_stream_writer.Write(info);
+                m_stream_writer.Flush();
+            }
         }
         public static bool CreateFolder(string strInFolder)
         {
