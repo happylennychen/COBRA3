@@ -501,9 +501,14 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             string filename = System.IO.Path.GetFileName(cfgfullpath);
 
             string hexfullpath = System.IO.Path.Combine(newfolder, originalfilename + ".hex");
-            string BIN_MD5_STR = SaveHexFile(hexfullpath);
+            string BIN_MD5_STR = SaveHexFile(hexfullpath);                                      //呼叫DEM API，P2H之后保存二进制文件。如果OCE的xml里面没有指定SaveHex命令的话，这里相当于skip掉。
 
-            msg.task = TM.TM_CONVERT_HEXTOPHYSICAL;
+            msg.task = TM.TM_CONVERT_PHYSICALTOHEX;                                             //P2H。为防止上一步被skip掉，这里要确保流程完整，所以必须加上这一步
+            parent.AccessDevice(ref m_Msg);
+            while (msg.bgworker.IsBusy)
+                System.Windows.Forms.Application.DoEvents();
+
+            msg.task = TM.TM_CONVERT_HEXTOPHYSICAL;                                             //H2P。这样一来保存的内容就是实际计算出来的值而非UI值。
             parent.AccessDevice(ref m_Msg);
             while (msg.bgworker.IsBusy)
                 System.Windows.Forms.Application.DoEvents();
@@ -943,6 +948,7 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
             cfgViewModel.UpdateAllModels();     //加载完之后，直接让cfg settings生效
             boardViewModel.UpdateAllModels();   //加载完之后，直接让board settings生效
+            OnRasieBoardConfigChangedEvent();
             return true;
         }
 

@@ -397,7 +397,15 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                     }
                 case 1: //ComboBox
                     {
-                        strval = itemlist[listindex];
+                        try
+                        {
+                            strval = itemlist[listindex];
+                        }
+                        catch(Exception e)
+                        {
+                            System.Windows.MessageBox.Show(e.Message);
+                            strval = e.Message;
+                        }
                         break;
                     }
                 case 2:
