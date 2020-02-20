@@ -493,21 +493,34 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
                 }
             }
 
+            cfgViewModel.UpdateAllModels();                                                     //UI to P
+
             string originalfilename = System.IO.Path.GetFileNameWithoutExtension(cfgfullpath);
             string originalfolder = System.IO.Path.GetDirectoryName(cfgfullpath);
             string newfolder = System.IO.Path.Combine(originalfolder, originalfilename + "-" + DateTime.Now.ToString("yyyyMMddHHmmss"));
             if (!Directory.Exists(newfolder))
                 Directory.CreateDirectory(newfolder);
             string filename = System.IO.Path.GetFileName(cfgfullpath);
+            string BIN_MD5_STR = string.Empty;
+            if (SaveHexSubTask != 0)
+            {
+                string hexfullpath = System.IO.Path.Combine(newfolder, originalfilename + ".hex");
+                BIN_MD5_STR = SaveHexFile(hexfullpath);                                      //呼叫DEM API，P2H之后保存二进制文件。如果OCE的xml里面没有指定SaveHex命令的话，这里相当于skip掉。
+            }
+            else
+            {
+                //对于Register Config来说，不产生hex文件，也没有BIN_MD5
+            }
 
-            string hexfullpath = System.IO.Path.Combine(newfolder, originalfilename + ".hex");
-            string BIN_MD5_STR = SaveHexFile(hexfullpath);                                      //呼叫DEM API，P2H之后保存二进制文件。如果OCE的xml里面没有指定SaveHex命令的话，这里相当于skip掉。
-
+            msg.task_parameterlist = cfgViewModel.dm_parameterlist;
+            msg.gm.sflname = sflname;
             msg.task = TM.TM_CONVERT_PHYSICALTOHEX;                                             //P2H。为防止上一步被skip掉，这里要确保流程完整，所以必须加上这一步
             parent.AccessDevice(ref m_Msg);
             while (msg.bgworker.IsBusy)
                 System.Windows.Forms.Application.DoEvents();
 
+            msg.task_parameterlist = cfgViewModel.dm_parameterlist;
+            msg.gm.sflname = sflname;
             msg.task = TM.TM_CONVERT_HEXTOPHYSICAL;                                             //H2P。这样一来保存的内容就是实际计算出来的值而非UI值。
             parent.AccessDevice(ref m_Msg);
             while (msg.bgworker.IsBusy)
@@ -569,23 +582,17 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
         private string SaveHexFile(string fullpath)	//Issue1513 Leon
         {
             msg.sm.efusebindata.Clear();
-            if (SaveHexSubTask != 0)
-            {
-                cfgViewModel.UpdateAllModels();
 
-                msg.task_parameterlist = cfgViewModel.dm_parameterlist;
-                msg.gm.sflname = sflname;
-                msg.sub_task = SaveHexSubTask;
-                msg.sub_task_json = fullpath;
-                msg.task = TM.TM_COMMAND;
-                parent.AccessDevice(ref m_Msg);
-                while (msg.bgworker.IsBusy)
-                    System.Windows.Forms.Application.DoEvents();
+            msg.task_parameterlist = cfgViewModel.dm_parameterlist;
+            msg.gm.sflname = sflname;
+            msg.sub_task = SaveHexSubTask;
+            msg.sub_task_json = fullpath;
+            msg.task = TM.TM_COMMAND;
+            parent.AccessDevice(ref m_Msg);
+            while (msg.bgworker.IsBusy)
+                System.Windows.Forms.Application.DoEvents();
 
-                return GetMd5Hash(msg.sm.efusebindata.ToArray());
-            }
-            else
-                return string.Empty;        //对于Register Config来说，不产生hex文件，也没有BIN_MD5
+            return GetMd5Hash(msg.sm.efusebindata.ToArray());
         }
 
         private void SaveCFile(string fullpath)
@@ -948,7 +955,6 @@ namespace O2Micro.Cobra.DeviceConfigurationPanel
             }
             cfgViewModel.UpdateAllModels();     //加载完之后，直接让cfg settings生效
             boardViewModel.UpdateAllModels();   //加载完之后，直接让board settings生效
-            OnRasieBoardConfigChangedEvent();
             return true;
         }
 
