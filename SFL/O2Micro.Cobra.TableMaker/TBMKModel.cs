@@ -93,7 +93,7 @@ namespace O2Micro.Cobra.TableMaker
 
 	public class TableSample
 	{
-		public static string strTBMVersion = "V006";
+		public static string strTBMVersion = "V007";
 
 		private List<string> mySourceFilePath = new List<string>();
 		//public List<SourceDataSample> mySourceData = new List<SourceDataSample>();
@@ -1500,6 +1500,9 @@ namespace O2Micro.Cobra.TableMaker.Table
 		private enum O2TXTRecord : int
 		{
 			TxtSerial = 1,
+            TxtElipse = 2,
+            TxtSecRecord = 3,
+            TxtStep = 6,
 			TxtChgDsg = 8,
 			TxtTime = 9,
 			TxtCurrent = 10,
@@ -1536,7 +1539,8 @@ namespace O2Micro.Cobra.TableMaker.Table
 		private string strSoCFileName { get; set; }	//use to save full path of SoC xls
 		private string strSocRowHeader = null;
 		private float fSoCStep = 0.05F;
-		private float fErrorStep = 2.3F;
+		private float fErrorStep = 4.0F;
+        private float fErrorRatio = 0.1F;       //90% * header.current
 		//private bool bFranLearningCheck = false;
 
 		#endregion
@@ -1717,7 +1721,8 @@ namespace O2Micro.Cobra.TableMaker.Table
 							LibErrorCode.fVal01 = rdn.fCurrent;
 							if ((rdn.fCurrent < 0))
 							{
-								if ((Math.Abs(rdn.fCurrent - myHeader.fCurrent) < fErrorStep))
+								//if ((Math.Abs(rdn.fCurrent - myHeader.fCurrent) < fErrorStep))
+                                if (Math.Abs(rdn.fCurrent - myHeader.fCurrent) < Math.Abs(fErrorRatio * myHeader.fCurrent))
 								{	//here are useful experiment raw data, add it
 									bExperimentCurr = true;
 									ReservedExpData.Add(rdn);
@@ -1822,7 +1827,8 @@ namespace O2Micro.Cobra.TableMaker.Table
 					{	//found charge state, it's learning cycle starting
 						bFoundCharge = true;
 					}
-					else if ((rdn.fCurrent < 0) && (Math.Abs(rdn.fCurrent - myHeader.fCurrent) < fErrorStep)) //will it be experiment data
+					//else if ((rdn.fCurrent < 0) && (Math.Abs(rdn.fCurrent - myHeader.fCurrent) < fErrorStep)) //will it be experiment data
+                    else if ((rdn.fCurrent < 0) && (Math.Abs(rdn.fCurrent - myHeader.fCurrent) < Math.Abs(fErrorRatio * myHeader.fCurrent)))
 					{	//voltage lower than High Bound, and idle or discharging
 						//???
 						if (fMaxCurrent < Math.Abs(rdn.fCurrent))
@@ -1983,7 +1989,9 @@ namespace O2Micro.Cobra.TableMaker.Table
 			bool bReachHighVolt = false, bStartExpData = false, bReachLowVolt = false,  bStopExpData = true;
 			float ftmp;
 			UInt32 iNumColCnt, iNumSrlNow, iNumSrlStart, iNumSrlEnd, iNumSrlLast, iNumZerotmp, iNumLostCount;
+            UInt32 iElipseTime;
 			float fVoltageDiff = 10F;
+            UInt16 iHighVoltDiff = 100;
 
 			if(strRawCSV == null)
 			{
@@ -2030,6 +2038,7 @@ namespace O2Micro.Cobra.TableMaker.Table
 			iNumSrlLast = iNumSrlStart;
 			iNumSrlEnd = iNumSrlStart;
 			iNumZerotmp = 0; iNumLostCount = 0;
+            iElipseTime = 0;
 
 			while ((strTemp = stmContent.ReadLine()) != null)
 			{
@@ -2038,8 +2047,13 @@ namespace O2Micro.Cobra.TableMaker.Table
 				sTemp.Remove(0, sTemp.Length);
 				sAccM.Remove(0, sAccM.Length);
 				sDate.Remove(0, sDate.Length);
-				//reserve last one value
-				iNumSrlLast = iNumSrlNow;
+                if (iElipseTime != 0)
+                {
+                    //reserve last one value
+                    iNumSrlLast = iNumSrlNow;
+                }
+                if (iNumSrlLast == 5400)
+                    fVoltOld = fVoltn;
 				fVoltOld = fVoltn;
 
 				#region skip other except log data line
@@ -2073,7 +2087,8 @@ namespace O2Micro.Cobra.TableMaker.Table
 				{
 					iNumSrlNow= 0;
 					ftmp = 1.0F;		//JAYOU is in mA/mV/mAhr format
-					ParseJYFormat(strToken, out sVoltage, out sCurrent, out sTemp, out sAccM, out sDate, out iNumSrlNow);
+                    iElipseTime = 0;
+                    ParseJYFormat(strToken, out sVoltage, out sCurrent, out sTemp, out sAccM, out sDate, out iNumSrlNow, out iElipseTime);
 				}
 				else if (myHeader.strEquip.ToUpper().IndexOf("JF") != -1)
 				{
@@ -2087,6 +2102,10 @@ namespace O2Micro.Cobra.TableMaker.Table
                     iNumSrlNow = 0;
                     ftmp = 1000F;      //Chroma is in A/V/Ahr format
                     ParseChroFormat(strToken, out sVoltage, out sCurrent, out sTemp, out sAccM, out sDate, out iNumSrlNow);
+                    if (iNumSrlNow != 0)
+                        iElipseTime = 1;
+                    else
+                        iElipseTime = 0;
                 }
                 //(E170612)
 				else
@@ -2145,7 +2164,7 @@ namespace O2Micro.Cobra.TableMaker.Table
 						#region check all log data about voltage/current, to get bReachHighVolt, bStartExpData, bStopExpData, and, bReachLowVolt value
 						if (!bReachHighVolt)
 						{		//initially, first time must go here, suppose not reach high voltage
-							if ((Math.Abs(fVoltn - myHeader.fLimitChgVolt) < (fErrorStep * 10)))	//maybe log will only be idle stage after charge_to_full, set higher hysteresis
+                            if ((Math.Abs(fVoltn - myHeader.fLimitChgVolt) < iHighVoltDiff))	//maybe log will only be idle stage after charge_to_full, set higher hysteresis
 							{	//check voltage is reached high voltage, no matter charge/discharge/or idle mode
 								bReachHighVolt = true;
 							}
@@ -2155,8 +2174,9 @@ namespace O2Micro.Cobra.TableMaker.Table
 						{
 							if (fCurrn < 0)
 							{
-								if (Math.Abs(fCurrn - myHeader.fCurrent) < fErrorStep)
-								{	//current is familiar with header setting
+								//if (Math.Abs(fCurrn - myHeader.fCurrent) < fErrorStep)
+                                if (Math.Abs(fCurrn - myHeader.fCurrent) < Math.Abs(fErrorRatio * myHeader.fCurrent))
+                                {	//current is familiar with header setting
 									bStartExpData = true;
 									bStopExpData = false;
 								}
@@ -2170,7 +2190,8 @@ namespace O2Micro.Cobra.TableMaker.Table
 						//else if((bReachHighVolt) && (fCurrn > 0))	//still in charging learning cycle
 						else if ((bStartExpData) && (!bReachLowVolt))
 						{
-                            if (Math.Abs(fCurrn - myHeader.fCurrent) < fErrorStep)
+                            //if (Math.Abs(fCurrn - myHeader.fCurrent) < fErrorStep)
+                            if (Math.Abs(fCurrn - myHeader.fCurrent) < Math.Abs(fErrorRatio * myHeader.fCurrent))
                             {
                                 if ((Math.Abs(fVoltn - myHeader.fCutoffDsgVolt) < fErrorStep))	//stop discharging to idle
                                 {
@@ -2186,7 +2207,7 @@ namespace O2Micro.Cobra.TableMaker.Table
                             }
 							//else voltage still in range of High_Low voltage
 						}
-						else if ((bReachLowVolt) && (!bStopExpData))
+						/*else*/ if ((bReachLowVolt) && (!bStopExpData))
 						{
                             if ((Math.Abs(fCurrn - 0) < 10) || (fCurrn >= 0))
 							{
@@ -2226,7 +2247,8 @@ namespace O2Micro.Cobra.TableMaker.Table
 							{
 								if (!bStartExpData)
 								{
-									if (Math.Abs(fCurrn - myHeader.fCurrent) < fErrorStep)
+									//if (Math.Abs(fCurrn - myHeader.fCurrent) < fErrorStep)
+                                    if (Math.Abs(fCurrn - myHeader.fCurrent) < Math.Abs(fErrorRatio * myHeader.fCurrent))
 									{	//current is familiar with header setting
 										bStartExpData = true;
 										bStopExpData = false;
@@ -2287,7 +2309,7 @@ namespace O2Micro.Cobra.TableMaker.Table
 						{
 							if ((iNumSrlNow - iNumSrlLast) > 1)	//jump more than 1
 							{
-								if ((iNumSrlNow - iNumSrlLast) > (UInt32)fErrorStep)	//jump more than 5
+								if ((iNumSrlNow - iNumSrlLast) > 5)	//jump more than 5
 								{
 									LibErrorCode.uVal01 = iNumSrlLast;
 									LibErrorCode.uVal02 = iNumSrlNow;
@@ -2296,8 +2318,9 @@ namespace O2Micro.Cobra.TableMaker.Table
 								}
 								else
 								{
-									//jump less than 5
-									if (Math.Abs(fVoltn - fVoltOld) > fErrorStep)
+									//jump less than 5 in 2 seconds
+									if ((Math.Abs(fVoltn - fVoltOld) > fErrorStep) && 
+                                        (iElipseTime < 2))
 									{
 										LibErrorCode.uVal01 = iNumSrlNow;
 										LibErrorCode.fVal01 = fVoltOld;
@@ -2334,7 +2357,8 @@ namespace O2Micro.Cobra.TableMaker.Table
 									//if (Math.Abs(fVoltn - fVoltOld) > 5)
 									if(((fVoltn - fVoltOld) * fVoltageDiff) < 0)		//check voltage changing direction, in charging, voltage should increase, vice versa
 									{
-										if (Math.Abs(fVoltn - fVoltOld) > 10.0F)	//if changing tolence is bigger than 10mV
+										if ((Math.Abs(fVoltn - fVoltOld) > 10.0F) &&	//if changing tolence is bigger than 10mV in 2 seconds
+                                            (iElipseTime < 2))
 										{
 											LibErrorCode.uVal01 = iNumSrlNow;
 											LibErrorCode.fVal01 = fVoltn;
@@ -2408,7 +2432,8 @@ namespace O2Micro.Cobra.TableMaker.Table
             {
                 iNumLostCount -= 2;
             }
-            if ((iNumColCnt != (iNumSrlEnd - iNumSrlStart - iNumLostCount + 1)) 
+            //if ((iNumColCnt != (iNumSrlEnd - iNumSrlStart - iNumLostCount + 1)) 
+            if ((Math.Abs(iNumColCnt - (iNumSrlEnd - iNumSrlStart - iNumLostCount)) > 5) 
 				&& (	uErr == LibErrorCode.IDS_ERR_SUCCESSFUL))							//(M140728)Francis, And if there is nothing error in while loop
 			{
 				LibErrorCode.strVal01 = strSourceFilePath;
@@ -2693,7 +2718,7 @@ namespace O2Micro.Cobra.TableMaker.Table
 			//char[] digi = null;
 			int iErrCount = 0;
 			int iNumCol, iNumSub;//, iMinus;
-			UInt32 iNumSerial, iNumSerStart, iNumSerLast;
+			UInt32 iNumSerial, iNumSerStart, iNumSerLast, iElipseTime;
 			string sVoltage = "", sCurrent = "", sTemp = "", sAccM = "", sDate = "";
 			float fLastVolt, fNowVolt, fLastCurr, fNowCurr;
 			float ftmp;
@@ -2707,6 +2732,7 @@ namespace O2Micro.Cobra.TableMaker.Table
 			fLastVolt = -1F;
 			fNowVolt = -1F;
 			fLastCurr = -1F;
+            iElipseTime = 0; 
 			while ((strTemp = stmContent.ReadLine()) != null)
 			{
 				strToken = strTemp.Split(chSeperate, StringSplitOptions.None);
@@ -2734,7 +2760,7 @@ namespace O2Micro.Cobra.TableMaker.Table
 				{
 					iNumSerial = 0;
 					ftmp = 1.0F;		//JAYOU is in mA/mV/mAhr format
-					ParseJYFormat(strToken, out sVoltage, out sCurrent, out sTemp, out sAccM, out sDate, out iNumSerial);
+                    ParseJYFormat(strToken, out sVoltage, out sCurrent, out sTemp, out sAccM, out sDate, out iNumSerial, out iElipseTime);
 				}
 				else if (myHeader.strEquip.ToUpper().IndexOf("JF") != -1)
 				{
@@ -2989,9 +3015,9 @@ namespace O2Micro.Cobra.TableMaker.Table
 			return bReturn;
 		}
 
-		private void ParseJYFormat(string[] inToken, out string outVolt, out string outCurr, out string outTemp, out string outAccm, out string outDate, out UInt32 outSerial)
+		private void ParseJYFormat(string[] inToken, out string outVolt, out string outCurr, out string outTemp, out string outAccm, out string outDate, out UInt32 outSerial, out UInt32 outElipse)
 		{
-			int iMinus = 0;
+			int iMinus = 0, iSecRec = -1;
 
 			outVolt = "";
 			outCurr = "";
@@ -2999,6 +3025,29 @@ namespace O2Micro.Cobra.TableMaker.Table
 			outAccm = "";
 			outDate = "";
 			outSerial = 0;
+            outElipse = 0;
+            if (!int.TryParse(inToken[(int)O2TXTRecord.TxtElipse], out iMinus))
+			{
+				return;
+			}
+            else
+            {
+                outElipse = (UInt32)iMinus;
+                if (iMinus == 0)
+                {   //if elipsetime is zero
+                    if (!int.TryParse(inToken[(int)O2TXTRecord.TxtSecRecord], out iSecRec))
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        if (iSecRec != 0)
+                        {   //if Record second is 0, not first one record
+                            return;
+                        }
+                    }
+                }
+            }
 			if (!int.TryParse(inToken[(int)O2TXTRecord.TxtChgDsg], out iMinus))
 			{
 				return;
@@ -4161,6 +4210,7 @@ namespace O2Micro.Cobra.TableMaker.Table
 		static public int iMaxPercent = 10000;
 		static public float fPerSteps = 1.5625F;
 		static public int iSOCStepmV = 16;
+        static public int iTSOCLimitedVolt = 4264;      //(A170714)Francis, due to F/W limitation, only accept MaxVolt 4264mV in TSOCbyOCV table
 		#endregion
 
 		#region private member definition; string saving content to write into file
@@ -4751,21 +4801,26 @@ namespace O2Micro.Cobra.TableMaker.Table
 		private bool CreateTSOCPoints(ref List<Int32> ixpo, ref List<Int32> iypo, List<RawDataNode> inListRaw, ref UInt32 uErr)
 		{
 			bool bReturn = false;
-			int fmulti = (int)(((float)(iMaxVoltage - iMinVoltage)) * 10F / OCVSample.iSOCStepmV);
-			int ileft = (int)fmulti % 10;
+            int iTSOCMaxVolt = iMaxVoltage;
+			int fmulti = 1;
+			int ileft = 1;
 			//int ftpp = (BattModel.wTSOCPoints - 1) * OCVSample.iSOCStepmV + myOCV.iMinVoltage;
 			int ftpp, i, itemp, iSumVolt;
 			int iHundred = 32767;
 			float fTemp;
 
+            if(iTSOCMaxVolt > iTSOCLimitedVolt)
+                iTSOCMaxVolt = iTSOCLimitedVolt;
+            fmulti = (int)(((float)(iTSOCMaxVolt - iMinVoltage)) * 10F / OCVSample.iSOCStepmV);
+            ileft = (int)fmulti % 10;
 			fmulti /= 10;
 			ftpp = fmulti * OCVSample.iSOCStepmV + iMinVoltage;
 
-			if ((ileft != 0) || (ftpp != iMaxVoltage))
+			if ((ileft != 0) || (ftpp != iTSOCMaxVolt))
 			{
-				if (ftpp < iMaxVoltage)	//should not bigger than iMaxVoltage
+				if (ftpp < iTSOCMaxVolt)	//should not bigger than iTSOCMaximumVoltUsage
 				{
-					iMaxVoltage = ftpp;
+					iTSOCMaxVolt = ftpp;
 				}
 			}
 
@@ -4775,7 +4830,7 @@ namespace O2Micro.Cobra.TableMaker.Table
 				//foreach (RawDataNode rds in mySourceData[0].ReservedExpData)
 				foreach (RawDataNode rds in inListRaw)
 				{
-					iSumVolt = (iMaxVoltage - (i * OCVSample.iSOCStepmV));
+					iSumVolt = (iTSOCMaxVolt - (i * OCVSample.iSOCStepmV));
 					if (rds.fVoltage <= iSumVolt)
 					{
 						fTemp = (float)(TableSourceHeader.fFullCapacity - rds.fAccMah) / TableSourceHeader.fFullCapacity;
@@ -4799,7 +4854,8 @@ namespace O2Micro.Cobra.TableMaker.Table
 					fTemp *= (float)iHundred;
                     itemp = Convert.ToInt32(Math.Round(fTemp, 0));
                     ixpo.Add(Convert.ToInt32(Math.Round(lastone.fVoltage, 0)));
-					iypo.Add(itemp);
+                    if (itemp <= 0) itemp = 0;	//keep it positiv, or 0
+                    iypo.Add(itemp);
 					bReturn = true;
 				}
 				else if (ixpo.Count == (fmulti + 1))
@@ -6172,7 +6228,7 @@ namespace O2Micro.Cobra.TableMaker.Table
 				}
 				if (fAvgSoc > 10000) fAvgSoc = 10000.0F;
 				//if (fAvgSoc < 0) fAvgSoc = -9999.0F;
-				if (fAvgSoc < 0) fAvgSoc -= 1.0F;
+                if (fAvgSoc < 0) fAvgSoc = 0;//fAvgSoc -= 1.0F;
 				ypoints.Add(Convert.ToInt32(Math.Round(fAvgSoc, 0)));
 				//i += 1;
 				if (i >= TableVoltagePoints.Count)
@@ -7674,12 +7730,15 @@ namespace O2Micro.Cobra.TableMaker.Table
 		private int iLineCmtTester = 27;
 		private int iLineCmtBId = 28;
 		private List<string> strHFileContents = new List<string>();
-		private int iLineOCVNum = 4;
+        private int iLineIncTypeh = 3;      //(M190809)Francis, per Eason request, to support HB,
+        private int iLineOCVNum = 4;
 		private int iLineCHGNum = 5;
 		private int iLineXNum = 8;
 		private int iLineYNum = 9;
 		private int iLineZNum = 10;
 		private int iLineIDNum = 12;
+        private int iLineStructX = 20;      //(M190809)Francis, per Eason request, to support HB,
+        private int iLineStructY = 21;      //(M190809)Francis, per Eason request, to support HB,
         private UInt32 m_uOCVNumHF;
         public UInt32 uOCVNumHF
 		{
@@ -7695,7 +7754,7 @@ namespace O2Micro.Cobra.TableMaker.Table
 			get { return m_uChargeNumHF;}
 			set { 
 				m_uChargeNumHF = value;
-				strHFileContents[iLineCHGNum] = string.Format("#define CHARGE_DATA_NUM \t\t {0}", m_uChargeNumHF);
+				strHFileContents[iLineCHGNum] = string.Format("//#define CHARGE_DATA_NUM \t\t {0}", m_uChargeNumHF);
 			}
 		}
         private UInt32 m_uXNumHF;
@@ -7737,13 +7796,14 @@ namespace O2Micro.Cobra.TableMaker.Table
 		}
 
 		private List<string> strCFileContents = new List<string>();
-		private int iLineIDCont = 9;
+        private int iLineKernelH = 0;           //(M190809)Francis, per Eason request, to support HB
+        private int iLineIDCont = 9;
 		private int iLineOCVCont = 11;
 		private int iLineCHGCont = 14;
 		private int iLineXCont = 17;
 		private int iLineYCont = 20;
 		private int iLineZCont = 23;
-		private int iLineRCCont = 27;
+        private int iLineRCCont = 27;           //(C190809)Francis, this line is 1 line after int32_t	RCtable[][] = 
 		private string m_IDContCF;
 		public string IDContCF
 		{
@@ -7771,7 +7831,7 @@ namespace O2Micro.Cobra.TableMaker.Table
 			set
 			{
 				m_CHGContCF = value;
-				strCFileContents[iLineCHGCont] = string.Format("one_latitude_data_t	charge_data[CHARGE_DATA_NUM] = {{") + value + "};";
+				strCFileContents[iLineCHGCont] = string.Format("//one_latitude_data_t	charge_data[CHARGE_DATA_NUM] = {{") + value + "};";
 			}
 		}
 		private string m_XAxisContCF;
@@ -7891,6 +7951,10 @@ namespace O2Micro.Cobra.TableMaker.Table
 		private string strHFileFullName =""; //= string.Format(".h");
         private string strFalconLYCFileFullName = ""; //= string.Format(".c");
         private string strFalconLYHFileFullName = ""; //= string.Format(".h");
+        //(A190808)Francis, per Eason request, have another hummingbird table
+        private string strHBCFileFullName = ""; //= string.Format(".c");
+        private string strHBHFileFullName = ""; //= string.Format(".h");
+        //(E190808)
         //(M170318)Francis, modify these 2 as public, for calling by FalconLy conveniently.
         public List<string> strTmpFullPathList = new List<string>();		//sequency of tmpfullpathlist must be 1.RC, 2.OCV, 3.CHG
         public int iIndxInFullPathList = -1;
@@ -7920,6 +7984,9 @@ namespace O2Micro.Cobra.TableMaker.Table
 		private List<TableError> drvError = null;											//(A141118)Francis, only a reference point, has no new instance
 
         public bool bAndDrvShortShow = false;                           //(A170706)Francis, if true, show alert message that cannot make Android Driver. Only when if current table is Charge, or found Charge tmp file.
+
+        private bool bChgTableNecessary = false;                        //(A190808)Francis, as Eason request, charge table is not necessary
+        private bool bHummingBirdTableGen = true;                       //(A190808)Francis, as Eason request, generate another HB table
 
         #endregion
 
@@ -7986,15 +8053,15 @@ namespace O2Micro.Cobra.TableMaker.Table
 
 				#region add comment header string content for C and H file
 				strHHeaderComments.Add(string.Format("/*****************************************************************************"));
-				strHHeaderComments.Add(string.Format("* Copyright(c) O2Micro, 2014. All rights reserved."));
+				strHHeaderComments.Add(string.Format("* Copyright(c) O2Micro, 2019. All rights reserved."));
 				strHHeaderComments.Add(string.Format("*"));
 				strHHeaderComments.Add(string.Format("* O2Micro battery gauge driver"));
-				strHHeaderComments.Add( string.Format("* File: table"));	//4
+				strHHeaderComments.Add( string.Format("* File: "));	//4
 				strHHeaderComments.Add(string.Format("*"));
 				strHHeaderComments.Add(string.Format("* $Source: /data/code/CVS"));
 				strHHeaderComments.Add(string.Format("* $Revision: 4.00.01 $"));
 				strHHeaderComments.Add(string.Format("*"));
-				strHHeaderComments.Add(string.Format("* This program is free software and can be edistributed and/or modify"));
+				strHHeaderComments.Add(string.Format("* This program is free software and can be redistributed with or without modification"));
 				strHHeaderComments.Add(string.Format("* it under the terms of the GNU General Public License version 2 as"));
 				strHHeaderComments.Add(string.Format("* published by the Free Software Foundation."));
 				strHHeaderComments.Add(string.Format("*"));
@@ -8043,12 +8110,18 @@ namespace O2Micro.Cobra.TableMaker.Table
 				//strTargetTmpFileFullPath = strDriverTableFileN;
 				strTmpFullPathList.Add(strTmpFile + strRCExtendTmp);
 				strTmpFullPathList.Add(strTmpFile + strOCVExtendTmp);
-				strTmpFullPathList.Add(strTmpFile + strCHGExtendTmp);
+                //(M190808)Francis, Eason request that charge file is not necessary
+                if (bChgTableNecessary)
+    				strTmpFullPathList.Add(strTmpFile + strCHGExtendTmp);
 				strTargetTmpFileFullPath = strTmpFile;
 				strCFileFullName = strTmpFile + ".c";
 				strHFileFullName = strTmpFile + ".h";
                 strFalconLYCFileFullName = strTmpFile + "_FalconLY.c";
                 strFalconLYHFileFullName = strTmpFile + "_FalconLY.h";
+                //(A190808)Francis, per Eason request, have another hummingbird table
+                strHBCFileFullName = strTmpFile + "_HB.c"; //= string.Format(".c");
+                strHBHFileFullName = strTmpFile + "_HB.h"; //= string.Format(".h");
+                //(E190808)
 				if (TableTypeMk == TypeEnum.ChargeRawType)
 				{
 					strTargetTmpFileFullPath += strCHGExtendTmp;
@@ -8126,7 +8199,7 @@ namespace O2Micro.Cobra.TableMaker.Table
 
 				#region add comment header string content for C and H file
 				strHHeaderComments.Add(string.Format("/*****************************************************************************"));
-				strHHeaderComments.Add(string.Format("* Copyright(c) O2Micro, 2014. All rights reserved."));
+				strHHeaderComments.Add(string.Format("* Copyright(c) O2Micro, 2019. All rights reserved."));
 				strHHeaderComments.Add(string.Format("*"));
 				strHHeaderComments.Add(string.Format("* O2Micro battery gauge driver"));
 				strHHeaderComments.Add( string.Format("* File: table"));	//4
@@ -8193,16 +8266,17 @@ namespace O2Micro.Cobra.TableMaker.Table
 			strHFileContents.Add(string.Format("#ifndef _TABLE_H_"));
 			strHFileContents.Add(string.Format("#define _TABLE_H_"));
 			strHFileContents.Add(string.Format(""));
+//            strHFileContents.Add(string.Format("#include \"types.h\""));            //(A190809)Francis, as Eason request, to support HB
+            strHFileContents.Add(string.Format(""));
+			strHFileContents.Add(string.Format("#define OCV_DATA_NUM  \t 44"));     //line 4
+			strHFileContents.Add(string.Format("//#define CHARGE_DATA_NUM \t 51"));   //line 5
 			strHFileContents.Add(string.Format(""));
-			strHFileContents.Add(string.Format("#define OCV_DATA_NUM  \t 44"));
-			strHFileContents.Add(string.Format("#define CHARGE_DATA_NUM \t 51"));
 			strHFileContents.Add(string.Format(""));
-			strHFileContents.Add(string.Format(""));
-			strHFileContents.Add(string.Format("#define XAxis \t\t 25"));
+			strHFileContents.Add(string.Format("#define XAxis \t\t 25"));           //line 8
 			strHFileContents.Add(string.Format("#define YAxis \t\t 7"));
 			strHFileContents.Add(string.Format("#define ZAxis \t\t 8"));
 			strHFileContents.Add(string.Format(""));															//(A140805)Francis, for battery id string array
-			strHFileContents.Add(string.Format("#define BATTERY_ID_NUM \t 2"));	//(A140805)Francis, for battery id string array
+			strHFileContents.Add(string.Format("#define BATTERY_ID_NUM \t 2"));	//(A140805)Francis, for battery id string array //line 13
 			strHFileContents.Add(string.Format(""));
 			strHFileContents.Add(string.Format(""));
 			strHFileContents.Add(string.Format("/****************************************************************************"));
@@ -8210,8 +8284,8 @@ namespace O2Micro.Cobra.TableMaker.Table
 			strHFileContents.Add(string.Format("*  add struct #define here if any"));
 			strHFileContents.Add(string.Format("***************************************************************************/"));
 			strHFileContents.Add(string.Format("typedef struct tag_one_latitude_data {{"));
-			strHFileContents.Add(string.Format(" \t int32_t \t\t\t x;//"));
-			strHFileContents.Add(string.Format(" \t int32_t \t\t\t y;//"));
+			strHFileContents.Add(string.Format(" \t int32_t \t\t\t x;//"));         //line 20
+			strHFileContents.Add(string.Format(" \t int32_t \t\t\t y;//"));         //line 21
 			strHFileContents.Add(string.Format("}} one_latitude_data_t;"));
 			strHFileContents.Add(string.Format(""));
 			strHFileContents.Add(string.Format(""));
@@ -8247,12 +8321,12 @@ namespace O2Micro.Cobra.TableMaker.Table
 			strCFileContents.Add(string.Format("* e.g."));
 			strCFileContents.Add(string.Format("*	int8_t foo;"));
 			strCFileContents.Add(string.Format("****************************************************************************/"));
-			strCFileContents.Add(string.Format("const char * battery_id[BATTERY_ID_NUM] = {{ \"XXXX\", \"YYYY\" }};"));
+			strCFileContents.Add(string.Format("const char * battery_id[BATTERY_ID_NUM] = {{ \"XXXX\", \"YYYY\" }};"));     //line 9
 			strCFileContents.Add(string.Format(""));
-			strCFileContents.Add(string.Format("one_latitude_data_t ocv_data[OCV_DATA_NUM] = {{ }};"));
+			strCFileContents.Add(string.Format("one_latitude_data_t ocv_data[OCV_DATA_NUM] = {{ }};"));                     //line 11
 			strCFileContents.Add(string.Format(""));
 			strCFileContents.Add(string.Format("//real current to soc "));
-			strCFileContents.Add(string.Format("one_latitude_data_t	charge_data[CHARGE_DATA_NUM] = {{ }};"));
+			strCFileContents.Add(string.Format("//one_latitude_data_t	charge_data[CHARGE_DATA_NUM] = {{ }};"));               //line 14
 			strCFileContents.Add(string.Format(""));
 			strCFileContents.Add(string.Format("//RC table X Axis value, in mV format"));
 			strCFileContents.Add(string.Format("int32_t	XAxisElement[XAxis] = {{ }};"));
@@ -8433,7 +8507,8 @@ namespace O2Micro.Cobra.TableMaker.Table
                     ReadRCContentFromTmp();
                     ReadOCVContentFromTmp();
                     //}
-					ReadChgContentFromTmp();
+                    if (bChgTableNecessary)
+    					ReadChgContentFromTmp();
 				}
 				//create C/H file
 
@@ -8478,7 +8553,7 @@ namespace O2Micro.Cobra.TableMaker.Table
 				IDContCF = strTemp;
 				strHHeaderComments[iLineCmtBId] = "* Battery ID: " + strTemp;	//update in comments
 
-				bReturn = GenerateDriverFiles(ref uErr, OutFolder);	//basically return true; except C/H file create error, but C/H file path is default and no chagned
+				bReturn = GenerateDriverFiles(ref uErr, OutFolder);	//basically return true; except C/H file create error, but C/H file path is default and no changed
                 if ((tblSample.bVTRboth) && (bVTRable))
                 {
                     bReturn &= GenerateDriverFiles(ref uErr, OutFolder, true);
@@ -8504,7 +8579,7 @@ namespace O2Micro.Cobra.TableMaker.Table
                 {
                     uErr = LibErrorCode.IDS_ERR_TMK_DRV_SHORT_TABLES; //should not happen
                     CreateNewDrvError(strTargetTmpFileFullPath, uErr);
-                    bReturn = false;
+                    bReturn = true;
                 }
 			}
 
@@ -9350,14 +9425,18 @@ namespace O2Micro.Cobra.TableMaker.Table
 			StreamWriter FileContent = null;
 			string strFullC = "";
 			string strFullH = "";
-			int i = 0;
+            string strHBFullC = "";
+            string strHBFullH = "";
+            int i = 0;
 
 			if (OutFolder != null)
 			{
                 if (!bCreateFalconLy)
                 {
-                    strFullC = System.IO.Path.Combine(OutFolder, strCFileFullName);
-                    strFullH = System.IO.Path.Combine(OutFolder, strHFileFullName);
+                    strFullC    = System.IO.Path.Combine(OutFolder, strCFileFullName);
+                    strFullH    = System.IO.Path.Combine(OutFolder, strHFileFullName);
+                    strHBFullC  = System.IO.Path.Combine(OutFolder, strHBCFileFullName);
+                    strHBFullH  = System.IO.Path.Combine(OutFolder, strHBHFileFullName);
                 }
                 else
                 {
@@ -9391,11 +9470,14 @@ namespace O2Micro.Cobra.TableMaker.Table
                     {
                         strFullC = System.IO.Path.Combine(System.IO.Path.Combine(strTargetOutDrvFolder, TableInterface.strFalconLY), strCFileFullName);
                         strFullH = System.IO.Path.Combine(System.IO.Path.Combine(strTargetOutDrvFolder, TableInterface.strFalconLY), strHFileFullName);
+                        strHBFullC = System.IO.Path.Combine(System.IO.Path.Combine(strTargetOutDrvFolder, TableInterface.strFalconLY), strHBCFileFullName);
+                        strHBFullH = System.IO.Path.Combine(System.IO.Path.Combine(strTargetOutDrvFolder, TableInterface.strFalconLY), strHBHFileFullName);
                     }
                 }
-			}
+            }
 
-			try
+            #region create Driver H file 
+            try
 			{
 				fswrite = File.Open(strFullH, FileMode.Create, FileAccess.Write, FileShare.None);
 				FileContent = new StreamWriter(fswrite, Encoding.Default);
@@ -9413,8 +9495,11 @@ namespace O2Micro.Cobra.TableMaker.Table
 			{
 				if (i == iLineCmtHCFile)
 				{
-					FileContent.WriteLine(shc + ".h");
-				}
+                    //(M190808)Francis, modify to "* File: xxxx_YYYY_zzz.h"
+					//FileContent.WriteLine(shc + ".h");
+                    FileContent.WriteLine(shc + strHFileFullName);
+                    //(E190808)
+                }
 				else
 				{
 					FileContent.WriteLine(shc);
@@ -9448,8 +9533,10 @@ namespace O2Micro.Cobra.TableMaker.Table
 			//(E141027)
 			FileContent.Close();
 			fswrite.Close();
+            #endregion
 
-			try
+            #region create Driver C file
+            try
 			{
 				fswrite = File.Open(strFullC, FileMode.Create, FileAccess.Write, FileShare.None);
 				FileContent = new StreamWriter(fswrite, Encoding.Default);
@@ -9467,7 +9554,10 @@ namespace O2Micro.Cobra.TableMaker.Table
 			{
 				if (i == iLineCmtHCFile)
 				{
-					FileContent.WriteLine(scc + ".c");
+                    //(M190808)Francis, modify to "* File: xxxx_YYYY_zzz.c"
+                    //FileContent.WriteLine(scc + ".c");
+                    FileContent.WriteLine(scc + strCFileFullName);
+                    //(E190808)
 				}
 				else
 				{
@@ -9494,7 +9584,7 @@ namespace O2Micro.Cobra.TableMaker.Table
 			}
 
 			FileContent.WriteLine(strCFileContentLastOne);
-            
+
             //(A170307)Francis, append VTR/TR table to end of C file
             if (bCreateFalconLy)
             {
@@ -9504,8 +9594,148 @@ namespace O2Micro.Cobra.TableMaker.Table
 
             FileContent.Close();
 			fswrite.Close();
+            #endregion
 
-			bReturn = true;
+            #region create HB H/C files
+            if (bHummingBirdTableGen)
+            {
+                #region create Driver H file
+                try
+                {
+                    fswrite = File.Open(strHBFullH, FileMode.Create, FileAccess.Write, FileShare.None);
+                    FileContent = new StreamWriter(fswrite, Encoding.Default);
+                }
+                catch (Exception eh)
+                {
+                    LibErrorCode.strVal01 = strHBFullH;
+                    uErr = LibErrorCode.IDS_ERR_TMK_DRV_H_FILE_CREATE;
+                    CreateNewDrvError(strFullH, uErr);
+                    return bReturn;
+                }
+
+                i = 0;
+                foreach (string shc in strHHeaderComments)
+                {
+                    if (i == iLineCmtHCFile)
+                    {
+                        //(M190808)Francis, modify to "* File: xxxx_YYYY_zzz.h"
+                        //FileContent.WriteLine(shc + ".h");
+                        FileContent.WriteLine(shc + strHFileFullName);
+                        //(E190808)
+                    }
+                    else
+                    {
+                        FileContent.WriteLine(shc);
+                    }
+                    i++;
+                }
+
+                //(M141027)Francis,
+                i = 0;
+                foreach (string shf in strHFileContents)
+                {
+                    //(M141125)
+                    //(A141027)Francis
+                    if (i == strHFileContents.Count - 2)	//add at last 2 line
+                    {
+                        AppendTableHFile(FileContent);
+                    }
+                    //(E141027)
+                    if (iLineIncTypeh == i)
+                    {
+                        FileContent.WriteLine(string.Format("#include \"types.h\""));
+                        FileContent.WriteLine(shf);
+                    }
+                    else if (iLineStructX == i)
+                    {
+                        FileContent.WriteLine(string.Format(" \t int16_t \t\t\t x;//"));         //line 20
+                    }
+                    else if (iLineStructY == i)
+                    {
+                        FileContent.WriteLine(string.Format(" \t int16_t \t\t\t y;//"));         //line 21
+                    }
+                    else
+                    {
+                        FileContent.WriteLine(shf);
+                    }
+                    i += 1;
+                }
+                //(E141027)
+                FileContent.Close();
+                fswrite.Close();
+                #endregion
+
+                #region create Driver C file
+                try
+                {
+                    fswrite = File.Open(strHBFullC, FileMode.Create, FileAccess.Write, FileShare.None);
+                    FileContent = new StreamWriter(fswrite, Encoding.Default);
+                }
+                catch (Exception ec)
+                {
+                    LibErrorCode.strVal01 = strHBFullC;
+                    uErr = LibErrorCode.IDS_ERR_TMK_DRV_C_FILE_CREATE;
+                    CreateNewDrvError(strFullC, uErr);
+                    return bReturn;
+                }
+
+                i = 0;
+                foreach (string scc in strHHeaderComments)
+                {
+                    if (i == iLineCmtHCFile)
+                    {
+                        //(M190808)Francis, modify to "* File: xxxx_YYYY_zzz.c"
+                        //FileContent.WriteLine(scc + ".c");
+                        FileContent.WriteLine(scc + strCFileFullName);
+                        //(E190808)
+                    }
+                    else
+                    {
+                        FileContent.WriteLine(scc);
+                    }
+                    i++;
+                }
+                i = 0;
+                foreach (string scf in strCFileContents)
+                {
+                    if ((i == iLineKernelH))// || (i == iLineCHGCont))
+                    {
+                        FileContent.Write("//");
+                    }
+                    else if (i == iLineIDCont)
+                    {
+                        AppendTableCFile(FileContent);
+                    }
+                    else if (i == iLineOCVCont)
+                    {
+                        FileContent.WriteLine(string.Format("const one_latitude_data_t code ") + scf.Substring(20));
+                        i += 1;
+                        continue;
+                    }
+                    else if ((i == iLineXCont) || (i == iLineYCont) || (i == iLineZCont) || (i == (iLineRCCont-1)))
+                    {
+                        FileContent.WriteLine(string.Format("const int16_t\tcode ") + scf.Substring(8));
+                        i += 1;
+                        continue;
+                    }
+                    FileContent.WriteLine(scf);
+                    i += 1;
+                }
+
+                foreach (string src in strRCContent)
+                {
+                    FileContent.WriteLine(src);
+                }
+
+                FileContent.WriteLine(strCFileContentLastOne);
+
+                FileContent.Close();
+                fswrite.Close();
+                #endregion
+            }
+            #endregion
+
+            bReturn = true;
 			uErr = LibErrorCode.IDS_ERR_TMK_DRV_FILES_CRATE;
 			LibErrorCode.strVal01 = OutFolder;
 

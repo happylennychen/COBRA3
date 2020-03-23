@@ -283,7 +283,7 @@ namespace O2Micro.Cobra.TableMaker
                     {
                         case "Test Time":
                             //if (!Regex.IsMatch(hi.Value, @"^\d{4}-\d{1,2}-\d{1,2}$"))
-                            if (!Regex.IsMatch(hi.Value, @"^201[4-9]-(1[0-2]|0?[1-9])-(3[01]|[1-2][0-9]|0?[1-9])$"))
+                            if (!Regex.IsMatch(hi.Value, @"^201|202|203[0-9]-(1[0-2]|0?[1-9])-(3[01]|[1-2][0-9]|0?[1-9])$"))
                             {
                                 MessageBox.Show("无效日期!");
                                 tb.IsChecked = false;
@@ -870,7 +870,7 @@ namespace O2Micro.Cobra.TableMaker
                 MessageBox.Show("无效版本号!");
                 return;
             }
-            if (!Regex.IsMatch(strDate.Text, @"^201[4-9].(1[0-2]|0?[1-9]).(3[01]|[1-2][0-9]|0?[1-9])$"))
+            if (!Regex.IsMatch(strDate.Text, @"^201|202|203[0-9].(1[0-2]|0?[1-9]).(3[01]|[1-2][0-9]|0?[1-9])$"))
             {
                 MessageBox.Show("无效日期!");
                 return;
@@ -975,7 +975,10 @@ namespace O2Micro.Cobra.TableMaker
             }
             if (myTable.GenerateFile(ref uErrorCode))
             {
-                MessageBox.Show("完成！");
+                if(uErrorCode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                    MessageBox.Show(LibErrorCode.GetErrorDescription(uErrorCode));
+                else
+                    MessageBox.Show("完成！");
                 RCcfgPanel.Visibility = Visibility.Hidden;
                 CcfgPanel.Visibility = Visibility.Hidden;
                 OCVcfgPanel.Visibility = Visibility.Hidden;
@@ -1135,7 +1138,7 @@ namespace O2Micro.Cobra.TableMaker
                 MessageBox.Show("无效版本号!");
                 return;
             }
-            if (!Regex.IsMatch(txbDateFalconLY.Text, @"^201[4-9].(1[0-2]|0?[1-9]).(3[01]|[1-2][0-9]|0?[1-9])$"))
+            if (!Regex.IsMatch(txbDateFalconLY.Text, @"^201|202|203[0-9].(1[0-2]|0?[1-9]).(3[01]|[1-2][0-9]|0?[1-9])$"))
             {
                 MessageBox.Show("无效日期!");
                 return;

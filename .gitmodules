@@ -28,3 +28,6 @@
 [submodule "System/DEM/O2Micro.Cobra.SP8G2"]
 	path = System/DEM/O2Micro.Cobra.SP8G2
 	url = https://github.com/happylennychen/O2Micro.Cobra.SP8G2
+[submodule "System/DEM/O2Micro.Cobra.OZ1C601D"]
+	path = System/DEM/O2Micro.Cobra.OZ1C601D
+	url = https://github.com/happylennychen/O2Micro.Cobra.OZ1C601D

@@ -1,5 +1,6 @@
 #define debug
 #define x
+#define extension
 //#define y
 //#define m
 using System;
@@ -121,11 +122,15 @@ namespace O2Micro.Cobra.EM
             if (Registry.GetCurExtensionFileName().Length == 0) return false;
             FolderMap.m_curextensionfile_name = Registry.GetCurExtensionFileName();
 #if debug
-            string projectname = "Woodpecker8";
+            string projectname = "KALL17";
+            string extension = " 3717";
 #endif
 #if x
             string xmlxpath = FolderMap.m_main_folder.Remove(FolderMap.m_main_folder.LastIndexOf("output\\"));
             xmlxpath = Path.Combine(xmlxpath, "System\\DEM\\O2Micro.Cobra." + projectname + "\\xml x\\");
+#if extension
+            xmlxpath = xmlxpath.Substring(0, xmlxpath.Length-1) + extension + "\\";
+#endif
             foreach (string path in Directory.GetFiles(xmlxpath))
             {
                 string destPath = Path.Combine(FolderMap.m_extension_work_folder, Path.GetFileName(path));
@@ -353,6 +358,7 @@ namespace O2Micro.Cobra.EM
             {
                 m_extDescrip_xmlDoc.Load(extxmlfullname);
                 root = m_extDescrip_xmlDoc.DocumentElement;
+                if (root.GetAttribute("SkipCheck").ToUpper() == "True".ToUpper()) return LibErrorCode.IDS_ERR_SUCCESSFUL;   //Leon: 对于某些OCE（例如Table Maker）,需要绕过下面的检查
                 if (root.GetAttribute("libname") == string.Empty) return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE;
                 if (root.GetAttribute("ProjectCode") == string.Empty) return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE;
                 if (root.GetAttribute("OCEVersion") == string.Empty) return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE;
