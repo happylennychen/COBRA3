@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Root>
   <Part Name="PreProject">
-    <PreExtensionBusType BusType="SPI" />
+    <PreExtensionBusType BusType="I2C" />
     <PreExtension Name="OZ8978_A0_X_03_20191226" />
   </Part>
   <Part Name="Device Connection Settings">
@@ -15,6 +15,6 @@
   <Part Name="ConfigFilePath">
     <OZ7710_C0_C1_X_03_20191226>C:\Users\leon.chen\Documents\COBRA Documents\OZ7710_C0_C1_X_03_20191226\OZ7710-20200121102906\OZ7710.cfg</OZ7710_C0_C1_X_03_20191226>
     <OZ8978_A0_Y_03_20191226>C:\Users\leon.chen\Documents\COBRA Documents\OZ8978_A0_Y_03_20191226\OZ8978-20200107174812\OZ8978.cfg</OZ8978_A0_Y_03_20191226>
-    <OZ8978_A0_X_03_20191226>C:\Users\leon.chen\Documents\COBRA Documents\OZ8978_A0_X_03_20191226\OZ8978-20200121142800\OZ8978.cfg</OZ8978_A0_X_03_20191226>
+    <OZ8978_A0_X_03_20191226>C:\Users\leon.chen\Documents\COBRA Documents\OZ8978_A0_X_03_20191226\Woodpecker10-20200325232401\Woodpecker10.cfg</OZ8978_A0_X_03_20191226>
   </Part>
 </Root>
