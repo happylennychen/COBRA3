@@ -31,7 +31,7 @@ namespace O2Micro.Cobra.ExperPanel
 		public string strGroup { get; set; }
 		public string strRegName { get; set; }		//(A141218)Francis, for enhancement
 		public string strUnit { get; set; }				//(A141218)Francis, for enhancement
-
+		public bool bPhyDataFromList { get; set; }      //(ISSUE:2203)Guo, for enhancement
 		public ExperXMLData()
 		{
 			bCustMode = false;
@@ -51,6 +51,7 @@ namespace O2Micro.Cobra.ExperPanel
 			strGroup = string.Empty;
 			strUnit = string.Empty;
 			strRegName = string.Empty;
+			bPhyDataFromList = false;
 		}
 	}
 
@@ -145,14 +146,22 @@ namespace O2Micro.Cobra.ExperPanel
                 //(M180821)Francis, issue_id=865, sync solution that don't convert physical value from DEM, jsut convert DEC to HEX simply
                 if (bShowPhysical)
                 {
-                    if (strUnit.Length == 0)
-				    {
-					    strPhysicalValue = string.Format("{0} {1}", m_dbPhyValue, strUnit);
-				    }
-				    else
-				    {
-					    strPhysicalValue = string.Format("{0:F1} {1}", m_dbPhyValue, strUnit);
-				    }
+					if ((pmrBitParent != null) && (pmrBitParent.itemlist.Count != 0) && (pmrBitParent.itemlist.Count > m_dbPhyValue)
+						&&(expXMLdataParent !=null)&&expXMLdataParent.bPhyDataFromList)
+					{
+						strPhysicalValue = pmrBitParent.itemlist[(int)m_dbPhyValue].Trim();
+					}
+					else
+					{
+						if (strUnit.Length == 0)
+						{
+							strPhysicalValue = string.Format("{0} {1}", m_dbPhyValue, strUnit);
+						}
+						else
+						{
+							strPhysicalValue = string.Format("{0:F1} {1}", m_dbPhyValue, strUnit);
+						}
+					}
                 }
                 else
                 {

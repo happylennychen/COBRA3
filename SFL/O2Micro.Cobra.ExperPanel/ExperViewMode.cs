@@ -265,6 +265,18 @@ namespace O2Micro.Cobra.ExperPanel
 							xmlData.strRegName = de.Value.ToString();
 							break;
 						}
+					case "bPhyDataFromList":
+						{
+							if (!Boolean.TryParse(de.Value.ToString(), out bdata))
+							{
+								xmlData.bPhyDataFromList = false;
+							}
+							else
+							{
+								xmlData.bPhyDataFromList = bdata;
+							}
+							break;
+						}
 
 				}	//switch
 			}
