@@ -34,3 +34,6 @@
 [submodule "System/DEM/O2Micro.Cobra.Woodpecker10"]
 	path = System/DEM/O2Micro.Cobra.Woodpecker10
 	url = https://github.com/happylennychen/O2Micro.Cobra.Woodpecker10
+[submodule "System/DEM/O2Micro.Cobra.Wizards"]
+	path = System/DEM/O2Micro.Cobra.Wizards
+	url = https://github.com/happylennychen/O2Micro.Cobra.Wizards
