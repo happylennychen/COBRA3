@@ -146,7 +146,7 @@ namespace O2Micro.Cobra.ExperPanel
                 //(M180821)Francis, issue_id=865, sync solution that don't convert physical value from DEM, jsut convert DEC to HEX simply
                 if (bShowPhysical)
                 {
-					if ((pmrBitParent != null) && (pmrBitParent.itemlist.Count != 0) && (pmrBitParent.itemlist.Count > m_dbPhyValue)
+					if ((pmrBitParent != null) && (pmrBitParent.itemlist.Count != 0) && (pmrBitParent.itemlist.Count > m_dbPhyValue) && (m_dbPhyValue >= 0)
 						&&(expXMLdataParent !=null)&&expXMLdataParent.bPhyDataFromList)
 					{
 						strPhysicalValue = pmrBitParent.itemlist[(int)m_dbPhyValue].Trim();

@@ -1,5 +1,5 @@
-#define debug
-#define x
+//#define debug
+//#define x
 //#define extension
 //#define y
 //#define m
@@ -122,7 +122,8 @@ namespace O2Micro.Cobra.EM
             if (Registry.GetCurExtensionFileName().Length == 0) return false;
             FolderMap.m_curextensionfile_name = Registry.GetCurExtensionFileName();
 #if debug
-            string projectname = "KALL8";
+            //string projectname = "KALL8";
+            string projectname = "Woodpecker10";
             //string extension = " 3717";
 #endif
 #if x
