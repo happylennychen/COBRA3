@@ -37,3 +37,6 @@
 [submodule "System/DEM/O2Micro.Cobra.Wizards"]
 	path = System/DEM/O2Micro.Cobra.Wizards
 	url = https://github.com/happylennychen/O2Micro.Cobra.Wizards
+[submodule "System/DEM/O2Micro.Cobra.OZ2610"]
+	path = System/DEM/O2Micro.Cobra.OZ2610
+	url = https://github.com/happylennychen/O2Micro.Cobra.OZ2610
