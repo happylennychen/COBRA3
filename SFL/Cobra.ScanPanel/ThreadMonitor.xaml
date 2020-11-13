@@ -1,0 +1,71 @@
+﻿<Window x:Class="Cobra.ScanPanel.ThreadMonitorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ThreadMonitor" Height="800" Width="500">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="110"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <GroupBox Grid.Row="0" Header="Pool Threads Info" Margin="10">
+            <DockPanel LastChildFill="False">
+                <StackPanel>
+                    <Label Height="30">Pool Depth:</Label>
+                    <Label Height="30" Width="50" Name="PoolDepth"></Label>
+                </StackPanel>
+                <StackPanel>
+                    <Label Height="30" Margin="20,0,0,0">Working Thread Number:</Label>
+                    <Label Height="30" Width="50" Name="WorkingThreadNumber"></Label>
+                </StackPanel>
+                <StackPanel>
+                    <Label Height="30" Margin="20,0,0,0">Timer Skiped Number:</Label>
+                    <Label Height="30" Width="50" Name="TimerSkipedNumber"></Label>
+                </StackPanel>
+            </DockPanel>
+        </GroupBox>
+        <GroupBox Grid.Row="1" Header="IO Threads Info" Margin="10">
+            <StackPanel>
+                <DockPanel LastChildFill="False">
+                    <Label>Alive Thread Count:</Label>
+                    <Label Width="50" Name="IOAliveThreadCount"></Label>
+                    <Label>Abandoned Thread Count:</Label>
+                    <Label Width="50" Name="IOAbandonedThreadCount"></Label>
+                </DockPanel>
+                <DataGrid Name="IOThreadsGrid" ItemsSource="{Binding}"
+                    CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False"
+                    CanUserSortColumns="True" IsReadOnly="True" AreRowDetailsFrozen="False">
+                </DataGrid>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Grid.Row="2" Header="DB Threads Info" Margin="10">
+            <StackPanel>
+                <DockPanel LastChildFill="False">
+                    <Label>Alive Thread Count:</Label>
+                    <Label Width="50" Name="DBAliveThreadCount"></Label>
+                    <Label>Abandoned Thread Count:</Label>
+                    <Label Width="50" Name="DBAbandonedThreadCount"></Label>
+                </DockPanel>
+                <DataGrid Name="DBThreadsGrid" ItemsSource="{Binding}"
+                    CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False"
+                    CanUserSortColumns="True" IsReadOnly="True" AreRowDetailsFrozen="False">
+                </DataGrid>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Grid.Row="3" Header="UI Threads Info" Margin="10">
+            <StackPanel>
+                <DockPanel LastChildFill="False">
+                    <Label>Alive Thread Count:</Label>
+                    <Label Width="50" Name="UIAliveThreadCount"></Label>
+                    <Label>Abandoned Thread Count:</Label>
+                    <Label Width="50" Name="UIAbandonedThreadCount"></Label>
+                </DockPanel>
+                <DataGrid Name="UIThreadsGrid" ItemsSource="{Binding}"
+                    CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False"
+                    CanUserSortColumns="True" IsReadOnly="True" AreRowDetailsFrozen="False">
+                </DataGrid>
+            </StackPanel>
+        </GroupBox>
+    </Grid>
+</Window>

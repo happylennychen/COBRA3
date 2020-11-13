@@ -1,0 +1,53 @@
+﻿<UserControl x:Class="Cobra.SBSPanel.ThermalControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             xmlns:local="clr-namespace:Cobra.SBSPanel">
+    <UserControl.Resources>
+        <local:Bool2BrushConverter x:Key="Bool2BrushConverter" />
+    </UserControl.Resources>
+    <UniformGrid Rows="2">
+        <Viewbox x:Name="tcgrid" HorizontalAlignment="Left">
+            <Canvas Width="550" Height="150" Margin="5">
+                <TextBox Text="Charger Current" FontFamily="Arial" FontSize="14" Canvas.Left="440" Canvas.Top="1" BorderThickness="0"/>
+                <TextBox Text="{Binding Path= constant_cur, Source={x:Static local:ConfigData.CCInstance}}" FontFamily="Arial" FontSize="14" Canvas.Left="224" Canvas.Top="10" BorderThickness="0"/>
+                <TextBox Text="{Binding Path= hconstant_cur, Source={x:Static local:ConfigData.CCInstance}}" FontFamily="Arial" FontSize="14" Canvas.Left="68" Canvas.Top="50" BorderThickness="0"/>
+                <Line StrokeThickness="5" Stroke="{Binding Path= bit0, Converter= {StaticResource Bool2BrushConverter},Source={x:Static local:ConfigData.CCInstance}}" X1="10" Y1="145" X2="62" Y2="145" />
+                <Line StrokeThickness="5" Stroke="Black" X1="60" Y1="143" X2="60" Y2="73" />
+                <Line StrokeThickness="5" Stroke="{Binding Path= bit1, Converter= {StaticResource Bool2BrushConverter},Source={x:Static local:ConfigData.CCInstance}}" X1="60" Y1="75" X2="112" Y2="75" />
+                <Line StrokeThickness="5" Stroke="Black" X1="110" Y1="75" X2="110" Y2="2" />
+                <Line StrokeThickness="5" Stroke="{Binding Path= bit2, Converter= {StaticResource Bool2BrushConverter},Source={x:Static local:ConfigData.CCInstance}}" X1="110" Y1="5" X2="312" Y2="5" />
+                <Line StrokeThickness="5" Stroke="{Binding Path= bit3, Converter= {StaticResource Bool2BrushConverter},Source={x:Static local:ConfigData.CCInstance}}" X1="312" Y1="5" X2="363" Y2="5" />
+                <Line StrokeThickness="5" Stroke="{Binding Path= bit4, Converter= {StaticResource Bool2BrushConverter},Source={x:Static local:ConfigData.CCInstance}}" X1="362" Y1="5" X2="412" Y2="5" />
+                <Line StrokeThickness="5" Stroke="Black" X1="410" Y1="5" X2="410" Y2="147" />
+                <Line StrokeThickness="5" Stroke="{Binding Path= bit5, Converter= {StaticResource Bool2BrushConverter},Source={x:Static local:ConfigData.CCInstance}}" X1="408" Y1="147" X2="510" Y2="147" />
+            </Canvas>
+        </Viewbox>
+        <Viewbox x:Name="tvgrid" HorizontalAlignment="Left">
+            <Canvas Width="550" Height="150" Margin="5">
+                <TextBox Text="Charger Voltage" FontFamily="Arial" FontSize="14"  Canvas.Left="440" Canvas.Top="1" BorderThickness="0"/>
+                <TextBox Text="{Binding Path= constant_vol, Source={x:Static local:ConfigData.Instance}}" FontFamily="Arial" FontSize="14" Canvas.Left="180" Canvas.Top="10" BorderThickness="0"/>
+                <TextBox Text="{Binding Path= cv_t34, Source={x:Static local:ConfigData.Instance}}" FontFamily="Arial" FontSize="14" Canvas.Left="310" Canvas.Top="30" BorderThickness="0"/>
+                <TextBox Text="{Binding Path= cv_t45, Source={x:Static local:ConfigData.Instance}}" FontFamily="Arial" FontSize="14" Canvas.Left="360" Canvas.Top="80" BorderThickness="0"/>
+                <Line StrokeThickness="5" Stroke="{Binding Path= bit0, Converter= {StaticResource Bool2BrushConverter},Source={x:Static local:ConfigData.Instance}}" X1="10" Y1="140" X2="62" Y2="140" />
+                <Line StrokeThickness="5" Stroke="Black" X1="60" Y1="140" X2="60" Y2="3" />
+                <Line StrokeThickness="5" Stroke="{Binding Path= bit1, Converter= {StaticResource Bool2BrushConverter},Source={x:Static local:ConfigData.Instance}}" X1="60" Y1="5" X2="112" Y2="5" />
+                <Line StrokeThickness="5" Stroke="{Binding Path= bit2, Converter= {StaticResource Bool2BrushConverter},Source={x:Static local:ConfigData.Instance}}" X1="112" Y1="5" X2="312" Y2="5" />
+                <Line StrokeThickness="5" Stroke="Black" X1="310" Y1="5" X2="310" Y2="55" />
+                <Line StrokeThickness="5" Stroke="{Binding Path= bit3, Converter= {StaticResource Bool2BrushConverter},Source={x:Static local:ConfigData.Instance}}" X1="310" Y1="53" X2="362" Y2="53" />
+                <Line StrokeThickness="5" Stroke="Black" X1="360" Y1="53" X2="360" Y2="104" />
+                <Line StrokeThickness="5" Stroke="{Binding Path= bit4, Converter= {StaticResource Bool2BrushConverter},Source={x:Static local:ConfigData.Instance}}" X1="360" Y1="102" X2="412" Y2="102" />
+                <Line StrokeThickness="5" Stroke="Black" X1="410" Y1="102" X2="410" Y2="142" />
+                <Line StrokeThickness="5" Stroke="{Binding Path= bit5, Converter= {StaticResource Bool2BrushConverter},Source={x:Static local:ConfigData.Instance}}" X1="410" Y1="140" X2="510" Y2="140" />
+                <TextBox Text="T1(0℃)"  FontFamily="Arial" FontSize="12" BorderThickness="0" Canvas.Left="30" Canvas.Top="145" />
+                <TextBox Text="T2(10℃)" FontFamily="Arial" FontSize="12" BorderThickness="0" Canvas.Left="80" Canvas.Top="145" />
+                <TextBox Text="T3(45℃)" FontFamily="Arial" FontSize="12" BorderThickness="0" Canvas.Left="275" Canvas.Top="145" />
+                <TextBox Text="T4(50℃)" FontFamily="Arial" FontSize="12" BorderThickness="0" Canvas.Left="330" Canvas.Top="145" />
+                <TextBox Text="T5(60℃)" FontFamily="Arial" FontSize="12" BorderThickness="0" Canvas.Left="390" Canvas.Top="145" />
+            </Canvas>
+        </Viewbox>
+    </UniformGrid>
+
+</UserControl>

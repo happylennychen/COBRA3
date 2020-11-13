@@ -1,0 +1,244 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d3="http://research.microsoft.com/DynamicDataDisplay/1.0"
+    xmlns:src="clr-namespace:Cobra.ScanPanel"
+	xmlns:controls="clr-namespace:Cobra.ControlLibrary;assembly=Cobra.ControlLibrary"
+	mc:Ignorable="d" FontSize="12"
+	x:Class="Cobra.ScanPanel.MainControl"
+	x:Name="UserControl" d:DesignHeight="480" d:DesignWidth="640">
+    <UserControl.Resources>
+        <src:MainWidthConverter x:Key="mwc"></src:MainWidthConverter>
+        <src:EnableConverter1 x:Key="ec1"></src:EnableConverter1>
+        <src:EnableConverter2 x:Key="ec2"></src:EnableConverter2>
+        <Style x:Key="AutoHidding">
+            <Style.Triggers>
+                <Trigger Property="Control.IsMouseOver" Value="False">
+                    <Setter Property="Control.Width" Value="10"></Setter>
+                    <Setter Property="Control.Height" Value="10"></Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <Border Name="border">
+            <Canvas Name="canvas" Width="{Binding ElementName=border, Path=ActualWidth}" Height="{Binding ElementName=border, Path=ActualHeight}" MouseMove="canvas_MouseMove" MouseLeftButtonUp="canvas_MouseLeftButtonUp" MouseLeave="canvas_MouseLeave">
+                <Border Width="{Binding ElementName=canvas, Path=ActualWidth}" Height="{Binding ElementName=canvas, Path=ActualHeight}">
+                    <TabControl Name="tb">
+                        <TabItem Header="Monitor">
+                            <Grid Name="sv">
+                                <Grid Name="MyGrid">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="{Binding ElementName=sv, Path=ActualHeight, Converter={StaticResource mwc}, ConverterParameter=40}" MinHeight="123"></RowDefinition>
+                                        <RowDefinition Height="{Binding ElementName=sv, Path=ActualHeight, Converter={StaticResource mwc}, ConverterParameter=25}" MinHeight="90"></RowDefinition>
+                                        <RowDefinition MinHeight="100"></RowDefinition>
+                                    </Grid.RowDefinitions>
+                                    <src:VoltagePanel x:Name="vPnl" Grid.Row="0" Margin="0,0,0,20"></src:VoltagePanel>
+                                    <Grid Name="TCGrid" Grid.Row="1" Margin="0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="50*"></ColumnDefinition>
+                                            <ColumnDefinition Width="50*"></ColumnDefinition>
+                                        </Grid.ColumnDefinitions>
+                                        <src:TemperaturePanel x:Name="tPnl" Grid.Column="0" Margin="0,0,5,0"></src:TemperaturePanel>
+                                        <src:CurrentPanel x:Name="cPnl" Grid.Column="1" Margin="5,0,0,0"></src:CurrentPanel>
+                                    </Grid>
+                                    <Grid Name="FSWGrid" Grid.Row="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Name="FlagGroup"></ColumnDefinition>
+                                            <ColumnDefinition Name="StatusGroup"></ColumnDefinition>
+                                            <ColumnDefinition Name="MiscGroup"></ColumnDefinition>
+                                        </Grid.ColumnDefinitions>
+                                        <src:SafetyEventPanel x:Name="sePnl" Grid.Column="0"></src:SafetyEventPanel>
+                                        <src:FetDisablePanel x:Name="fdPnl" Grid.Column="1"></src:FetDisablePanel>
+                                        <src:MiscPanel x:Name="mcPnl" Grid.Column="2"></src:MiscPanel>
+                                        <!--<GroupBox DockPanel.Dock="Top" Header="Misc Group"></GroupBox>-->
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="Log View">
+                            <DockPanel>
+                                <Expander DockPanel.Dock="Bottom" IsExpanded="True">
+                                    <Expander.Style>
+                                        <Style>
+                                            <Style.Triggers>
+                                                <Trigger Property="Expander.IsExpanded" Value="True">
+                                                    <Setter Property="Control.Height" Value="200"></Setter>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                            <Setter Property="Expander.ExpandDirection" Value="Up"/>
+                                        </Style>
+                                    </Expander.Style>
+                                    <DockPanel>
+                                        <GroupBox Header="Log Manager" Width="350" DockPanel.Dock="Right" Margin="2">
+                                            <DockPanel>
+                                                <StackPanel DockPanel.Dock="Right">
+                                                    <Button Name="ViewFolderBtn" Click="ViewFolderBtn_Click" Visibility="Collapsed">Folder</Button>
+                                                    <Button Name="DeleteBtn" Click="DeleteBtn_Click" Focusable="False">
+                                                        <Button.IsEnabled>
+                                                            <MultiBinding Converter="{StaticResource ec2}">
+                                                                <Binding ElementName="loglist" Path="SelectedItems.Count" Mode="OneWay"></Binding>
+                                                                <Binding ElementName="runBtn" Path="IsChecked" Mode="OneWay"></Binding>
+                                                            </MultiBinding>
+                                                        </Button.IsEnabled>
+                                                        Delete
+                                                    </Button>
+                                                    <Button Name="ExportBtn" Click="ExportBtn_Click" Focusable="False">
+                                                        <Button.IsEnabled>
+                                                            <MultiBinding Converter="{StaticResource ec1}">
+                                                                <Binding ElementName="loglist" Path="SelectedItems.Count" Mode="OneWay"></Binding>
+                                                                <Binding ElementName="runBtn" Path="IsChecked" Mode="OneWay"></Binding>
+                                                            </MultiBinding>
+                                                        </Button.IsEnabled>
+                                                        Export
+                                                    </Button>
+                                                    <Button Name="LoadBtn" Click="LoadBtn_Click" Focusable="False" Visibility="Collapsed">
+                                                        <Button.IsEnabled>
+                                                            <MultiBinding Converter="{StaticResource ec1}">
+                                                                <Binding ElementName="loglist" Path="SelectedItems.Count" Mode="OneWay"></Binding>
+                                                                <Binding ElementName="runBtn" Path="IsChecked" Mode="OneWay"></Binding>
+                                                            </MultiBinding>
+                                                        </Button.IsEnabled>
+                                                        Load
+                                                    </Button>
+                                                </StackPanel>
+                                                <DataGrid Name="loglist" ItemsSource="{Binding}"
+                                              AutoGeneratingColumn="loglist_AutoGeneratingColumn"
+                                              CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False"
+                                              CanUserSortColumns="True" IsReadOnly="True" AreRowDetailsFrozen="False">
+                                                    <DataGrid.ColumnHeaderStyle>
+                                                        <Style TargetType="DataGridColumnHeader">
+                                                            <Setter Property="FontSize" Value="12"/>
+                                                        </Style>
+                                                    </DataGrid.ColumnHeaderStyle>
+                                                </DataGrid>
+                                            </DockPanel>
+                                        </GroupBox>
+                                        <GroupBox Name="TimeSelector" Header="Time Scale" Visibility="Collapsed" DockPanel.Dock="Right">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="0.25*"></RowDefinition>
+                                                    <RowDefinition Height="0.25*"></RowDefinition>
+                                                    <RowDefinition Height="0.25*"></RowDefinition>
+                                                    <RowDefinition Height="0.25*"></RowDefinition>
+                                                </Grid.RowDefinitions>
+                                                <DockPanel Grid.Row="0">
+                                                    <Button DockPanel.Dock="Right">...</Button>
+                                                    <TextBlock HorizontalAlignment="Center">Start Time</TextBlock>
+                                                </DockPanel>
+                                                <TextBlock HorizontalAlignment="Center" Grid.Row="1">2013.9.22 15:52:56</TextBlock>
+                                                <DockPanel Grid.Row="2">
+                                                    <Button DockPanel.Dock="Right">...</Button>
+                                                    <TextBlock HorizontalAlignment="Center">End Time</TextBlock>
+                                                </DockPanel>
+                                                <TextBlock HorizontalAlignment="Center" Grid.Row="3">Now</TextBlock>
+                                            </Grid>
+                                        </GroupBox>
+                                        <GroupBox Name="DataSelectGroup" Header="Data Display Selection" Margin="2">
+                                            <DockPanel>
+                                                <ToggleButton Name="AllNone" DockPanel.Dock="Left" IsChecked="True" Click="AllNone_Click">
+                                                    <ToggleButton.Style>
+                                                        <Style>
+                                                            <Style.Triggers>
+                                                                <Trigger Property="Control.IsMouseOver" Value="False">
+                                                                    <Setter Property="Control.Width" Value="8"></Setter>
+                                                                </Trigger>
+                                                                <Trigger Property="ToggleButton.IsChecked" Value="true">
+                                                                    <Setter Property="ToggleButton.Content" Value="None"></Setter>
+                                                                </Trigger>
+                                                                <Trigger Property="ToggleButton.IsChecked" Value="false">
+                                                                    <Setter Property="ToggleButton.Content" Value="All"></Setter>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ToggleButton.Style>
+                                                </ToggleButton>
+                                                <ScrollViewer Name="scrv1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                                    <ItemsControl Name="DataSelector" ItemsSource="{Binding}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel Width="{Binding ElementName=scrv1, Path=ActualWidth}"></WrapPanel>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <StackPanel Orientation="Horizontal" Background="LightGray" Margin="2">
+                                                                    <CheckBox Content="{Binding Path=pKey, Mode=OneWay}" Margin="4" Focusable="false" 
+                                                                  IsChecked="{Binding Path=pValue, Mode=TwoWay}" 
+                                                                  Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked">
+                                                                    </CheckBox>
+                                                                </StackPanel>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </DockPanel>
+                                        </GroupBox>
+                                    </DockPanel>
+                                </Expander>
+                                <Border Padding="5">
+                                    <Border Name="gb">
+                                        <Canvas Name="cv" Width="{Binding ElementName=gb, Path=ActualWidth}" Height="{Binding ElementName=gb, Path=ActualHeight}">
+                                            <Border Name="d3border" Width="{Binding ElementName=cv, Path=ActualWidth}" Height="{Binding ElementName=cv, Path=ActualHeight}" Visibility="Collapsed">
+                                                <TabControl>
+                                                    <TabItem Name="Vtab" Header="Voltage" Visibility="Collapsed">
+                                                        <d3:Plotter2D Name="Vplotter" Visibility="Collapsed">
+                                                            <d3:HorizontalAxis></d3:HorizontalAxis>
+                                                            <d3:VerticalAxis></d3:VerticalAxis>
+                                                            <!--<d3:Legend FontSize="10"></d3:Legend>-->
+                                                        </d3:Plotter2D>
+                                                    </TabItem>
+                                                    <TabItem Name="Ttab" Header="Temperature" Visibility="Collapsed">
+                                                        <d3:Plotter2D Name="Tplotter" Visibility="Collapsed">
+                                                            <d3:HorizontalAxis></d3:HorizontalAxis>
+                                                            <d3:VerticalAxis></d3:VerticalAxis>
+                                                            <!--<d3:AxisNavigation Orientation="Vertical"></d3:AxisNavigation>
+                                        <d3:AxisNavigation Orientation="Horizontal"></d3:AxisNavigation>-->
+                                                            <d3:Legend FontSize="10"></d3:Legend>
+                                                        </d3:Plotter2D>
+                                                    </TabItem>
+                                                    <TabItem Name="Ctab" Header="Current" Visibility="Collapsed">
+                                                        <d3:Plotter2D Name="Cplotter" Visibility="Collapsed">
+                                                            <d3:HorizontalAxis></d3:HorizontalAxis>
+                                                            <d3:VerticalAxis></d3:VerticalAxis>
+                                                            <!--<d3:AxisNavigation Orientation="Vertical"></d3:AxisNavigation>
+                                        <d3:AxisNavigation Orientation="Horizontal"></d3:AxisNavigation>-->
+                                                            <d3:Legend FontSize="10"></d3:Legend>
+                                                        </d3:Plotter2D>
+                                                    </TabItem>
+                                                </TabControl>
+                                            </Border>
+                                            <DataGrid Name="loguidatagrid" ItemsSource="{Binding}"
+                                          Width="{Binding ElementName=cv, Path=ActualWidth}" Height="{Binding ElementName=cv, Path=ActualHeight}"
+                                          AutoGenerateColumns="True"
+                                          CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False"
+                                          CanUserSortColumns="False" IsReadOnly="True" AreRowDetailsFrozen="False">
+                                                <DataGrid.ColumnHeaderStyle>
+                                                    <Style TargetType="DataGridColumnHeader">
+                                                        <Setter Property="FontSize" Value="12"/>
+                                                    </Style>
+                                                </DataGrid.ColumnHeaderStyle>
+                                            </DataGrid>
+                                            <ToggleButton Name="switchGraph" Style="{StaticResource AutoHidding}" Canvas.Top="5" Canvas.Right="5" Panel.ZIndex="3" Click="switchGraph_Click">Curve</ToggleButton>
+                                        </Canvas>
+                                    </Border>
+                                </Border>
+                            </DockPanel>
+                        </TabItem>
+                    </TabControl>
+                </Border>
+                <Grid Name="FloatPanel" Panel.ZIndex="3" Background="LightGray" Style="{StaticResource AutoHidding}" Canvas.Bottom="35" Canvas.Right="20" MouseLeftButtonDown="FloatPanel_MouseLeftButtonDown">
+                    <DockPanel LastChildFill="False" Margin="5" Height="60">
+                        <ToggleButton Height="28" Width="60" Name="runBtn" DockPanel.Dock="Right" Click="runBtn_Click">Run</ToggleButton>
+                        <ComboBox Name="SubTask" Height="28" Width="80" DockPanel.Dock="Right" Margin="0,0,5,0" IsEditable="False" IsReadOnly="True" ItemsSource="{Binding}"></ComboBox>
+                        <ComboBox Name="ScanInterval" Height="28" Width="80" DockPanel.Dock="Right" Margin="0,0,5,0" IsEditable="False" IsReadOnly="True" ItemsSource="{Binding}"></ComboBox>
+                        <Button Name="ConfigBtn" Content="Configuration"  Height="28" Width="120" DockPanel.Dock="Right" Margin="0,0,5,0" Click="ConfigBtn_Click"/>
+                    </DockPanel>
+                </Grid>
+            </Canvas>
+        </Border>
+        <controls:WarningControl x:Name="WarningPopControl"/>
+    </Grid>
+</UserControl>

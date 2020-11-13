@@ -1,0 +1,84 @@
+﻿<UserControl x:Class="Cobra.SimpleI2CPanel.MainControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:src="clr-namespace:Cobra.SimpleI2CPanel"
+	         xmlns:controls="clr-namespace:Cobra.ControlLibrary;assembly=Cobra.ControlLibrary"
+             mc:Ignorable="d" 
+             x:Name="UserControl" d:DesignHeight="480" d:DesignWidth="640">
+    <Grid>
+        <StackPanel Orientation="Vertical">
+            <UniformGrid>
+                <Grid Margin="20,20,5,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5">Address:</TextBlock>
+                    <TextBlock Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5">0x</TextBlock>
+                    <TextBox Grid.Column="2" Height="30" Width="100" Name="AddressBox" Margin="5" Text="1"></TextBox>
+                </Grid>
+                <Grid Margin="5,20,5,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5">Write Value:</TextBlock>
+                    <TextBlock Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5">0x</TextBlock>
+                    <TextBox Grid.Column="2" Height="30" Width="100" Name="wValueBox" Margin="5"></TextBox>
+                </Grid>
+                <Grid Margin="5,20,5,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5">Read Value:</TextBlock>
+                    <TextBlock Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5" >0x</TextBlock>
+                    <TextBox Grid.Column="2" Height="30" Width="100" Name="rValueBox" Margin="5"></TextBox>
+                </Grid>
+            </UniformGrid>
+            <UniformGrid>
+                <Button Height="30" Width="60" Click="ReadButton_Click" Content="Read" />
+                <Button Height="30" Width="60" Click="WriteButton_Click" Content="Write"/>
+            </UniformGrid>
+            <UniformGrid>
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">Timer:</TextBlock>
+                    <TextBox Grid.Column="1" Height="30" Width="100" Name="timerBox" Text="2000"></TextBox>
+                    <TextBlock Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center">ms</TextBlock>
+                </Grid>
+                <ToggleButton Content="Run" x:Name="runBtn" Height="30" Width="60" Click="runBtn_Click"/>
+            </UniformGrid>
+            <UniformGrid Columns="4" Rows="5">
+                <Label Margin="5,2,5,2">Reg0x00</Label>
+                <TextBox x:Name="Reg00" BorderBrush="Black" BorderThickness="1" Margin="5,2,5,2"></TextBox>
+                <Label>Reg0x01</Label>
+                <TextBox x:Name="Reg01" BorderBrush="Black" BorderThickness="1" Margin="5,2,5,2"></TextBox>
+                <Label>Reg0x02</Label>
+                <TextBox x:Name="Reg02" BorderBrush="Black" BorderThickness="1" Margin="5,2,5,2"></TextBox>
+                <Label>Reg0x03</Label>
+                <TextBox x:Name="Reg03" BorderBrush="Black" BorderThickness="1" Margin="5,2,5,2"></TextBox>
+                <Label>Reg0x04</Label>
+                <TextBox x:Name="Reg04" BorderBrush="Black" BorderThickness="1" Margin="5,2,5,2"></TextBox>
+                <Label>Reg0x05</Label>
+                <TextBox x:Name="Reg05" BorderBrush="Black" BorderThickness="1" Margin="5,2,5,2"></TextBox>
+                <Label>Reg0x06</Label>
+                <TextBox x:Name="Reg06" BorderBrush="Black" BorderThickness="1" Margin="5,2,5,2"></TextBox>
+                <Label>Reg0x07</Label>
+                <TextBox x:Name="Reg07" BorderBrush="Black" BorderThickness="1" Margin="5,2,5,2"></TextBox>
+                <Button Width="70" Click="crc4Btn_Click">Count</Button>
+                <TextBox x:Name="Result" BorderBrush="Black" BorderThickness="1" Margin="5,2,5,2"></TextBox>
+            </UniformGrid>
+        </StackPanel>
+        <controls:WarningControl x:Name="WarningPopControl" />
+    </Grid>
+</UserControl>

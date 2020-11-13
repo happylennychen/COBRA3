@@ -1,0 +1,211 @@
+﻿<GroupBox x:Class="Cobra.ProductionPanel.CFGMainControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" FontSize="12"
+             xmlns:src="clr-namespace:Cobra.ProductionPanel"
+	         xmlns:controls="clr-namespace:Cobra.ControlLibrary;assembly=Cobra.ControlLibrary"
+             Name="GroupBox" d:DesignHeight="480" d:DesignWidth="640">
+    <GroupBox.Resources>
+        <src:OrLogicEnableConverter x:Key="olec"></src:OrLogicEnableConverter>
+        <src:SaveButtonEnableConverter x:Key="sbec"></src:SaveButtonEnableConverter>
+    </GroupBox.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="90*"></RowDefinition>
+            <RowDefinition Height="10*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="25*"></RowDefinition>
+                <RowDefinition Height="50*"></RowDefinition>
+                <RowDefinition Height="25*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <GroupBox Margin="5" Header="Process Selection">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid Background="LightGray" Margin="5,2.5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <RadioButton Name="DownloadOnly" GroupName="ProcessOptions" HorizontalAlignment="Center" VerticalAlignment="Center">Download Only</RadioButton>
+                        <RadioButton Name="DownloadAndTest" GroupName="ProcessOptions" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1">Download and Test</RadioButton>
+                        <RadioButton Name="TestOnly" GroupName="ProcessOptions" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="2" Checked="TestOnly_Checked">Test Only</RadioButton>
+                    </Grid>
+                    <Grid Grid.Row="1" Background="LightGray" Margin="5,2.5" IsEnabled="{Binding ElementName=DownloadEnable, Path=IsChecked, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <RadioButton Name="WithPowerControl" GroupName="PowerOptions" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                             Content="Download with power control">
+                            <RadioButton.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <Trigger Property="RadioButton.IsEnabled" Value="false">
+                                            <Setter Property="RadioButton.IsChecked" Value="false"></Setter>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </RadioButton.Style>
+                            <RadioButton.IsEnabled>
+                                <MultiBinding Converter="{StaticResource olec}">
+                                    <Binding ElementName="DownloadOnly" Path="IsChecked" Mode="OneWay" UpdateSourceTrigger="PropertyChanged"></Binding>
+                                    <Binding ElementName="DownloadAndTest" Path="IsChecked" Mode="OneWay" UpdateSourceTrigger="PropertyChanged"></Binding>
+                                </MultiBinding>
+                            </RadioButton.IsEnabled>
+                        </RadioButton>
+                        <RadioButton Name="WithoutPowerControl" GroupName="PowerOptions" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1"
+                                     Content="Download without power control">
+                            <RadioButton.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <Trigger Property="RadioButton.IsEnabled" Value="false">
+                                            <Setter Property="RadioButton.IsChecked" Value="false"></Setter>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </RadioButton.Style>
+                            <RadioButton.IsEnabled>
+                                <MultiBinding Converter="{StaticResource olec}">
+                                    <Binding ElementName="DownloadOnly" Path="IsChecked" Mode="OneWay" UpdateSourceTrigger="PropertyChanged"></Binding>
+                                    <Binding ElementName="DownloadAndTest" Path="IsChecked" Mode="OneWay" UpdateSourceTrigger="PropertyChanged"></Binding>
+                                </MultiBinding>
+                            </RadioButton.IsEnabled>
+                        </RadioButton>
+                    </Grid>
+                </Grid>
+            </GroupBox>
+            <GroupBox Header="Test Items" Grid.Row="1" Margin="5">
+                <DataGrid Grid.Row="0" Margin="5" Name="TestItemsUI" ItemsSource="{Binding}"
+                      Style="{DynamicResource dataGrid-deviceConfiguration}">
+                    <DataGrid.IsEnabled>
+                        <MultiBinding Converter="{StaticResource olec}">
+                            <Binding ElementName="TestOnly" Path="IsChecked" Mode="OneWay" UpdateSourceTrigger="PropertyChanged"></Binding>
+                            <Binding ElementName="DownloadAndTest" Path="IsChecked" Mode="OneWay" UpdateSourceTrigger="PropertyChanged"></Binding>
+                        </MultiBinding>
+                    </DataGrid.IsEnabled>
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="{x:Type DataGridColumnHeader}">
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="Item Name" Width="15*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Label Margin="2" Content="{Binding Path=Name, Mode=OneTime}" HorizontalAlignment="Center"></Label>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Standard Value" Width="20*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="50*"></ColumnDefinition>
+                                            <ColumnDefinition MaxWidth="60" Width="50*"></ColumnDefinition>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Margin="2" Grid.Column="0" Text="{Binding Path=StandardValue, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+                                        <Label Margin="2" Grid.Column="1" Content="{Binding Path=Unit, Mode=TwoWay}"></Label>
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Tolerance" Width="20*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.Style>
+                                            <Style>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=EnableTolerance}" Value="true">
+                                                        <Setter Property="Grid.Visibility" Value="Visible"></Setter>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Path=EnableTolerance}" Value="false">
+                                                        <Setter Property="Grid.Visibility" Value="Hidden"></Setter>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Grid.Style>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="50*"></ColumnDefinition>
+                                            <ColumnDefinition MaxWidth="60" Width="50*"></ColumnDefinition>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Margin="2" Grid.Column="0" Text="{Binding Path=Tolerance, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+                                        <Label Margin="2" Grid.Column="1" Content="{Binding Path=Unit, Mode=OneTime}"></Label>
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Group" Width="15*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ComboBox SelectedIndex="{Binding Path=Group, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" HorizontalContentAlignment="Center">
+                                        <ComboBoxItem HorizontalContentAlignment="Center">0</ComboBoxItem>
+                                        <ComboBoxItem HorizontalContentAlignment="Center">1</ComboBoxItem>
+                                        <ComboBoxItem HorizontalContentAlignment="Center">2</ComboBoxItem>
+                                        <ComboBoxItem HorizontalContentAlignment="Center">3</ComboBoxItem>
+                                        <ComboBoxItem HorizontalContentAlignment="Center">4</ComboBoxItem>
+                                    </ComboBox>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Enable" Width="15*">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding Path=IsEnable, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></CheckBox>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </GroupBox>
+            <GroupBox Header="Pack Files" Grid.Row="2" Margin="5">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="25*"></ColumnDefinition>
+                        <ColumnDefinition Width="60*"></ColumnDefinition>
+                        <ColumnDefinition Width="15*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">Bin File</Label>
+                    <TextBox Grid.Column="1" Grid.Row="0" HorizontalAlignment="Stretch"  VerticalAlignment="Center" Name="BinFilePath" IsEnabled="False">
+                    </TextBox>
+                    <Button Name="ChipBrowseButton" Grid.Column="2" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ChooseBinFileButton_Click" Content="Browse...">
+                        <Button.IsEnabled>
+                            <MultiBinding Converter="{StaticResource olec}">
+                                <Binding ElementName="WithPowerControl" Path="IsChecked"></Binding>
+                                <Binding ElementName="WithoutPowerControl" Path="IsChecked"></Binding>
+                            </MultiBinding>
+                        </Button.IsEnabled>
+                    </Button>
+                </Grid>
+            </GroupBox>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Button HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="100" Grid.Column="1" Click="SavePackButton_Click" Content="Save Pack File" Name="SavePackButton">
+                <Button.IsEnabled>
+                    <MultiBinding Converter="{StaticResource sbec}" UpdateSourceTrigger="PropertyChanged" Mode="OneWay">
+                        <Binding ElementName="ChipBrowseButton" Path="IsEnabled"></Binding>
+                        <Binding ElementName="BinFilePath" Path="IsEnabled"></Binding>
+                        <Binding ElementName="TestOnly" Path="IsChecked"></Binding>
+                    </MultiBinding>
+                </Button.IsEnabled>
+            </Button>
+        </Grid>
+    </Grid>
+</GroupBox>

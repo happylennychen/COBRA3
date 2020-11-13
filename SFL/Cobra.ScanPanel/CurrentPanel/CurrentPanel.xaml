@@ -1,0 +1,121 @@
+﻿<GroupBox x:Class="Cobra.ScanPanel.CurrentPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" FontSize="12"
+             xmlns:src="clr-namespace:Cobra.ScanPanel"
+             xmlns:s="clr-namespace:System;assembly=mscorlib"
+             Name="cGroup" Header="Current Group(mA)" d:DesignHeight="300" d:DesignWidth="300">
+    <GroupBox.Resources>
+        <src:BarConverter x:Key="bc"></src:BarConverter>
+        <src:CurrentBarLeftConverter x:Key="cblc"></src:CurrentBarLeftConverter>
+        <src:CurrentBarWidthConverter x:Key="cbwc"></src:CurrentBarWidthConverter>
+        <src:ColorConverter x:Key="cc"></src:ColorConverter>
+        <src:TotalVoltageConverter x:Key="tc"></src:TotalVoltageConverter>
+        <src:DeltaVoltageConverter x:Key="dc"></src:DeltaVoltageConverter>
+        <src:WidthConverter x:Key="wc"></src:WidthConverter>
+        <src:WidthConverter2 x:Key="wc2"></src:WidthConverter2>
+        <src:HeightConverter x:Key="hc"></src:HeightConverter>
+        <src:IndexConverter x:Key="ic"></src:IndexConverter>
+        <src:FDColorConverter x:Key="FDcc"></src:FDColorConverter>
+        <src:DataColorConverter x:Key="datacolor"></src:DataColorConverter>
+        <s:Double x:Key="BarHeight">
+            14
+        </s:Double>
+    </GroupBox.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ItemsControl Name="CurrentList" Canvas.Top="0" ItemsSource="{Binding}" VerticalContentAlignment="Stretch" VerticalAlignment="Stretch">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22"></ColumnDefinition>
+                                <ColumnDefinition></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Content="{Binding Path=pLabel, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center"></Label>
+                            <Canvas Grid.Column="1" Name="cvs1" Width="{Binding ElementName=cGroup, Path=ActualWidth, Converter={StaticResource wc2}, ConverterParameter=48}" Height="{Binding ElementName=listCanvas1, Path=Height, Mode=OneWay, Converter={StaticResource wc2}, ConverterParameter=-16}" VerticalAlignment="Top">
+                                <TextBlock Name="DOCTH1" Text="{Binding Path=pMinValue}" Canvas.Left="{Binding ElementName=L1a, Path=X1, Converter={StaticResource wc2}, ConverterParameter=12}" ToolTip="DOCTH" Height="14"></TextBlock>
+                                <TextBlock Name="COCTH1" Text="{Binding Path=pMaxValue}" Canvas.Left="{Binding ElementName=L2a, Path=X1, Converter={StaticResource wc2}, ConverterParameter=12}" ToolTip="COCTH" Height="14"></TextBlock>
+                                <TextBlock Text="0" Canvas.Left="{Binding ElementName=L3a, Path=X1, Converter={StaticResource wc2}, ConverterParameter=2}" ToolTip="Current Zero Point" Height="14">
+                                </TextBlock>
+                                <Canvas Name="listCanvas1" Height="{StaticResource BarHeight}" Width="{Binding ElementName=cvs1, Path=Width, Mode=OneWay}" Margin="0,2" ToolTip="Current" Canvas.Top="14">
+                                <TextBlock Canvas.Left="{Binding ElementName=L3a, Path=X1, Converter={StaticResource wc2}, ConverterParameter=-4}" Panel.ZIndex="1" Text="{Binding Path=pValue, Mode=OneWay, Converter={StaticResource wc}}"
+                                           Foreground="{Binding Path=IsRunning,Converter={StaticResource datacolor}}">
+                                </TextBlock>
+                                    <Rectangle Height="{StaticResource BarHeight}">
+                                        <Rectangle.Width>
+                                            <MultiBinding Converter="{StaticResource cbwc}">
+                                                <Binding Path="pMaxValue" Mode="OneWay"></Binding>
+                                                <Binding Path="pMinValue" Mode="OneWay"></Binding>
+                                                <Binding Path="pValue" Mode="OneWay"></Binding>
+                                                <Binding ElementName="listCanvas1" Path="Width" Mode="OneWay"></Binding>
+                                            </MultiBinding>
+                                        </Rectangle.Width>
+                                        <Canvas.Left>
+                                            <MultiBinding Converter="{StaticResource cblc}">
+                                                <Binding Path="pMaxValue" Mode="OneWay"></Binding>
+                                                <Binding Path="pMinValue" Mode="OneWay"></Binding>
+                                                <Binding Path="pValue" Mode="OneWay"></Binding>
+                                                <Binding ElementName="listCanvas1" Path="Width" Mode="OneWay"></Binding>
+                                            </MultiBinding>
+                                        </Canvas.Left>
+                                        <Rectangle.Fill>
+                                            <MultiBinding Converter="{StaticResource cc}">
+                                                <Binding Path="pCOCTH" Mode="OneWay"></Binding>
+                                                <Binding Path="pDOCTH" Mode="OneWay"></Binding>
+                                                <Binding Path="pValue" Mode="OneWay"></Binding>
+                                                <Binding Path="pUsability" Mode="TwoWay"></Binding>
+                                            </MultiBinding>
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                    <Rectangle Name="boder1" Height="{StaticResource BarHeight}" Width="{Binding ElementName=listCanvas1, Path=Width}" Panel.ZIndex="2" StrokeThickness="1">
+                                        <Rectangle.Stroke>
+                                            <MultiBinding Converter="{StaticResource cc}">
+                                                <Binding Path="pCOCTH" Mode="OneWay"></Binding>
+                                                <Binding Path="pDOCTH" Mode="OneWay"></Binding>
+                                                <Binding Path="pValue" Mode="OneWay"></Binding>
+                                                <Binding Path="pUsability" Mode="TwoWay"></Binding>
+                                            </MultiBinding>
+                                        </Rectangle.Stroke>
+                                    </Rectangle>
+                                    <Rectangle Height="{StaticResource BarHeight}" Width="{Binding ElementName=listCanvas1, Path=Width}" Fill="LightGray" Opacity="{Binding Path=pUsability}" Panel.ZIndex="3"></Rectangle>
+                                </Canvas>
+                                <Line  Name="L1a" Y1="14" Y2="{Binding ElementName=cvs1, Path=Height}" Stroke="LightGray" X2="{Binding ElementName=L1a, Path=X1}">
+                                    <Line.X1>
+                                        <MultiBinding Converter="{StaticResource bc}">
+                                            <Binding Path="pMaxValue" Mode="OneWay"></Binding>
+                                            <Binding Path="pMinValue" Mode="OneWay"></Binding>
+                                            <Binding Path="pMinValue" Mode="OneWay"></Binding>
+                                            <Binding ElementName="listCanvas1" Path="Width" Mode="OneWay"></Binding>
+                                        </MultiBinding>
+                                    </Line.X1>
+                                </Line>
+                                <Line  Name="L2a" Y1="14" Y2="{Binding Path=Y2, ElementName=L1a}" Stroke="LightGray" X2="{Binding ElementName=L2a, Path=X1}">
+                                    <Line.X1>
+                                        <MultiBinding Converter="{StaticResource bc}">
+                                            <Binding Path="pMaxValue" Mode="OneWay"></Binding>
+                                            <Binding Path="pMinValue" Mode="OneWay"></Binding>
+                                            <Binding Path="pMaxValue" Mode="OneWay"></Binding>
+                                            <Binding ElementName="listCanvas1" Path="Width" Mode="OneWay"></Binding>
+                                        </MultiBinding>
+                                    </Line.X1>
+                                </Line>
+                                <Line  Name="L3a" Y1="14" Y2="{Binding Path=Y2, ElementName=L1a}" Stroke="LightGray" X2="{Binding ElementName=L3a, Path=X1}">
+                                    <Line.X1>
+                                        <MultiBinding Converter="{StaticResource bc}">
+                                            <Binding Path="pMaxValue" Mode="OneWay"></Binding>
+                                            <Binding Path="pMinValue" Mode="OneWay"></Binding>
+                                            <Binding ElementName="L3a" Path="Y1" Converter="{StaticResource wc2}" ConverterParameter="14" Mode="OneWay"></Binding>
+                                            <Binding ElementName="listCanvas1" Path="Width" Mode="OneWay"></Binding>
+                                        </MultiBinding>
+                                    </Line.X1>
+                                </Line>
+                            </Canvas>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+    </ScrollViewer>
+</GroupBox>
+

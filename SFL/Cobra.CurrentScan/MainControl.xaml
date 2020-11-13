@@ -1,0 +1,55 @@
+﻿<UserControl x:Class="Cobra.CurrentScan.MainControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+	         xmlns:controls="clr-namespace:Cobra.ControlLibrary;assembly=Cobra.ControlLibrary"
+             mc:Ignorable="d" 
+             d:DesignHeight="480" d:DesignWidth="640"
+             xmlns:src="clr-namespace:Cobra.CurrentScan"
+             Name="CurrentScanUI">
+    <UserControl.Resources>
+        <src:EnableConverter1 x:Key="ec1"></src:EnableConverter1>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50*"></RowDefinition>
+            <RowDefinition Height="40*"></RowDefinition>
+            <RowDefinition Height="10*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <DataGrid Grid.Row="0" Name="CurrentDataGrid" ItemsSource="{Binding}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" 
+                                          AutoGeneratingColumn="CurrentDataGrid_AutoGeneratingColumn"
+                                          CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False"
+                                          CanUserSortColumns="False" IsReadOnly="True" AreRowDetailsFrozen="False">
+        </DataGrid>
+        <GroupBox Grid.Row="1" Header="Log Manager" Width="450" Margin="2">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right">
+                    <Button Name="ExportBtn" Click="ExportBtn_Click" Focusable="False">
+                        <Button.IsEnabled>
+                            <MultiBinding Converter="{StaticResource ec1}">
+                                <Binding ElementName="loglist" Path="SelectedItems.Count" Mode="OneWay"></Binding>
+                                <Binding ElementName="runBtn" Path="IsChecked" Mode="OneWay"></Binding>
+                            </MultiBinding>
+                        </Button.IsEnabled>
+                        Export
+                    </Button>
+                </StackPanel>
+                <DataGrid Name="loglist" ItemsSource="{Binding}"
+                                              AutoGeneratingColumn="loglist_AutoGeneratingColumn" 
+                                              CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False"
+                                              CanUserSortColumns="True" IsReadOnly="True" AreRowDetailsFrozen="False">
+                </DataGrid>
+            </DockPanel>
+        </GroupBox>
+        <DockPanel Grid.Row="2" LastChildFill="False" Margin="5">
+            <ToggleButton Height="28" Width="60" Name="runBtn" DockPanel.Dock="Right" Click="runBtn_Click">Run</ToggleButton>
+            <ComboBox Name="SubTask" Height="28" Width="160" DockPanel.Dock="Right" Margin="0,0,5,0" IsEditable="False" IsReadOnly="True" SelectedIndex="0">
+                <ComboBoxItem>1 Time</ComboBoxItem>
+                <ComboBoxItem>4 Times Average</ComboBoxItem>
+                <ComboBoxItem>8 Times Average</ComboBoxItem>
+            </ComboBox>
+        </DockPanel>
+        <controls:WarningControl x:Name="WarningPopControl"/>
+    </Grid>
+</UserControl>

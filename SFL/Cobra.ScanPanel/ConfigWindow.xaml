@@ -1,0 +1,55 @@
+﻿<Window x:Class="Cobra.ScanPanel.ConfigWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Cobra.ScanPanel"
+        Width="400" Height="340" 
+        Title="Configuration Window" WindowStartupLocation="CenterOwner" Topmost="True" ShowInTaskbar="False" ResizeMode="NoResize" 
+        Icon="{DynamicResource COBRA_ICO}">
+
+    <Window.Resources>
+        <DataTemplate x:Key="textBox" >
+            <TextBox x:Name="textBox" BorderThickness="0" TextAlignment="Center" Text="{Binding sphydata,Mode=TwoWay, UpdateSourceTrigger= LostFocus}"/>
+        </DataTemplate>
+        <DataTemplate x:Key="comboBox">
+            <ComboBox x:Name="comboBox" SelectedIndex="{Binding phydata,Mode=TwoWay, UpdateSourceTrigger = PropertyChanged}" ItemsSource="{Binding itemlist,Mode= OneWay}"
+				BorderThickness="0" HorizontalContentAlignment="Right" FontSize="14" FontFamily="Arial">
+            </ComboBox>
+        </DataTemplate>
+        <DataTemplate x:Key="checkBox">
+            <CheckBox x:Name="checkBox" IsChecked="{Binding bcheck,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="{Binding IsChecked,ElementName=checkBox}"  Margin="1,5,1,1" HorizontalAlignment="Right"/>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid x:Name="LayoutRoot">
+        <Grid x:Name="TopPanel" Margin="5,0,5,42">
+            <DataGrid x:Name="mDataGrid" ItemsSource="{Binding}" Style="{DynamicResource dataGrid-deviceConfiguration}" VirtualizingStackPanel.IsVirtualizing="True"
+                      HeadersVisibility ="None">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn IsReadOnly="True" CanUserResize="False" Width="0.4*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock x:Name="NameTextBlock" Style="{DynamicResource textBlk-deviceConfiguration}" Text="{Binding Path= nickname, Mode = OneTime}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn CanUserResize="False" Width="0.6*">
+                        <DataGridTemplateColumn.CellTemplateSelector>
+                            <local:SetDataDataTypeTemplateSelector TextBoxTemplate="{StaticResource textBox}"
+                                            	ComboBoxTemplate="{StaticResource comboBox}"
+                                            	CheckBoxTemplate="{StaticResource checkBox}">
+                            </local:SetDataDataTypeTemplateSelector>
+                        </DataGridTemplateColumn.CellTemplateSelector>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+        <Grid x:Name="BottomPanel" Height="40" VerticalAlignment="Bottom">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.7*"/>
+                <ColumnDefinition Width="0.3*"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="SaveBtn" Content="Save" FontFamily="Arial" FontSize="14" Grid.Column="0" Margin="136,3,5,3" Click="SaveBtn_Click" />
+            <Button x:Name="CancelBtn" Content="Close"  FontFamily="Arial" FontSize="14" Grid.Column="1" Margin="30,3,5,3" Click="CancelBtn_Click"/>
+        </Grid>
+    </Grid>
+</Window>

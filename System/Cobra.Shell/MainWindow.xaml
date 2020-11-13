@@ -1,0 +1,285 @@
+﻿<RibbonWindow
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ribbon="clr-namespace:System.Windows.Controls.Ribbon;assembly=System.Windows.Controls.Ribbon"
+		xmlns:EM="clr-namespace:Cobra.EM;assembly=Cobra.EM" 
+        xmlns:local="clr-namespace:Cobra.Shell" 
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+	    xmlns:controls="clr-namespace:Cobra.ControlLibrary;assembly=Cobra.ControlLibrary" x:Name="topmost"
+		mc:Ignorable="d"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase" x:Class="Cobra.Shell.MainWindow" Closed="RibbonWindow_Closed"
+        Height="600" Width="800" WindowStartupLocation="CenterScreen" Topmost="False">
+   
+    <RibbonWindow.Resources>
+        <local:DeviceInforConverter x:Key="deviceInforConverter"/>
+        <local:UInt2BrushConverter x:Key="UInt2BrushConverter" />
+        <local:ExpanderConverter x:Key="ExpanderConverter" />
+        <local:ItemDataTempSelector x:Key="itemDataTempSelector" />
+        <!-- RibbonButton -->
+        <Style TargetType="{x:Type RibbonButton}" >
+            <Setter Property="Width" 		Value="100" />
+            <Setter Property="Height"		Value="25"  />
+            <Setter Property="FontSize" 	Value="12"  />
+            <Setter Property="BorderBrush" 	Value="#FFA1C1DE"  />
+            <Setter Property="CornerRadius" Value="4"  />
+            <Setter Property="Margin"		Value="1,5" />
+            <Setter Property="Padding"      Value="3"/>
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="#FFFDFDFD" Offset="0"/>
+                        <GradientStop Color="#FFCBEAFD" Offset="1"/>
+                        <GradientStop Color="#FFD2E9F5" Offset="0.265"/>
+                        <GradientStop Color="#FFDFF4FD" Offset="0.7"/>
+                        <GradientStop Color="#FFD6EAFF" Offset="0.409"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!--ListBox样式-->
+        <Style TargetType="{x:Type ListBox}">
+            <Setter Property="BorderBrush" Value="#F8F7F5"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#F8F7F5"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <!--ListBoxItem样式-->
+        <Style x:Key="ListBoxkey" TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Background" Value="#F7F8F5"/>
+            <Setter Property="FontFamily" Value="Arial" />
+            <Setter Property="FontSize" Value="16" />
+            <!-- 设置控件模板 -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Grid Height="40">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.9*"/>
+                                <ColumnDefinition Width="0.1*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Margin="0,0,0,2" CornerRadius="5" BorderThickness="1" Grid.Column="0">
+                                <Border.BorderBrush>
+                                    <SolidColorBrush Color="#FF2171A5" Opacity="0.6"/>
+                                </Border.BorderBrush>
+                                <Border.Background>
+                                    <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                                        <GradientStop Color="{Binding Background.Color, RelativeSource={RelativeSource TemplatedParent}}" Offset="0"/>
+                                        <GradientStop Color="White" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <ContentPresenter Margin="10,2,10,2" TextBlock.Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Left" VerticalAlignment="Center" RecognizesAccessKey="True" Content="{Binding Path= btnlabel}"/>
+                            </Border>
+                                    <ListBox x:Name="LampList" ItemsSource="{Binding Path=btnpanellampitems}" Grid.Column="1" >
+                                <ListBox.Resources>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="Margin" Value="1,0,1,0"/>
+                                        <Setter Property="Padding" Value="0"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                    </Style>
+                                </ListBox.Resources>
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation= "Horizontal" IsItemsHost = "True"/>
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Label Content="{Binding Path = id,Mode = OneWay}" Background="{Binding Path= btnlamp,Mode=OneWay,Converter={StaticResource UInt2BrushConverter}}" Height="32"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Padding" Value="1,1,0,1"/>
+            <!-- 设置触发器 -->
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="true">
+                    <Setter Property="Background" Value="#006699"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="true">
+                    <Setter Property="Background" Value="#C7C8C5"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <DataTemplate x:Key="DeviceStatusTemp">
+            <StackPanel Margin="1" Orientation="Vertical" Background="#F2F2F2" >
+                <TextBlock x:Name="IndexTb" Style="{DynamicResource textBlk-shell}" HorizontalAlignment="Center" Text="{Binding Path= index,Mode = OneTime,StringFormat='Device #{0}'}" FontWeight="Bold" />
+                <StackPanel Orientation ="Vertical">
+                    <UniformGrid Rows="1" Columns="2" Margin="2">
+                        <TextBlock Style="{DynamicResource textBlk-shell}"  Text="Device Status:" />
+                        <TextBlock x:Name="StatusTb" Style="{DynamicResource textBlk-shell}" Text="{Binding Path= status, Mode = OneWay, Converter={StaticResource deviceInforConverter}, ConverterParameter= Status}"/>
+                    </UniformGrid>
+                    <UniformGrid Rows="1" Columns="2" Margin="2">
+                        <TextBlock Style="{DynamicResource textBlk-shell}" Text="Device ID:" />
+                        <TextBlock x:Name="IDTb" Style="{DynamicResource textBlk-shell}" Text="{Binding Path= type, Mode = OneWay, Converter={StaticResource deviceInforConverter}, ConverterParameter= Type}"/>
+                    </UniformGrid>
+                    <UniformGrid Rows="1" Columns="2" Margin="2">
+                        <TextBlock Style="{DynamicResource textBlk-shell}" Text="Device Version:"/>
+                        <TextBlock x:Name="VersionTb" Style="{DynamicResource textBlk-shell}" Text="{Binding Path= shwversion, Mode = OneWay, Converter={StaticResource deviceInforConverter}, ConverterParameter= HWVersion}"/>
+                    </UniformGrid>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="FWDeviceStatusTemp">
+            <StackPanel Margin="1" Orientation="Vertical" Background="#F2F2F2">
+                <TextBlock x:Name="IndexTb" Style="{DynamicResource textBlk-shell}" HorizontalAlignment="Center" Text="{Binding Path= index,Mode = OneTime,StringFormat='Device #{0}'}" FontWeight="Bold" />
+                <StackPanel Orientation ="Vertical">
+                    <UniformGrid Rows="1" Columns="2" Margin="2">
+                        <TextBlock Style="{DynamicResource textBlk-shell}"  Text="Device Status:" />
+                        <TextBlock x:Name="StatusTb" Style="{DynamicResource textBlk-shell}" Text="{Binding Path= status, Mode = OneWay, Converter={StaticResource deviceInforConverter}, ConverterParameter= Status}"/>
+                    </UniformGrid>
+                    <UniformGrid Rows="1" Columns="2" Margin="2">
+                        <TextBlock Style="{DynamicResource textBlk-shell}" Text="Device ID:" />
+                        <TextBlock x:Name="IDTb" Style="{DynamicResource textBlk-shell}" Text="{Binding Path= fwversion, Mode = OneWay, Converter={StaticResource deviceInforConverter}, ConverterParameter= FWVersion}"/>
+                    </UniformGrid>
+                    <UniformGrid Rows="1" Columns="2" Margin="2">
+                        <TextBlock Style="{DynamicResource textBlk-shell}" Text="BootLoader Ver:"/>
+                        <TextBlock x:Name="VersionTb" Style="{DynamicResource textBlk-shell}" Text="{Binding Path= ateversion, Mode = OneWay, Converter={StaticResource deviceInforConverter}, ConverterParameter= HWVersion}"/>
+                    </UniformGrid>
+                    <UniformGrid Rows="1" Columns="2" Margin="2">
+                        <TextBlock Style="{DynamicResource textBlk-shell}" Text="Serial Num:"/>
+                        <TextBlock x:Name="SerialTb" Style="{DynamicResource textBlk-shell}" Text="{Binding Path= shwversion, Mode = OneWay, Converter={StaticResource deviceInforConverter}, ConverterParameter= HWVersion}"/>
+                    </UniformGrid>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+    </RibbonWindow.Resources>
+
+    <Grid x:Name="Cobra_Shell_Window">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Ribbon x:Name="Ribbon" Title="Cobra System" FontSize="14" FontFamily="Arial" SelectionChanged="Ribbon_SelectionChanged" WindowIconVisibility="Collapsed">
+                    <Ribbon.TitleTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Image  Source="{StaticResource COBRA_ICO}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1"/>
+                                <TextBlock TextAlignment="Left" HorizontalAlignment="Stretch" VerticalAlignment="Center" Width="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type RibbonWindow}}, Path=ActualWidth}"
+                                       Text="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type RibbonWindow}}, Path=Title}">
+                                    <TextBlock.Effect>
+                                        <DropShadowEffect ShadowDepth="0" Color="MintCream " BlurRadius="10"   />
+                                    </TextBlock.Effect>
+                                </TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                    </Ribbon.TitleTemplate>
+                    <Ribbon.ApplicationMenu>
+                        <RibbonApplicationMenu>
+                            <RibbonApplicationMenuItem Header="Minimize Feature Bar" x:Name="SystemBar_MenuItem" Click="SystemBar_MenuItem_Click" IsCheckable="True" Background="#ECF2F9" />
+                            <RibbonApplicationMenuItem Header="Minimize Ribbon Bar" x:Name="MiniRibbonBar_MenuItem" Click="MiniRibbonBar_MenuItem_Click" IsCheckable="True" Background="#ECF2F9" />
+                        </RibbonApplicationMenu>
+                    </Ribbon.ApplicationMenu>
+
+                    <RibbonTab x:Name="ConnectionTab" Header ="Connection Settings" FontSize="12" FontFamily="Arial" GroupSizeReductionOrder="DeviceInterfaceGroup,DeviceConnectGroup,ConOperationGroup">
+                        <RibbonGroup Header = "Extension"  Width="140">
+                            <RibbonButton x:Name="btnExtensionManager"	Label ="Extension Manager" Width="120" Margin="1,20,1,1"  Click="btnExtensionManager_Click"/>
+                        </RibbonGroup>
+
+                        <RibbonGroup Header = "Device Interface Information" x:Name="DeviceInterfaceGroup">
+                            <RibbonTwoLineText x:Name="CommunicationLabel" Margin="1,12" Text="{Binding Path=bustype, Mode= TwoWay, Source={x:Static EM:EMExtensionManage.m_EM_DevicesManage}}"/>
+                            <RibbonTwoLineText x:Name="DeviceTypeLabel"   Text="{Binding Path=devicetype, Mode= TwoWay, Source={x:Static EM:EMExtensionManage.m_EM_DevicesManage}}"/>
+                        </RibbonGroup>
+
+                        <RibbonGroup Header = "Device Connection Setting" x:Name="DeviceConnectGroup">
+                            <Border CornerRadius="3" BorderBrush="#CFDDEA" BorderThickness="2" Margin="2,5,4,2">
+                                <StackPanel Orientation="Horizontal" x:Name="DeviceRibbonControlGroup" Margin="2,0,2,0"/>
+                            </Border>
+                        </RibbonGroup>
+
+                        <RibbonGroup Header = "About" x:Name="AboutGroup">
+                            <RibbonButton x:Name="btnAbout"	Label ="About"  Margin="1,5"  Click="btnAbout_Click"/>
+                            <RibbonButton x:Name="btnUpgrade"	Label ="Upgrade"  Margin="1"  Click="btnUpgrade_Click"/>
+                        </RibbonGroup>
+                    </RibbonTab>
+
+                    <RibbonTab x:Name="InformationTab" Header ="Operation Log" FontFamily="Arial" FontSize="12">
+                        <RibbonGroup Header = "System Information" x:Name="SystemInformGroup" Width="600">
+                            <DataGrid x:Name='InformList' ItemsSource="{Binding}" CanUserAddRows="False" IsReadOnly="True" AutoGenerateColumns="False" Background="{Binding Background, ElementName=Ribbon}"
+						        ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                                <DataGrid.ColumnHeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="Foreground" Value="Black"/>
+                                        <Setter Property="FontFamily" Value="Arial"/>
+                                        <Setter Property="FontSize" Value="13"/>
+                                        <Setter Property="Height"	Value="18"/>
+                                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                        <Setter Property="Background" Value="{Binding Background, ElementName=Ribbon}" />
+                                    </Style>
+                                </DataGrid.ColumnHeaderStyle>
+                                <DataGrid.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="FontFamily" Value="Arial"/>
+                                        <Setter Property="FontSize" Value="13"/>
+                                        <Setter Property="Height"	Value="16"/>
+                                    </Style>
+                                </DataGrid.CellStyle>
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Time" IsReadOnly="True" CanUserResize="False" Width="0.25*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock x:Name="TimeTextBlock" HorizontalAlignment="Left" Text="{Binding Path= time}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Controls" IsReadOnly="True" CanUserResize="True" Width="0.5*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock x:Name="ControlsTextBlock" HorizontalAlignment="Left" Text="{Binding Path= controls}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="Events" CanUserResize="True" Width="0.25*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock x:Name="EventsTextBlock" HorizontalAlignment="Left" Text="{Binding Path= message}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </RibbonGroup>
+
+                        <RibbonGroup Header = "Operation" x:Name="InformOperationGroup">
+                            <RibbonButton x:Name="btnSaveAs"	Label ="Save As"  Margin="1,5"  Click="btnSaveAs_Click"/>
+                            <RibbonButton x:Name="btnClear" 	Label ="Clear"  Margin="1"  Click="btnClear_Click"/>
+                        </RibbonGroup>
+                    </RibbonTab>
+                </Ribbon>
+            </Grid>
+            <DockPanel x:Name="Mainwindow"  Background="#FFFEFEFE" Margin="1,1,1,1" Grid.Row="1"  LastChildFill="true">
+                <Expander Style="{DynamicResource expander-shell}" x:Name="fl_Expander"  Header="Feature Libraries" DockPanel.Dock="Left"  IsExpanded="True">
+                    <Grid  x:Name="BtnStatusPanel">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="{Binding ElementName=DeviceStatusGroup,Path=Height}"/>
+                        </Grid.RowDefinitions>
+                        <ListBox x:Name="FeatureBtnList" ItemsSource="{Binding}" Background="White" Grid.Row="0" SelectionChanged = "FeatureBtnList_SelectionChanged" 
+                                    ItemContainerStyle= "{StaticResource ListBoxkey}"/>
+                        <GroupBox Margin="1" Grid.Column="0" Grid.Row="1" VerticalAlignment="Bottom" BorderThickness="2" BorderBrush="#4F818D" x:Name="DeviceStatusGroup">
+                            <GroupBox.Header>
+                                <TextBlock Text="Device Status" Style="{DynamicResource textBlk-deviceConfiguration}" Margin="2"/>
+                            </GroupBox.Header>
+                            <ItemsControl x:Name="DeviceStatusList" ItemsSource="{Binding}" Background="White" ItemTemplateSelector="{StaticResource itemDataTempSelector}"  />
+                        </GroupBox>
+                    </Grid>
+                </Expander>
+                <!--Define right Panel-->
+                <Grid x:Name="ExtensionStatusPanel" Width="Auto"/>
+            </DockPanel>
+        </Grid>
+        <controls:WarningControl x:Name="WarningPopControl"/>
+        <controls:WaitControl x:Name="WaitPopControl"/>
+    </Grid>
+</RibbonWindow>

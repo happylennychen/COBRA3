@@ -1,0 +1,132 @@
+﻿<UserControl x:Class="Cobra.PreCHGDSGPanel.MainControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:src="clr-namespace:Cobra.PreCHGDSGPanel"
+	         xmlns:controls="clr-namespace:Cobra.ControlLibrary;assembly=Cobra.ControlLibrary"
+             mc:Ignorable="d" 
+             FontSize="12"
+             x:Name="UserControl" d:DesignHeight="480" d:DesignWidth="640" HorizontalContentAlignment="Stretch">
+    <Grid x:Name="LayoutRoot">
+        <Grid x:Name ="WorkPanel">
+            <Grid.RowDefinitions>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
+            </Grid.RowDefinitions>
+            <GroupBox Header="Configuration" Grid.Row="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" ToolTip="This parameter can be changed in BoardConfig">Rsense(mOhm)</Label>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="1" ToolTip="{Binding Path=Imax_cal, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">Max Power(mW)</Label>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="2">Max Current(mA)</Label>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="3" Name="OVTHLabel">OVTH(mV)</Label>
+                    <TextBox HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="0" Width="50" Name="RsenseInput" 
+                             Text="{Binding Path=Rsense.phydata, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             IsReadOnly="True" ToolTip="This parameter can be changed in BoardConfig"></TextBox>
+                    <TextBox HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="1" Width="50" Name="PmaxInput" Text="{Binding Path=Pmax_set, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+                    <TextBox HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="2" Width="50" Name="ImaxInput" Text="{Binding Path=Imax_set, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+                    <TextBox HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="3" Width="50" Name="OVTHInput" Text="{Binding Path=OVTH, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"></TextBox>
+                    <Button Grid.Column="4" Grid.RowSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="60" Click="Confirm_Click">Confirm</Button>
+                </Grid>
+            </GroupBox>
+            <GroupBox Name="CCGroup" Header="Constant Current Process" Grid.Row="1" IsEnabled="False">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom">Target Current(mA)</Label>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="0" Name="Imin_UI" Text="{Binding Path=Imin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">??</TextBlock>
+                        <Label HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1">&lt;</Label>
+                        <TextBox HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="2" Width="50" Name="ItargetInput" Text="{Binding Path=Itarget, Mode=TwoWay, UpdateSourceTrigger=Explicit}"></TextBox>
+                        <Label HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="3">&lt;</Label>
+                        <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="4" Name="Imax_UI" Text="{Binding Path=Imax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">??</TextBlock>
+                    </Grid>
+                    <Button Name="CCUpdate" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="60" Click="CCUpdate_Click" IsEnabled="False" Visibility="Collapsed">Update</Button>
+                    <ToggleButton Name="CCrunBtn" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="60" Click="CC_Click">Start</ToggleButton>
+                </Grid>
+            </GroupBox>
+            <GroupBox Name="CPGroup" Header="Constant Power Process" Grid.Row="2" IsEnabled="False">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom">Target Power(mW)</Label>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="0" Name="Pmin_UI" Text="{Binding Path=Pmin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">??</TextBlock>
+                        <Label HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1">&lt;</Label>
+                        <TextBox HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="2" Width="50" Name="PtargetInput" Text="{Binding Path=Ptarget, Mode=TwoWay, UpdateSourceTrigger=Explicit}"></TextBox>
+                        <Label HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="3">&lt;</Label>
+                        <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="4" Name="Pmax_UI" Text="{Binding Path=Pmax, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">??</TextBlock>
+                    </Grid>
+                    <Button Name="CPUpdate" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="60" Click="CPUpdate_Click" IsEnabled="False" Visibility="Collapsed">Update</Button>
+                    <ToggleButton Name="CPrunBtn" Grid.Row="1" Grid.Column="1" Grid.RowSpan="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="30" Width="60" Click="CP_Click">Start</ToggleButton>
+                </Grid></GroupBox>
+            <GroupBox Header="Monitor" Grid.Row="3">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom">Vpack(mV)</Label>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="1">Vbatt(mV)</Label>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="2">Vfet(mV)</Label>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="3">Current(mA)</Label>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="4">Power(mW)</Label>
+                    <Label HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="5">Ipreset(mA)</Label>
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="0" Width="50" Name="Vpack_UI" Text="{Binding Path=Vpack, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="1" Width="50" Name="Vbatt_UI" Text="{Binding Path=Vbatt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="2" Width="50" Name="Vfet_UI" Text="{Binding Path=Vfet, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="3" Width="50" Name="I_UI" Text="{Binding Path=I, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="4" Width="50" Name="P_UI" Text="{Binding Path=P, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="1" Grid.Column="5" Width="50" Name="Ipre_UI" Text="{Binding Path=Ipre, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBlock>
+                </Grid></GroupBox>
+        </Grid>
+        <controls:WarningControl x:Name="WarningPopControl"/>
+    </Grid>
+</UserControl>

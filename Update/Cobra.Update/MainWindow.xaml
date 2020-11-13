@@ -1,0 +1,66 @@
+﻿<Window x:Class="Cobra.Update.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	    xmlns:controls="clr-namespace:Cobra.ControlLibrary;assembly=Cobra.ControlLibrary"
+	    xmlns:local="clr-namespace:Cobra.Update" 
+        Title="Cobra Update" Height="400" Width="600" ShowInTaskbar="True" WindowStartupLocation="CenterScreen"
+        Loaded="Window_Loaded" Closed="Window_Closed" WindowStyle="ToolWindow"  Icon="{StaticResource COBRA_JPG}">
+    <Window.Resources>
+        <local:Bool2ContentConverter x:Key="Bool2ContentConverter" />
+        <local:Bool2BrushConverter x:Key="Bool2BrushConverter" />
+        <DataTemplate x:Key="dttmpSingleFileAutoUpdate">
+            <Grid Background="#FFEBEBEB" Margin="0,5,0,5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height ="0.4*"/>
+                    <RowDefinition Height ="*"/>
+                    <RowDefinition Height ="24"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row ="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width ="*"/>
+                        <ColumnDefinition Width ="90"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" x:Name="txtboxFileName" Content="{Binding Path=strFileName, Mode=OneWay}" FontWeight="Bold" Style="{DynamicResource label-upgrade}" />
+                    <Button Grid.Column="1" x:Name="btnFileDownload" Content="{Binding bcancel,Converter={StaticResource Bool2ContentConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}" 
+                        Margin="2" Visibility="{Binding Path=vsiDownload, Mode=OneWay}"  FontFamily="Arial" FontSize="14" IsEnabled="{Binding Path=bDownloadable, Mode=OneWay}" Click="btnFileDownload_Click" 
+                        Width="80" Height="30" VerticalAlignment="Center"/>
+                </Grid>
+                <Label Grid.Row="2" x:Name="txtboxFileDescription" MaxWidth="{Binding ElementName=grd3ViewB, Path=ActualWidth}" Content="{Binding Path=strFileDescription, Mode=OneWay}" 
+                           Visibility="{Binding Path=vsiDescription, Mode=OneWay}" FontFamily="Arial" FontSize="14" Foreground="{Binding Path= bDownloadable,Mode=OneWay,Converter={StaticResource Bool2BrushConverter}}"/>
+                <ProgressBar Grid.Row="2" x:Name="prgDownProgress" Minimum="0" Maximum="100" Visibility="{Binding Path=vsiProgressbar, Mode=OneWay}" Value="{Binding Path=iProgressValue, Mode=OneWay}"
+                             Tag="{Binding Path=strProgressText, Mode=OneWay}"/>
+                <TextBlock Grid.Row="2" Visibility="{Binding Path=vsiProgressbar, Mode=OneWay}" Text="{Binding ElementName=prgDownProgress, Path=Value, StringFormat={}{0:0}%}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Arial" FontSize="14"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" Content="Current Version:"  FontFamily="Arial" FontSize="14"/>
+                    <Label Grid.Column="1"  x:Name="txtboxOldFileVersion" Content="{Binding Path=strOldFileVersion, Mode=OneWay}"  FontFamily="Arial" FontSize="14"/>
+                    <Label Grid.Column="2" Content="New Version:"  FontFamily="Arial" FontSize="14"/>
+                    <Label Grid.Column="3" x:Name="txtboxNewFileVersion" Content="{Binding Path=strNewFileVersion, Mode=OneWay}"  FontFamily="Arial" FontSize="14"/>
+                </Grid>
+            </Grid>
+        </DataTemplate>
+    </Window.Resources>
+    <Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"></RowDefinition>
+                <RowDefinition Height="0.9*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal" Grid.Row="0">
+                <Button x:Name="btnConnect" Content="Connect"  Margin="2,5,2,5" Width="80" Height="30"  HorizontalAlignment="Right" Click="btnConnect_Click" FontFamily="Arial" FontSize="16"/>
+                <Button x:Name="btnRestart" Content="Restart"  Margin="2,5,2,5" Width="80" Height="30"  HorizontalAlignment="Right" Click="btnReStart_Click"  FontFamily="Arial" FontSize="16"/>
+            </StackPanel>
+            <ListBox x:Name="lstboxFileAutoUpdate" Grid.Row="1" HorizontalContentAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="White"
+                     ItemsSource="{Binding}" ItemTemplate="{StaticResource ResourceKey=dttmpSingleFileAutoUpdate}" BorderThickness="0" BorderBrush="White">
+            </ListBox>
+        </Grid>
+        <controls:WarningControl x:Name="WarningPopControl"/>
+        <controls:SelectControl x:Name="SelectPopControl"/>
+    </Grid>
+</Window>

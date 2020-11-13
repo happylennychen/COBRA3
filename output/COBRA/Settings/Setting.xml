@@ -2,7 +2,7 @@
 <Root>
   <Part Name="PreProject">
     <PreExtensionBusType BusType="I2C" />
-    <PreExtension Name="Woodpecker10_A0_X_03_20200630" />
+    <PreExtension Name="SD77060_B0_X_20201029" />
   </Part>
   <Part Name="Device Connection Settings">
     <DeviceList>
@@ -11,10 +11,5 @@
       <Device Name="Device3" IsChecked="False" />
       <Device Name="Device4" IsChecked="False" />
     </DeviceList>
-  </Part>
-  <Part Name="ConfigFilePath">
-    <OZ7710_C0_C1_X_03_20191226>C:\Users\leon.chen\Documents\COBRA Documents\OZ7710_C0_C1_X_03_20191226\OZ7710-20200121102906\OZ7710.cfg</OZ7710_C0_C1_X_03_20191226>
-    <OZ8978_A0_Y_03_20191226>C:\Users\leon.chen\Documents\COBRA Documents\OZ8978_A0_Y_03_20191226\OZ8978-20200107174812\OZ8978.cfg</OZ8978_A0_Y_03_20191226>
-    <OZ8978_A0_X_03_20191226>C:\Users\leon.chen\Desktop\Woodpecker10-20200630154505\Woodpecker10.cfg</OZ8978_A0_X_03_20191226>
   </Part>
 </Root>

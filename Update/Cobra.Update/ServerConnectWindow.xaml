@@ -1,0 +1,70 @@
+﻿<Window x:Class="Cobra.Update.ServerConnectWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            Title="Cobra Center Setting" Height="300" Width="360"
+            WindowStartupLocation="CenterScreen" Topmost="True" ShowInTaskbar="False" ResizeMode="NoResize" WindowStyle="ToolWindow">
+    <Window.Resources>
+        <Style TargetType="{x:Type Border}">
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="BorderBrush" Value="Gray" />
+            <Setter Property="CornerRadius" Value="5" />
+        </Style>
+        <!--Border Style, BorderThickness=2, BorderBrush=Gray, CornerRadius=5-->
+    </Window.Resources>
+    <Grid x:Name="grdCenterSetting">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.75*"/>
+            <RowDefinition Height="0.10*"/>
+            <RowDefinition Height="0.15*"/>
+        </Grid.RowDefinitions>
+        <Border Grid.Row="0">
+            <DataGrid x:Name="dtgrdSetting" Grid.Row="0" CanUserAddRows="False" IsReadOnly="True" 
+                  AutoGenerateColumns="False" HeadersVisibility="None" IsSynchronizedWithCurrentItem="True" 
+                  BorderBrush="LightSkyBlue" SelectionMode="Single" VerticalAlignment="Top"
+                  ItemsSource="{Binding}" >
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Name" IsReadOnly="True" CanUserResize="False" Width="0.4*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock x:Name="txtblkName" HorizontalAlignment="Left" Text="{Binding Path= strSettingName, Mode = OneTime}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Value" IsReadOnly="False" CanUserResize="False" Width="0.6*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Text="{Binding Path= strSettingValue, Mode = TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="True" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell">
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="White"/>
+                                <Setter Property="Foreground" Value="Black"/>
+                                <Setter Property="BorderBrush" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="1"/>
+                            </Trigger>
+                        </Style.Triggers>
+                        <Setter Property="FontFamily"  Value ="Arial" />
+                        <Setter Property="FontSize"  Value ="16" />
+                    </Style>
+                </DataGrid.CellStyle>
+            </DataGrid>
+        </Border>
+        <ProgressBar x:Name="prgbarConnect" Grid.Row="1" Margin="0,3,0,3" Minimum="0" Maximum="100"
+                     Visibility="Collapsed"
+                     Value="0" />
+        <TextBlock x:Name="txbProgress" Grid.Row="1" Visibility="Collapsed" Text="" Margin="0,3,0,3" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+        <Grid x:Name="OperationPanel" Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.7*"/>
+                <ColumnDefinition Width="0.3*"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="SaveAndTestBtn" Content="Save and Test" FontFamily="Arial" FontSize="14" Grid.Column="0" Margin="136,3,5,3" Click="SaveAndTestBtn_Click" />
+            <Button x:Name="CancelBtn" Content="Close"  FontFamily="Arial" FontSize="14" Grid.Column="1" Margin="30,3,5,3" Click="CancelBtn_Click"/>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,157 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ExpressionBlendVersion>4.0.20621.0</ExpressionBlendVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{14E4DF76-DAE6-43BE-B4C1-1C6896E56CDA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Cobra.ScanPanel</RootNamespace>
+    <AssemblyName>Cobra.ScanPanel</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\output\COBRA\SFL\ScanV2\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\O2_Cobra_Shell\bin\Release\StandardFeatureLibrary\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ConfigWindow.xaml.cs">
+      <DependentUpon>ConfigWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CurrentPanel\CurrentPanel.xaml.cs">
+      <DependentUpon>CurrentPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="FetDisablePanel\FetDisablePanel.xaml.cs">
+      <DependentUpon>FetDisablePanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MiscPanel\MiscPanel.xaml.cs" />
+    <Compile Include="OscilloscopeRestriction.cs" />
+    <Compile Include="SafetyEventPanel\SafetyEventPanel.xaml.cs">
+      <DependentUpon>SafetyEventPanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ScanLogUIData.cs" />
+    <Compile Include="Services.cs" />
+    <Compile Include="TemperaturePanel\TemperaturePanel.xaml.cs">
+      <DependentUpon>TemperaturePanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ThreadMonitor.xaml.cs">
+      <DependentUpon>ThreadMonitor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="VoltagePanel\VoltagePanel.xaml.cs">
+      <DependentUpon>VoltagePanel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Converters.cs" />
+    <Compile Include="WakeupEventPanel\WakeupEventPanel.xaml.cs">
+      <DependentUpon>WakeupEventPanel.xaml</DependentUpon>
+    </Compile>
+    <Page Include="ConfigWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CurrentPanel\CurrentPanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="FetDisablePanel\FetDisablePanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MainControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="MainControl.xaml.cs">
+      <DependentUpon>MainControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Page Include="MiscPanel\MiscPanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SafetyEventPanel\SafetyEventPanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="TemperaturePanel\TemperaturePanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="ThreadMonitor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="VoltagePanel\VoltagePanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="WakeupEventPanel\WakeupEventPanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\System\Common\Cobra.Common\Cobra.Common.csproj">
+      <Project>{E8AB3957-5744-4656-B21C-A8D8131BB9D2}</Project>
+      <Name>Cobra.Common</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\System\Common\Cobra.ControlLibrary\Cobra.ControlLibrary\Cobra.ControlLibrary.csproj">
+      <Project>{4D8A39E7-2BF2-4228-BF46-2F2A10D0545F}</Project>
+      <Name>Cobra.ControlLibrary</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\System\Cobra.EM\Cobra.EM.csproj">
+      <Project>{17CD664C-971F-4C6B-A3F3-FE0E170271A3}</Project>
+      <Name>Cobra.EM</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\System\Common\Cobra.DynamicDataDisplay\Cobra.DynamicDataDisplay.csproj">
+      <Project>{ECD37682-DF7E-409F-912D-0965634556B5}</Project>
+      <Name>Cobra.DynamicDataDisplay</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath32)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+	     Other similar extension points exist, see Microsoft.Common.targets.
+	<Target Name="BeforeBuild">
+	</Target>
+	<Target Name="AfterBuild">
+	</Target>
+	-->
+</Project>

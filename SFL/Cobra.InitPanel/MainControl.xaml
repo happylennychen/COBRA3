@@ -1,0 +1,24 @@
+﻿<UserControl x:Class="Cobra.InitPanel.MainControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:src="clr-namespace:Cobra.InitPanel"
+	         xmlns:controls="clr-namespace:Cobra.ControlLibrary;assembly=Cobra.ControlLibrary"
+             mc:Ignorable="d" 
+             x:Name="UserControl" d:DesignHeight="480" d:DesignWidth="640">
+    <Grid>
+        <StackPanel>
+            <Button HorizontalAlignment="Center" Margin="10" Width="200" Height="40" Name="Init" Click="Init_Click" ToolTip="Write LDO trimming code to Reg_0x08 and disable sleep." Visibility="Collapsed">Initial The Chip</Button>
+            <Button HorizontalAlignment="Center" Margin="10" Width="200" Height="40" Name="ClearBCOffset" Click="ClearBCOffset_Click" ToolTip="Clear board current offset." Visibility="Collapsed">Clear Board Current Offset</Button>
+            <Button HorizontalAlignment="Center" Margin="10" Width="200" Height="40" Name="LogicLow" Click="LogicLow_Click" ToolTip="Write  01h to Register 13h." Visibility="Collapsed">Logic Low</Button>
+            <Button HorizontalAlignment="Center" Margin="10" Width="200" Height="40" Name="LogicHigh" Click="LogicHigh_Click" ToolTip="Write  0Fh to Register 13h." Visibility="Collapsed">Logic High</Button>
+            <Button HorizontalAlignment="Center" Margin="10" Width="300" Height="40" Name="Decrease" Click="Decrease_Click" ToolTip="Write  decrease command sequences" Visibility="Collapsed">Decrease Command Sequences</Button>
+            <Button HorizontalAlignment="Center" Margin="10" Width="300" Height="40" Name="Increase" Click="Increase_Click" ToolTip="Write  increase command sequences" Visibility="Collapsed">Increase Command Sequences</Button>
+            <TextBox HorizontalAlignment="Center" Margin="10" Width="100" Height="40" Name="TimerOffset" ToolTip="Timer offset" Text="{Binding ElementName=sld, Path=Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Visibility="Collapsed"></TextBox>
+            <Button HorizontalAlignment="Center" Margin="10" Width="200" Height="40" Name="CRC" Click="CRC_Click" ToolTip="">CRC check</Button>
+            <Slider Name="sld" Minimum="-20" Maximum="20" TickFrequency="1" IsSnapToTickEnabled="True" Visibility="Collapsed"></Slider>
+        </StackPanel>
+        <controls:WarningControl x:Name="WarningPopControl"/>
+    </Grid>
+</UserControl>

@@ -1,0 +1,165 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d3="http://research.microsoft.com/DynamicDataDisplay/1.0"
+    xmlns:src="clr-namespace:Cobra.ProductionPanel"
+	xmlns:controls="clr-namespace:Cobra.ControlLibrary;assembly=Cobra.ControlLibrary"
+	mc:Ignorable="d"
+	x:Class="Cobra.ProductionPanel.MainControl"
+	x:Name="UserControl" d:DesignHeight="410" d:DesignWidth="525" FontSize="12" >
+    <UserControl.Resources>
+        <src:WidthConverter x:Key="wc"></src:WidthConverter>
+    </UserControl.Resources>
+    <Grid>
+        <TabControl>
+            <TabItem Header="Operation">
+                <Grid>
+                    <Grid Margin="5" Panel.ZIndex="0">
+                        <Border BorderBrush="Black" BorderThickness="1" VerticalAlignment="Stretch">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="55*"></ColumnDefinition>
+                                    <ColumnDefinition Width="45*"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="50*"></RowDefinition>
+                                        <RowDefinition Height="50*"></RowDefinition>
+                                    </Grid.RowDefinitions>
+                                    <GroupBox Grid.Row="0" Header="Operation">
+                                        <Grid Name="OperationGrid">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="30*"></RowDefinition>
+                                                <RowDefinition Height="50*"></RowDefinition>
+                                                <RowDefinition Height="20*"></RowDefinition>
+                                            </Grid.RowDefinitions>
+                                            <DockPanel Grid.Row="0" >
+                                                <Button Name="LoadButton" Focusable="False" Height="35" Width="80" Margin="5" Click="Load_Click">Load</Button>
+                                                <Label BorderBrush="LightGray" BorderThickness="1" Height="35" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="5" Name="FilePath" FontSize="10">Configuration File Path</Label>
+                                            </DockPanel>
+                                            <Button Grid.Row="1" Name="OperationButton" Margin="5,15" Height="auto" Click="OperationButton_Click" IsEnabled="False" IsDefault="True">
+                                                <Button.Content>
+                                                    <DockPanel>
+                                                        <TextBlock Name="OperationButtonName" FontSize="18" Margin="5">Operation Button</TextBlock>
+                                                        <TextBlock FontSize="16" Margin="5" VerticalAlignment="Center">(Enter Key)</TextBlock>
+                                                    </DockPanel>
+                                                </Button.Content>
+                                            </Button>
+                                            <DockPanel Grid.Row="2">
+                                                <Button Name="ReadBackCheckButton" Height="20" Width="120" Margin="5" IsEnabled="False" Click="ReadBackCheckButton_Click" Visibility="Collapsed">Read Back Check</Button>
+                                                <CheckBox HorizontalAlignment="Right" VerticalAlignment="Center" Name="WarningCheckBox" IsChecked="True">Display all prompts</CheckBox>
+                                            </DockPanel>
+                                        </Grid>
+                                    </GroupBox>
+                                    <GroupBox Grid.Row="1" Header="Status">
+                                        <Grid Background="DarkGray" Margin="5">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition></ColumnDefinition>
+                                                <ColumnDefinition></ColumnDefinition>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0" MinHeight="100" MinWidth="100"
+                                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10">
+                                                <Grid>
+                                                    <TextBlock Foreground="White" Name="StatusInitText" HorizontalAlignment="Center" VerticalAlignment="Center">Process Display</TextBlock>
+                                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                                        <ItemsControl HorizontalContentAlignment="Left" VerticalContentAlignment="Stretch" VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                                                       Name="ProcessUI" ItemsSource="{Binding}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Label Background="{Binding Path=Color, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" 
+                                                        Margin="2" Focusable="false">
+                                                                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Text="{Binding Path=Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap"
+                                                           ></TextBlock>
+                                                                    </Label>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </ScrollViewer>
+                                                </Grid>
+                                            </Border>
+                                            <Grid Grid.Column="1">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="60*"></RowDefinition>
+                                                    <RowDefinition Height="40*"></RowDefinition>
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Grid.Row="0" Foreground="GreenYellow" Background="DarkGray" FontWeight="UltraBold"  Margin="5" Name="MainStatus" TextAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Stretch" FontSize="36" TextWrapping="Wrap"></TextBlock>
+                                                <TextBlock Grid.Row="1" Margin="5" Name="SubStatus" TextAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Stretch" FontSize="14" TextWrapping="Wrap"></TextBlock>
+                                            </Grid>
+                                        </Grid>
+                                    </GroupBox>
+                                </Grid>
+                                <GroupBox Grid.Column="1" Header="Test Information">
+                                    <Border MinHeight="100" MinWidth="100" Margin="5,10,5,5" Background="DarkGray"
+                                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                        <Grid>
+                                            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="5">
+                                                <ItemsControl Name="TestUI" ItemsSource="{Binding}" HorizontalAlignment="Stretch">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel></WrapPanel>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Label Foreground="White" Height="30" Content="{Binding Path=Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                                        Margin="5" Background="{Binding Path=Color, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                        Focusable="false" Width="{Binding ElementName=TestUI, Path=ActualWidth, Mode=OneWay, Converter={StaticResource wc}}"></Label>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </ScrollViewer>
+                                            <TextBlock Margin="10" Foreground="White" Name="TestInitText" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap">No Test Recipe was designated in the Package File</TextBlock>
+                                        </Grid>
+                                    </Border>
+                                </GroupBox>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Records">
+                <DockPanel LastChildFill="True">
+                    <GroupBox Header="Summary" DockPanel.Dock="Top">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition></ColumnDefinition>
+                                <ColumnDefinition></ColumnDefinition>
+                                <ColumnDefinition></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                <Label HorizontalAlignment="Center">Total</Label>
+                                <Label HorizontalAlignment="Center" FontSize="14" FontWeight="Heavy" x:Name="TotalCountLabel">0</Label>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                <Label HorizontalAlignment="Center">Passed</Label>
+                                <Label HorizontalAlignment="Center" FontSize="14" FontWeight="Heavy" Foreground="Green" x:Name="PassedCountLabel">0</Label>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                <Label HorizontalAlignment="Center">Failed</Label>
+                                <Label HorizontalAlignment="Center" FontSize="14" FontWeight="Heavy" Foreground="Red" x:Name="FailedCountLabel">0</Label>
+                            </StackPanel>
+                        </Grid>
+                    </GroupBox>
+                    <GroupBox Header="Record List">
+                        <DataGrid Name="RecordsDataGrid" ItemsSource="{Binding}" Margin="5"
+                      AutoGenerateColumns="True" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False"
+                      CanUserSortColumns="False" IsReadOnly="True" AreRowDetailsFrozen="False">
+                            <DataGrid.ColumnHeaderStyle>
+                                <Style TargetType="{x:Type DataGridColumnHeader}">
+                                    <Setter Property="FontSize" Value="12"/>
+                                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                </Style>
+                            </DataGrid.ColumnHeaderStyle>
+                        </DataGrid>
+                    </GroupBox>
+                </DockPanel>
+            </TabItem>
+            <TabItem Header="MP Pack Maker" Name="CFGContainer">
+                <src:CFGMainControl x:Name="CFGTab"></src:CFGMainControl>
+            </TabItem>
+        </TabControl>
+        <controls:WarningControl x:Name="WarningPopControl" />
+    </Grid>
+</UserControl>

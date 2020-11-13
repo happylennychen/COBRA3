@@ -1,0 +1,406 @@
+       O2MICRO SOFTWARE LICENSE AGREEMENT
+    The software you are about to access is provided pursuant to this Software
+    License Agreement (Agreement). By downloading, installing, or otherwise
+    using the software, you are entering into and agree to and consent to be
+    bound by all of the terms of this Agreement between you and O2Micro
+    International Limited on behalf of itself and its affiliates and
+    subsidiaries (OMI), effective as of the date you use (the Effective
+    Date). You represent and warrant that you are at least eighteen (18) years
+    of age if you are a resident of PRC, or the age of majority in the
+    jurisdiction of your residence. If you are accepting these terms on behalf
+    of another person or a company or other legal entity, you represent and
+    warrant that you have full authority to bind that person, company, or legal
+    entity to these terms. You may hereinafter be referenced on occasion in
+    thisAgreement as the (Customer.) If you do not agree to the terms of this
+    Agreement, OMI does not grant you a license to the software and the
+    software will not be provided to you
+    
+
+
+    Recitals
+    A. OMI, among other things, develops, manufactures, and sells semiconductor
+       products and offers software consisting of certain software development
+       tools, operating systems, driver software, firmware, and example
+       application code. The provided software contains software or features
+       representative or illustrative of those that can be used with OMI ICs
+       and can be used for development of software application programs to
+       operate with OMI ICs or products containing OMI ICs.
+    B. Customer desires to license the software from OMI, under the terms and
+       conditions of this Agreement.
+    C. This Agreement permits Customer to license the software from OMI or its
+       distributors, representatives, or other partners who are duly
+       authorized by OMI to offer such licenses and sets forth the basic
+       terms and conditions under which the software will be delivered.
+    
+    1. Definitions. As used herein, the following terms shall have the meaning
+       given below:
+    1.1 Affiliate means any entity under the Control of a party where
+        (Control) means ownership of or the right to control greater than 50% of 
+		the voting securities of such entity.
+    1.2 Customer Program means a software program designed to operate with OMI
+        ICs and developed by Customer using the Software.
+    1.3 Documentation means all manuals, documentation, and other written
+        materials that OMI includes or otherwise provides as related to the
+        Software or OMI ICs, whether in printed or electronic form, including
+        without limitation, customer reference and installation manuals, user’s
+        guides, and programmers guide.
+    1.4 Executable Code means software in a machine-readable and executable
+        form which is not generally readable by humans without reverse
+        assembly, reverse compiling, or reverse engineering, but which can be
+        combined in an unmodified form with Source Code and which can be
+        compiled to make a Customer Program.
+    1.5 OMI ICs means integrated circuits that are separately purchased or
+        obtained by Customer directly from OMI or indirectly from OMI’s
+        distributors, representatives, or other partners who are duly
+        authorized by OMI to sell such integrated circuits.
+    1.6 OMI-Enabled Products means any product made by or for Customer that
+        incorporates a OMI IC.
+    1.7 OMI Proprietary Software means the software provided by OMI to Customer
+        under and upon Customer’s acceptance of this Agreement, all permitted
+        copies, modifications, or derivative works thereof made by Customer,
+        and all basic or related materials pertinent thereto, including without
+        limitation any documentation provided, either in hardcopy form or
+        electronic form. OMI Proprietary Software excludes Open Source Software
+        and Third Party Technology.
+    1.8 Object Code means software in machine-readable and executable form
+        resulting from compilation or assembly of Source Code and that is not
+        generally readable by humans without reverse assembly, reverse
+        compiling, or reverse engineering.
+    1.9 Open Source Software means any open source, community, or other free
+        software code or libraries of any type, including, without limitation,
+        any code that (a) is made generally available for free or that meets
+        the definition of (open source) or (free) as defined by the Open Source
+        Initiative or Free Software Foundation or (b) is licensed under any
+        license agreement approved by either such entity (such as, for example
+        purposes only, the BSD, MIT, GNU GPL, GNU LGPL, Mozilla, or Apache
+        license).
+    1.10 Site(s) means the Customer’s premises.
+    1.11 Software means the OMI Proprietary Software, any Third Party
+        Technology, and any Open Source Software delivered to Customer under
+        the terms of this Agreement. Unless otherwise noted, the Software and
+        Documentation are referred to collectively herein as (Software).
+    1.12 Source Code means software in human-readable, high-level language
+        form, which can be compiled or assembled into Object Code, machine
+        code, or another executable form of code.
+    1.13 Third Party Technology means any software, feature or functionality
+        that requires a license grant and/or payments by Customer to third
+        parties for commercial activities related to Customer Programs and/or
+        OMI-Enabled Products.
+
+    2. License 
+    OMI Proprietary Software License Grant
+    2.1 Subject to the terms of this Agreement, OMI hereby grants to Customer 
+        during the Term a personal, non-exclusive, non-transferable,
+        non-assignable, non-sublicensable (except as expressly granted herein)
+        license to do the following:
+        a. use Object Code versions of OMI Proprietary Software, internally and
+            only at the Site(s) for the sole purpose of creating Customer
+            Programs;
+        b. load, install, run, execute, test, and debug Object Code versions of
+            OMI Proprietary Software, as incorporated within a Customer
+            Program, in a OMI-Enabled Product internally and only at the
+            Site(s) and only for the purpose of enabling OMI ICs in the
+            OMI-Enabled Product;
+        c. grant a personal, non-exclusive, non-transferable, non-assignable,
+            non-sublicensable sublicense to third parties to install, run,
+            load, and execute Object Code versions of Customer Programs on
+            OMI-Enabled Products, and to distribute Customer Programs
+            embedded in OMI-Enabled Products to such third parties solely for
+            the purpose of and only to the extent needed to carry out such
+            sublicense. The sublicense will subject the third party to the
+            restrictions and obligations of Section 2.3 (License Restrictions
+            on OMI Proprietary Software) as if the third party were in the
+            place of Customer. Customer will be fully responsible for the
+            compliance with and liable for the breach of the sublicense by
+            the third party; and
+        d. use unmodified versions of Executable Code of OMI Proprietary
+            Software, to incorporate such Executable Code within Customer
+            Programs, and to create an Object Code version of Customer
+            Programs.
+            In all cases, the rights granted herein shall be exercised in
+            accordance with (i) the Documentation, and (ii) this Agreement.
+
+    2.2 Source Code License. 
+        To the extent that the OMI Proprietary Software includes any Source
+        Code, subject to the terms and conditions of this Agreement, OMI grants
+        to Customer a non-sublicensable, non-exclusive, non-transferable,
+        non-assignable license during the Term to use, modify, and compile the
+        Source Code internally and only at the Site(s) solely to the extent
+        necessary to support the development of a Customer Program as permitted
+        under Section 2.1 (License Grant to OMI Proprietary Software) above.
+    
+    License Restrictions on OMI Proprietary Software.
+    2.3 Except for the rights expressly granted in this Section 2, OMI grants
+        no rights in the OMI Proprietary Software to Customer, whether by
+        implication, estoppel, or otherwise. Subject to the rights expressly
+        granted in this Section 2, Customer shall not encourage, allow, or
+        facilitate any third party to:
+        a. modify, translate, adapt, reverse engineer, decompile, disassemble,
+            or otherwise translate or create derivative works based on the OMI
+            Proprietary Software, except solely to the extent (i) expressly
+            permitted in Section 2.1 (License Grant to OMI Proprietary
+            Software) above or (ii) by applicable law and then only with
+            advance written notice of such activity to OMI;
+        b. review, analyze, or evaluate OMI Proprietary Software for the
+            purpose of determining the infringement, validity, or
+            enforceability of any intellectual property, or compare OMI
+            Proprietary Software to intellectual property in any way;
+        c. examine, review, evaluate, or otherwise use the OMI Proprietary
+            Software for the purpose of developing or enabling a product or
+            technology that competes with OMI;
+        d. rent, lease, or sublicense the OMI Proprietary Software to a third
+            party, except as expressly permitted in Section 2.1;
+        e. remove any product identification, proprietary, copyright or other
+            notices contained in the OMI Proprietary Software;
+        f. distribute or sell the OMI Proprietary Software in any manner other
+            than as permitted under Section 2.1 above;
+
+    Authorized Users. 
+    2.4 Customer’s consultants and contractors, who are not direct competitors
+        of OMI and who are under written agreements to provide services to
+        Customer ((Authorized Users)), may use the OMI Proprietary Software in
+        accordance with the licenses granted to Customer under this Agreement,
+        provided that:
+        a. Customer shall remain responsible for the Authorized User’s
+            compliance with such confidentiality terms and the applicable terms
+            of this Agreement, and
+        b. each Authorized User’s use of the OMI Proprietary Software is only
+            for Customer’s benefit in accordance with this Agreement.
+
+    No Right to Manufacture. 
+    2.5 Customer acknowledges and agrees that the license to the OMI
+        Proprietary Software granted in Section 2.1 does not include any
+        license to any of OMI’s other technology or intellectual property and
+        that, consequently, it shall not have the right under this Agreement
+        to develop, manufacture, or have manufactured any integrated circuits
+        that incorporate any OMI technology, and that Customer is required to
+        separately purchase or obtain OMI ICs from OMI or a OMI certified
+        distributor.
+        
+    Form of Delivery
+    2.6 OMI will provide the Software licensed hereunder to Customer by
+        electronic medium or other form as mutually agreed upon
+
+    Open Source Licenses.
+    2.7 Customer understands and acknowledges that Open Source Software may be
+        delivered pursuant to this Agreement and subject to an Open Source
+        Software license, that each Open Source Software license is a separate
+        agreement between Customer and the copyright holder of such Open Source
+        Software and that OMI is not a party to any such Open Source Software
+        license. The terms and conditions governing Customer’s use of the Open
+        Source Software are set forth in the license agreement indicated in the
+        Open Source Software and not in this Agreement. Customer’s use of all
+        Open Source Software must comply with the terms of each applicable Open
+        Source Software license. This Agreement does not limit Customer’s
+        rights under, or grant Customer rights that supersede, the license
+        terms of any particular Open Source Software license.
+        
+    3. Representations and Warranties of Customer
+    3.1 General.
+        a. None of the Customer Programs, OMI-Enabled Products, or any portion
+            thereof, excluding any OMI Proprietary Software contained therein,
+            constitutes or may give rise to a claim of infringement of any
+            patent, copyright, trade secret or other intellectual property
+            right of a third party anywhere in the world; and
+        b. No portion of any Customer Program (including any libraries), or any
+            OMI-Enabled Product, contains any other software or code which
+            could compromise or interfere in any way with OMI’s rights,
+            including IPR, in or to the OMI Proprietary Software or other OMI
+            materials that may come into contact with such Customer Programs
+            or OMI-Enabled Products, or require OMI or Customer to disclose
+            any Source Code to any such OMI Proprietary Software integrated
+            in or distributed with any Customer Program or OMI-Enabled Product.
+    3.2 OMI Proprietary Software. Customer on behalf of itself and its
+        Affiliates hereby covenants not to bring suit or otherwise assert any
+        intellectual property right against OMI or any user, distributor, or
+        manufacturer of the OMI Proprietary Software for the manufacture, use,
+        import, offer for sale, or sale of any products or services based on
+        the OMI Proprietary Software.
+        
+    4. Ownership
+        Notwithstanding anything to the contrary contained herein and except
+        for the limited license rights expressly provided herein, OMI and its
+        suppliers have and will retain all rights, title, and interest in and
+        to the OMI Proprietary Software (including, without limitation, all
+        patent, copyright, trademark, trade secret, and other intellectual
+        property rights) and all copies, modifications, and derivative works
+        thereof. Customer acknowledges that it is obtaining only a limited
+        license right to the OMI Proprietary Software and that irrespective
+        of any use of the words (purchase), (sale,) or like terms hereunder,
+        no ownership rights are being conveyed to Customer under this
+        Agreement or otherwise. For the avoidance of doubt, as between OMI
+        and Customer, Customer shall have and retain all rights, title, and
+        interest in and to any Customer Programs except to the extent that
+        any Software is incorporated therein.
+        
+    5. Term and Termination.
+    5.1 Term. This Agreement is effective as of the Effective Date, will
+        continue for ____3___ years (the (License Term)), and expire when the
+        License Term has elapsed, unless earlier terminated in accordance with
+        this Section (the (Term)).
+        
+    5.2 Termination. This Agreement (and all licenses and sublicenses granted
+        hereunder) shall terminate on the earlier of:
+        a. immediately upon Customer’s material breach of any term of this
+            Agreement
+        b. OMI’s notice of termination, which may be for any reason, to
+           Customer
+        c. the date upon which Customer discontinues the development, sale or
+            distribution of Customer Programs or OMI-Enabled Products;
+        d. the date that Customer becomes insolvent, makes a general assignment
+            for the benefit of creditors, suffers or permits the appointment of
+            a receiver, becomes subject to any proceeding under any bankruptcy
+            or insolvency law whether domestic or foreign, voluntary or
+            involuntary; or
+        e. Expiration of the Term pursuant to Section 5.1 (Term).
+        Upon expiration or termination of this Agreement or upon written
+        request from OMI, Customer shall certify to OMI in writing that
+        Customer has returned (or, with the consent of OMI, destroyed) all
+        copies of the OMI Proprietary Software and any other material
+        provided by OMI (excluding Open Source Software).
+    
+    6. Warranty Disclaimer.
+        TO THE EXTENT PERMITTED BY LAW, THE SOFTWARE AND ALL SERVICES ARE
+        PROVIDED (AS IS) AND (WITH ALL FAULTS.) NEITHER OMI NOR ITS SUPPLIERS
+        MAKES ANY WARRANTIES, EXPRESS OR IMPLIED, STATUTORY OR OTHERWISE,
+        INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, TITLE,
+        FITNESS FOR A PARTICULAR PURPOSE, OR NONINFRINGEMENT. CUSTOMER MAY HAVE
+        OTHER STATUTORY RIGHTS. HOWEVER, TO THE FULL EXTENT PERMITTED BY LAW,
+        THE DURATION OF STATUTORILY REQUIRED WARRANTIES, IF ANY, SHALL BE
+        LIMITED TO THE LIMITED WARRANTY PERIOD.
+        
+    7. Support and Maintenance 
+        Ongoing maintenance and customer support for Customer’s software that
+        is based upon or includes portions of the OMI Proprietary Software is
+        the responsibility of the Customer. OMI may provide to Customer, in
+        OMI’s sole discretion, updates to the Software from time to time. Upon
+        delivery, such updates to the Software are subject to the terms and
+        conditions herein.
+        
+
+    9. Limitation of Remedies and Damages.
+    9.1 NEITHER PARTY IS LIABLE FOR ANY LOSS OF USE, LOST DATA, FAILURE OF
+        SECURITY MECHANISMS, INTERRUPTION OF BUSINESS, OR ANY INDIRECT,
+        SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES OF ANY KIND (INCLUDING
+        LOST PROFITS), REGARDLESS OF THE FORM OF ACTION, WHETHER IN CONTRACT,
+        TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, OR OTHERWISE, EVEN IF
+        INFORMED OF THE POSSIBILITY OF SUCH DAMAGES IN ADVANCE.
+    9.2 NOTWITHSTANDING ANY OTHER PROVISION OF THIS AGREEMENT, OMI’S AND ITS
+        LICENSORS’ AND SUPPLIERS’ ENTIRE CUMULATIVE LIABILITY UNDER THIS
+        AGREEMENT TO CUSTOMER SHALL NOT EXCEED TEN U.S. DOLLARS ($10.00).
+    9.3 THIS SECTION 9 DOES NOT APPLY TO CUSTOMER WITH RESPECT TO ANY CLAIM
+        ARISING UNDER SECTION 2.1 (OMI PROPRIETARY SOFTWARE LICENSE GRANT),
+        SECTION 3 (REPRESENTATIONS AND WARRANTIES OF CUSTOMER), SECTION 10
+        (INDEMNIFICATION BY CUSTOMER) OR SECTION 11 (CONFIDENTIAL INFORMATION).
+    9.4 The parties agree that the limitations specified in this Section 9 will
+        survive and apply even if any limited remedy specified in this
+        Agreement is found to have failed of its essential purpose.
+        
+    10. Indemnification by Customer
+        Customer shall indemnify, defend, and hold OMI and its Affiliates
+        harmless from any and all claims, liabilities, damages, or expenses
+        (including reasonable attorney’s fees and court, arbitration, and
+        mediation costs) in connection with, relating to, or which result from:
+        a. any allegation of infringement of a third party’s intellectual
+            property rights with respect to any Customer Program or OMI-Enabled
+            Product, but excluding any such claim in either case to the extent
+            based on the Software on a stand-alone basis,
+        b. the sale, marketing, distribution, or manufacture of any OMI-Enabled
+            Product, but excluding any such claim to the extent based on the
+            Software on a stand-alone basis, or
+        c. Customer’s breach of any provisions of Section 6 (Representations
+           and Warranties of Customer).
+
+    11. Confidential Information
+        Each party agrees that all code, inventions, know-how, business,
+        technical and financial information it ((Receiving Party)) obtains from
+        the disclosing party ((Disclosing Party)) constitute the confidential
+        property of the Disclosing Party ((Confidential Information)), provided
+        that it is identified as confidential at the time of disclosure or
+        should be reasonably known by the Receiving Party to be Confidential
+        Information due to the nature of the information disclosed and the
+        circumstances surrounding the disclosure. Any software, documentation,
+        or technical information provided by OMI (or its agents)(excluding Open
+        Source Software), performance information relating to the OMI
+        Proprietary Software, and the terms of this Agreement are deemed
+        Confidential Information of OMI without any marking or further
+        designation. Except as expressly authorized herein, the Receiving Party
+        will hold in confidence and not use or disclose any Confidential
+        Information. The Receiving Party’s nondisclosure obligation does not
+        apply to information that the Receiving Party can document:
+        a. was rightfully in its possession or known to it without the breach
+           of any confidentiality obligations prior to receipt of the
+           Confidential Information;
+        b. is or has become public knowledge through no fault of the Receiving
+           Party;
+        c. is rightfully obtained by the Receiving Party from a third party
+           without breach of any confidentiality obligation:
+        d. is independently developed by employees of the Receiving Party who
+           had no access to such information; or
+        e. is required to be disclosed pursuant to a regulation, law, or court
+           order (but only to the minimum extent required to comply with such
+           regulation or order and with advance written notice to the
+           Disclosing Party).
+    12. General 
+    12.1 All communications between the parties including, but not limited to,
+        notices, error or bug reports, the exercise of options, and support
+        requests shall be in the English language or the language agreed upon. 
+    12.2 Neither party shall assign or otherwise transfer this Agreement or any
+        of its rights and obligations hereunder whether in whole or in part
+        without the prior written consent of the other. An assignment shall be
+        deemed to include, without limitation; (i) any transaction or series of
+        transactions whereby a third party acquires, directly or indirectly,
+        the power to control the management and policies of the party, whether
+        through the acquisition of voting securities, by contract or otherwise;
+        or (ii) the sale of more than fifty percent (50%) of the party’s assets
+        whether in a single transaction or series of transactions.
+    12.3 Neither party shall be liable for any failure or delay in its
+        performance under this Agreement due to causes, including, but not
+        limited to, acts of civil or military authority, fires, epidemics,
+        floods, earthquakes, riots, wars, sabotage, third party industrial
+        disputes and governments actions, which are beyond its reasonable
+        control; provided that the delayed party: (i) gives the other party
+        written notice of such cause promptly, and in any event within fourteen
+        (14) days of discovery thereof; and (ii) uses its reasonable efforts to
+        correct such failure or delay in its performance. The delayed party’s
+        time for performance or cure under this Clause 12.4 shall be extended
+        for a period equal to the duration of the cause.
+    12.4 OMI and LICENSEE are independent parties. Neither company nor their
+        employee, consultants, contractors or agents are agents, employees or
+        joint ventures of the other party, nor do they have the authority to
+        bind the other party by contract or otherwise to any obligation.
+        Neither party will represent to the contrary, either expressly,
+        implicitly, by appearance or otherwise.
+    12.5 Failure or delay by either party to enforce any provision of this
+        Agreement shall not be deemed a waiver of future enforcement of that or
+        any other provision.
+    12.6 The provisions contained in each clause and sub-clause of this
+        Agreement shall be enforceable independently of each of the others and
+        if a provision of this Agreement is, or becomes, illegal, invalid or
+        deemed unenforceable by any court or administrative body of competent
+        jurisdiction it shall not affect the legality, validity or
+        enforceability of any other provisions of this Agreement.
+    12.7 This Agreement, including all Annexes, constitutes the entire
+        agreement between the parties with respect to the subject matter
+        hereof, and supersedes and replaces all prior or contemporaneous
+        understandings or agreements, written or oral, regarding the subject
+        matter. No amendment to or modification of this Agreement shall be
+        binding unless in writing and signed by a duly Authorized
+        representative of both parties. Nothing contained in any purchase
+        order shall modify or add any terms and conditions to this Agreement.
+    12.8 The validity, construction and performance of this Agreement shall be
+        governed by Law of People’s Republic of China. The parties agree to
+        submit any claim or actions arising from and/or related to this
+        Agreement to the exclusive jurisdiction and venue of China
+        International Economic and Trade Arbitration Commission and agree to
+        waive any right to assert the defense of forum non conveniens or to
+        object to such venue in any such proceeding.
+    12.9 Injunctive Relief. Customer understands and agrees that,
+        notwithstanding any other provision of this Agreement, breach of the
+        provisions of this Agreement by Customer will cause OMI irreparable
+        damage for which recovery of money damages would be inadequate, and
+        that OMI shall therefore be entitled to obtain timely equitable relief,
+        including but not limited to injunctive relief, to protect OMI’s rights
+        under this Agreement in addition to any and all remedies available at
+        law.
+        

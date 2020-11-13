@@ -1,0 +1,55 @@
+﻿<Window x:Class="Cobra.Shell.ExtensionManager"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Extension Manager" Height="450" Width="750"
+        xmlns:src="clr-namespace:Cobra.Shell"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False" ResizeMode="NoResize" Icon="{StaticResource COBRA_ICO}">
+    <Window.Resources>
+        <src:EnableConverter x:Key="ec"></src:EnableConverter>
+        <src:LegalConverter x:Key="lc"></src:LegalConverter>
+    </Window.Resources>
+    <Grid>
+        <DockPanel>
+            <Grid DockPanel.Dock="Right" Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+                <Button Name="SelectBtn" Click="SelectBtn_Click"  Focusable="False" Width="70" Height="30" Grid.Row="0"
+                         IsEnabled="{Binding ElementName=ExManager, Path=SelectedItems.Count, Mode=OneWay, Converter={StaticResource ec}, ConverterParameter=0}">
+                    Select
+                </Button>
+                <Button Name="AddBtn" Click="AddBtn_Click"  Focusable="False" Width="70" Height="30" Grid.Row="2">
+                    <Button.IsEnabled>true
+                    </Button.IsEnabled>
+                    Add
+                </Button>
+                <Button Name="DeleteBtn" Click="DeleteBtn_Click"  Focusable="False" Width="70" Height="30" Grid.Row="3"
+                        IsEnabled="{Binding ElementName=ExManager, Path=SelectedItems.Count, Mode=OneWay, Converter={StaticResource ec}, ConverterParameter=1}">
+                    Delete
+                </Button>
+                <ToggleButton Name="DebugOnOff" Click="DebugOnOff_Click" Focusable="False" Width="70" Height="30" Grid.Row="6">Debug Off</ToggleButton>
+            </Grid>
+            <DataGrid Name="ExManager" ItemsSource="{Binding}" Margin="5" RowHeight="23"
+                                              AutoGeneratingColumn="ExManager_AutoGeneratingColumn" ColumnWidth="Auto"
+                                              CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False"
+                                              CanUserSortColumns="True" IsReadOnly="True" AreRowDetailsFrozen="False">
+                <DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="FontSize" Value="14"></Setter>
+                    </Style>
+                </DataGrid.ColumnHeaderStyle>
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="Foreground" Value="{Binding Path=IsHighLighted, Mode=OneWay, Converter={StaticResource lc}, UpdateSourceTrigger=PropertyChanged}"></Setter>
+                    </Style>
+                </DataGrid.CellStyle>
+            </DataGrid>
+        </DockPanel>
+    </Grid>
+</Window>
