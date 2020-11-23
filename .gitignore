@@ -50,16 +50,16 @@ output/COBRA/*.exe
 
 # ignore files in the output/Upgrade directory
 output/Upgrade/Logs/
-output/Upgrade/O2Micro.Cobra.Common.dll
-output/Upgrade/O2Micro.Cobra.Common.pdb
-output/Upgrade/O2Micro.Cobra.ControlLibrary.dll
-output/Upgrade/O2Micro.Cobra.ControlLibrary.pdb
-output/Upgrade/O2Micro.Cobra.Center.dll
-output/Upgrade/O2Micro.Cobra.Center.pdb
-output/Upgrade/O2Micro.Cobra.Resource.dll
-output/Upgrade/O2Micro.Cobra.Resource.pdb
-output/Upgrade/O2Micro.Cobra.Update.exe
-output/Upgrade/O2Micro.Cobra.Update.pdb
+output/Upgrade/Cobra.Common.dll
+output/Upgrade/Cobra.Common.pdb
+output/Upgrade/Cobra.ControlLibrary.dll
+output/Upgrade/Cobra.ControlLibrary.pdb
+output/Upgrade/Cobra.Center.dll
+output/Upgrade/Cobra.Center.pdb
+output/Upgrade/Cobra.Resource.dll
+output/Upgrade/Cobra.Resource.pdb
+output/Upgrade/Cobra.Update.exe
+output/Upgrade/Cobra.Update.pdb
 output/Upgrade/System.Data.SQLite.dll
 output/Upgrade/System.Data.SQLite.pdb
 

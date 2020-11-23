@@ -2,7 +2,7 @@
 <Root>
   <Part Name="PreProject">
     <PreExtensionBusType BusType="I2C" />
-    <PreExtension Name="SD77060_B0_X_20201029" />
+    <PreExtension Name="TableMaker20201123" />
   </Part>
   <Part Name="Device Connection Settings">
     <DeviceList>

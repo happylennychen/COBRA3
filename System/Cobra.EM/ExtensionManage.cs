@@ -126,12 +126,13 @@ namespace Cobra.EM
             //string projectname = "OZ2610";
             //string projectname = "Woodpecker10";
             //string projectname = "Pikachu5";
-            string extension = " 3717";
-            string projectname = "KALL17";
+            //string extension = " 3717";
+            //string projectname = "KALL17";
+            string projectname = "Wizards";
 #endif
 #if x
             string xmlxpath = FolderMap.m_main_folder.Remove(FolderMap.m_main_folder.LastIndexOf("output\\"));
-            xmlxpath = Path.Combine(xmlxpath, "System\\DEM\\Cobra." + projectname + "\\xml x\\");
+            xmlxpath = Path.Combine(xmlxpath, "System\\DEM\\O2Micro.Cobra." + projectname + "\\xml x\\");
 #if extension
             xmlxpath = xmlxpath.Substring(0, xmlxpath.Length-1) + extension + "\\";
 #endif
