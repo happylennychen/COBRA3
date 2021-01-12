@@ -1,6 +1,6 @@
-//#define debug
-//#define x
-//#define extension
+#define debug
+#define x
+#define extension
 //#define y
 //#define m
 using System;
@@ -128,7 +128,10 @@ namespace Cobra.EM
             //string projectname = "Pikachu5";
             //string extension = " 3717";
             //string projectname = "KALL17";
-            string projectname = "Wizards";
+            //string projectname = "Wizards";
+            //string projectname = "SP8G2";
+            string projectname = "KALL";
+            string extension = " 7703";
 #endif
 #if x
             string xmlxpath = FolderMap.m_main_folder.Remove(FolderMap.m_main_folder.LastIndexOf("output\\"));

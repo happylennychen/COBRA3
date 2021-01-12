@@ -11,6 +11,7 @@
 *.pack
 .vs
 !app.config
+.vs/
 
 # ignore files in the System directory
 System/*.suo

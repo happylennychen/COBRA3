@@ -13,7 +13,6 @@ using Cobra.Common;
 using System.Windows.Threading;
 using System.Threading;
 using System.Security.Cryptography;
-using System.Threading;
 using System.Runtime.InteropServices;
 
 namespace Cobra.ProductionPanel
@@ -128,6 +127,7 @@ namespace Cobra.ProductionPanel
         public int TotalCount { get; set; } = 0;
         public int PassedCount { get; set; } = 0;
         public int FailedCount { get; set; } = 0;
+        private string StrHexValue = string.Empty;
         #endregion
 
         #region 函数定义
@@ -407,6 +407,7 @@ namespace Cobra.ProductionPanel
                     ShowWarning("Load Failed!", ErrorMessage[ret]);
                     return;
                 }
+                StrHexValue = GetHexStringFromBin(msg.sm.efusebindata);
                 NewLog();
             }
             #endregion
@@ -462,6 +463,13 @@ namespace Cobra.ProductionPanel
                 col.Unique = false;
                 Records.Columns.Add(col);
             }
+            col = new DataColumn();
+            col.DataType = System.Type.GetType("System.String");
+            col.ColumnName = "Hex Value";
+            col.AutoIncrement = false;
+            col.ReadOnly = true;
+            col.Unique = false;
+            Records.Columns.Add(col);
             foreach (var ti in TestItems)
             {
                 col = new DataColumn();
@@ -476,6 +484,16 @@ namespace Cobra.ProductionPanel
             #endregion
 
             ShowMessage("Package file loaded.", "Please click " + OperationButtonName.Text + " button to proceed.");
+        }
+
+        private string GetHexStringFromBin(List<byte> efusebindata)
+        {
+            string output = string.Empty;
+            foreach (var bin in efusebindata)
+            {
+                output += $"0x{bin.ToString("X2")} ";
+            }
+            return output;
         }
 
         private ErrorCode LoadMPTFile(string fullpath, ref bool needTest)
@@ -1004,6 +1022,7 @@ namespace Cobra.ProductionPanel
                         processresult = pi.FailedDetail;
                     row[pi.Name] = processresult;
                 }
+                row["Hex Value"] = StrHexValue;          //将Hex放入这里
                 foreach (var ti in TestItems)
                 {
                     string testresult = string.Empty;
@@ -1032,6 +1051,7 @@ namespace Cobra.ProductionPanel
                     prstring += ";";
                     prLstring += prstring;
                 }
+                prLstring += $"Hex Value:{StrHexValue};";      //填入Hex值
                 string trLstring = string.Empty;
                 foreach (var ti in TestItems)
                 {
