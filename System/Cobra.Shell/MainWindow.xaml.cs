@@ -58,7 +58,7 @@ namespace Cobra.Shell
         private BackgroundWorker m_Upgrade_BackgroundWorker;// 申明后台对象
         public MainWindow()
         {
-            try
+            //try
             {
                 InitializeComponent();
                 #region startup Dialog
@@ -132,9 +132,9 @@ namespace Cobra.Shell
                     startup.Close();
                 }));
             }
-            catch (System.Exception ex)
+            //catch (System.Exception ex)
             {
-                CatchSystemException(ex.Message);
+                //CatchSystemException(ex.Message);
             }
         }
 

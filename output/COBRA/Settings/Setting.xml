@@ -2,7 +2,7 @@
 <Root>
   <Part Name="PreProject">
     <PreExtensionBusType BusType="I2C" />
-    <PreExtension Name="OZ7703_A0_X_20210111" />
+    <PreExtension Name="Azalea14_B1_Y_20210615" />
   </Part>
   <Part Name="Device Connection Settings">
     <DeviceList>
@@ -13,6 +13,6 @@
     </DeviceList>
   </Part>
   <Part Name="ConfigFilePath">
-    <OZ7703_A0_X_20210111>C:\Users\leon.chen\Documents\COBRA Documents\OZ7703_A0_X_20210111\KALL-20210111164757\KALL.cfg</OZ7703_A0_X_20210111>
+    <OZ7703_A0_X_20210111>C:\Users\leon.chen\Desktop\Woodpecker10-20210601153014\Woodpecker10.cfg</OZ7703_A0_X_20210111>
   </Part>
 </Root>

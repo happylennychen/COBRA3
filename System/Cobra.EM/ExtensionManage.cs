@@ -1,6 +1,6 @@
-#define debug
-#define x
-#define extension
+//#define debug
+//#define x
+//#define extension
 //#define y
 //#define m
 using System;
@@ -125,13 +125,15 @@ namespace Cobra.EM
             //string projectname = "KALL8";
             //string projectname = "OZ2610";
             //string projectname = "Woodpecker10";
+            //string projectname = "Woodpecker8";
             //string projectname = "Pikachu5";
             //string extension = " 3717";
             //string projectname = "KALL17";
             //string projectname = "Wizards";
             //string projectname = "SP8G2";
-            string projectname = "KALL";
-            string extension = " 7703";
+            //string projectname = "KALL";
+            //string extension = " 7703";
+            string projectname = "Azalea14";
 #endif
 #if x
             string xmlxpath = FolderMap.m_main_folder.Remove(FolderMap.m_main_folder.LastIndexOf("output\\"));
@@ -147,7 +149,7 @@ namespace Cobra.EM
 #endif
 #if y
             string xmlypath = FolderMap.m_main_folder.Remove(FolderMap.m_main_folder.LastIndexOf("output\\"));
-            xmlypath = Path.Combine(xmlypath, "System\\DEM\\Cobra." + projectname + "\\xml y\\");
+            xmlypath = Path.Combine(xmlypath, "System\\DEM\\O2Micro.Cobra." + projectname + "\\xml y\\");
             foreach (string path in Directory.GetFiles(xmlypath))
             {
                 string destPath = Path.Combine(FolderMap.m_extension_work_folder, Path.GetFileName(path));
@@ -156,7 +158,7 @@ namespace Cobra.EM
 #endif
 #if m
             string xmlmpath = FolderMap.m_main_folder.Remove(FolderMap.m_main_folder.LastIndexOf("output\\"));
-            xmlmpath = Path.Combine(xmlmpath, "System\\DEM\\Cobra." + projectname + "\\xml m\\");
+            xmlmpath = Path.Combine(xmlmpath, "System\\DEM\\O2Micro.Cobra." + projectname + "\\xml m\\");
             foreach (string path in Directory.GetFiles(xmlmpath))
             {
                 string destPath = Path.Combine(FolderMap.m_extension_work_folder, Path.GetFileName(path));
