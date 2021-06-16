@@ -78,7 +78,7 @@ namespace Cobra.DeviceConfigurationPanel
         public List<SFLModel> TotalList
         {
             get
-            {
+           {
                 var list = cfgViewModel.sfl_parameterlist.ToList();
                 list.AddRange(boardViewModel.sfl_parameterlist.ToList());
                 return list;
@@ -1632,61 +1632,63 @@ namespace Cobra.DeviceConfigurationPanel
                 parent.bBusy = false;
                 return;
             }
-
-            msg.percent = 50;
-            msg.task = TM.TM_BLOCK_MAP;
-            parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+            if (!NoMapping)
             {
-                gm.level = 2;
-                gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
-                CallWarningControl(gm);
-                parent.bBusy = false;
-                return;
-            }
+                msg.percent = 50;
+                msg.task = TM.TM_BLOCK_MAP;
+                parent.AccessDevice(ref m_Msg);
+                while (msg.bgworker.IsBusy)
+                    System.Windows.Forms.Application.DoEvents();
+                if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                {
+                    gm.level = 2;
+                    gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
+                    CallWarningControl(gm);
+                    parent.bBusy = false;
+                    return;
+                }
 
-            msg.percent = 60;
-            msg.task = TM.TM_SPEICAL_GETDEVICEINFOR;
-            parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                gm.level = 2;
-                gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
-                CallWarningControl(gm);
-                parent.bBusy = false;
-                return;
-            }
+                msg.percent = 60;
+                msg.task = TM.TM_SPEICAL_GETDEVICEINFOR;
+                parent.AccessDevice(ref m_Msg);
+                while (msg.bgworker.IsBusy)
+                    System.Windows.Forms.Application.DoEvents();
+                if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                {
+                    gm.level = 2;
+                    gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
+                    CallWarningControl(gm);
+                    parent.bBusy = false;
+                    return;
+                }
 
-            msg.percent = 70;
-            msg.task = TM.TM_READ;
-            parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                gm.level = 2;
-                gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
-                CallWarningControl(gm);
-                parent.bBusy = false;
-                return;
-            }
+                msg.percent = 70;
+                msg.task = TM.TM_READ;
+                parent.AccessDevice(ref m_Msg);
+                while (msg.bgworker.IsBusy)
+                    System.Windows.Forms.Application.DoEvents();
+                if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                {
+                    gm.level = 2;
+                    gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
+                    CallWarningControl(gm);
+                    parent.bBusy = false;
+                    return;
+                }
 
-            msg.percent = 80;
-            msg.task = TM.TM_CONVERT_HEXTOPHYSICAL;
-            parent.AccessDevice(ref m_Msg);
-            while (msg.bgworker.IsBusy)
-                System.Windows.Forms.Application.DoEvents();
-            if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                gm.level = 2;
-                gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
-                CallWarningControl(gm);
-                parent.bBusy = false;
-                return;
+                msg.percent = 80;
+                msg.task = TM.TM_CONVERT_HEXTOPHYSICAL;
+                parent.AccessDevice(ref m_Msg);
+                while (msg.bgworker.IsBusy)
+                    System.Windows.Forms.Application.DoEvents();
+                if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                {
+                    gm.level = 2;
+                    gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
+                    CallWarningControl(gm);
+                    parent.bBusy = false;
+                    return;
+                }
             }
 
             parent.bBusy = false;

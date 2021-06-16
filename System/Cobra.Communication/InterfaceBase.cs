@@ -8,7 +8,6 @@ using System.IO;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Threading;
-
 using Cobra.Common;
 using Cobra.Communication.I2C;
 using Cobra.Communication.SPI;
@@ -430,14 +429,6 @@ namespace Cobra.Communication
             u16Sensor = 10;
             */
             m_busopDev = null;
-            try
-            {
-                DBManager2.NewSession("COM", ref session_id, "", DateTime.Now.ToString());
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show(ex.Message + ex.InnerException.Message);
-            }
         }
 
         public void SetSVIDAccessI2C()
@@ -450,80 +441,6 @@ namespace Cobra.Communication
 			SVIDAccessMethod = SVIDMethodEnum.SVIDVR;
 		}
 
-        //(A151215)Francis, get ATM setting value from BusOptions
-        public bool GetATMSetting(ref BusOptions opBusIn)
-        {
-            bool bReturn = true;
-
-            m_busopDev = opBusIn;
-            // (D151228)Francis, ATMSetting value move to AutoMationTest class
-            AutomationElement ATMElment = null;
-
-            //get Error Generating setting
-            ATMElment = opBusIn.GetATMElementbyGuid(AutomationElement.GUIDATMTestRandomError);
-            if(ATMElment != null)
-            {
-                if(ATMElment.dbValue != 0)
-                {
-                    bErrGenerate = true;
-                }
-                bReturn &= true;
-            }
-
-            //get OutofMax setting
-            ATMElment = opBusIn.GetATMElementbyGuid(AutomationElement.GUIDATMTestOutofMaxError);
-            if (ATMElment != null)
-            {
-                if (ATMElment.dbValue != 0)
-                {
-                    bErrOutMax = true;
-                }
-                bReturn &= true;
-            }
-
-            //get OutofMin setting
-            ATMElment = opBusIn.GetATMElementbyGuid(AutomationElement.GUIDATMTestOutofMinError);
-            if (ATMElment != null)
-            {
-                if (ATMElment.dbValue != 0)
-                {
-                    bErrOutMin = true;
-                }
-                bReturn &= true;
-            }
-
-            //get PEC setting
-            ATMElment = opBusIn.GetATMElementbyGuid(AutomationElement.GUIDATMTestPECError);
-            if (ATMElment != null)
-            {
-                if (ATMElment.dbValue != 0)
-                {
-                    bErrPEC = true;
-                }
-                bReturn &= true;
-            }
-
-            //get TestSensitive setting
-            ATMElment = opBusIn.GetATMElementbyGuid(AutomationElement.GUIDATMTestSensitive);
-            if (ATMElment != null)
-            {
-                u16Sensor = (UInt16)ATMElment.dbValue;
-                bReturn &= true;
-            }
-
-            if(bReturn)
-            {
-                ErrorCode = LibErrorCode.IDS_ERR_SUCCESSFUL;
-            }
-            else
-            {
-                ErrorCode = LibErrorCode.IDS_ERR_COM_NULL_COM_HANDLER;  //TBD
-            }
-            //
-
-            return bReturn;
-        }
-
         //(A160105)Francis, save to log
         public bool WriteDataToLog(byte[] yDataFromDEM, byte[] yDataFromChip, UInt16 wLengthChip, UInt16 wLengthDEM, byte yRW)
         {
@@ -533,104 +450,7 @@ namespace Cobra.Communication
             string strTmp = string.Empty;
             string strdbg = string.Empty;
 
-            if (!DBManager.supportdb) return false; //No log
-            #region database new row
-            try
-            {
-                Dictionary<string, string> record = new Dictionary<string, string>();
-                record[CommunicationLog.strColHeader[0]] = strTmp;
-                record[CommunicationLog.strColHeader[1]] = string.Format("0x{0:X8}", u32RandId);
-                record[CommunicationLog.strColHeader[2]] = string.Format("0x{0:X8}", ErrorCode);
-                if ((m_busopDev.BusType == BUS_TYPE.BUS_TYPE_I2C) || (m_busopDev.BusType == BUS_TYPE.BUS_TYPE_I2C2))
-                {
-                    if (yRW == 0)
-                    {
-                        record[CommunicationLog.strColHeader[3]] = "Write".ToString();
-                        strdbg = "Write".ToString();
-                    }
-                    else
-                    {
-                        record[CommunicationLog.strColHeader[3]] = "Read".ToString();
-                        strdbg = "Read".ToString();
-                    }
-                    record[CommunicationLog.strColHeader[4]] = string.Format("0x{0:X2}", yDataFromDEM[0]);
-                    record[CommunicationLog.strColHeader[5]] = string.Format("0x{0:X2}", yDataFromDEM[1]);
-                    strdbg += string.Format(" 0x{0:X2}, 0x{1:X2}", yDataFromDEM[0], yDataFromDEM[1]);
-
-                    if (yRW == 0)
-                    {
-                        strTmp = string.Empty;
-                        for (int i = 0; i < wLengthDEM; i++)
-                        {
-                            strTmp += string.Format("0x{0:X2}, ", yDataFromDEM[i + 2]);
-                        }
-                        record[CommunicationLog.strColHeader[6]] = strTmp;
-                    }
-                    else
-                    {
-
-
-                        strTmp = string.Empty;
-                        for (int i = 0; i < wLengthChip; i++)
-                        {
-                            strTmp += string.Format("0x{0:X2}, ", yDataFromChip[i]);
-                        }
-                        record[CommunicationLog.strColHeader[6]] = strTmp;
-                    }
-                    CommunicationDBLog.WriteDatatoDBLog(record);
-                }
-                else
-                {
-                    if (yRW == 0)
-                    {
-                        record[CommunicationLog.strColHeader[3]] = "Write".ToString();
-                        strdbg = "Write".ToString();
-
-                        strTmp = string.Empty;
-                        for (int i = 0; i < wLengthDEM; i++)
-                        {
-                            strTmp += string.Format("0x{0:X2}, ", yDataFromDEM[i]);
-                        }
-                        record[CommunicationLog.strColHeader[6]] = strTmp;
-                        CommunicationDBLog.WriteDatatoDBLog(record);
-                    }
-                    else
-                    {
-                        Dictionary<string, string> recordwr = new Dictionary<string, string>();
-                        recordwr[CommunicationLog.strColHeader[0]] = strTmp;
-                        recordwr[CommunicationLog.strColHeader[1]] = string.Format("0x{0:X8}", u32RandId);
-                        recordwr[CommunicationLog.strColHeader[2]] = string.Format("0x{0:X8}", ErrorCode);
-                        recordwr[CommunicationLog.strColHeader[3]] = "Write".ToString();
-                        strdbg = "Write".ToString();
-                        {
-                            strTmp = string.Empty;
-                            for (int i = 0; i < wLengthDEM; i++)
-                            {
-                                strTmp += string.Format("0x{0:X2}, ", yDataFromDEM[i]);
-                            }
-                            recordwr[CommunicationLog.strColHeader[6]] = strTmp;
-                        }
-                        CommunicationDBLog.WriteDatatoDBLog(recordwr);
-
-                        record[CommunicationLog.strColHeader[3]] = "Read".ToString();
-                        strdbg = "Read".ToString();
-                        strTmp = string.Empty;
-                        for (int i = 0; i < wLengthChip; i++)
-                        {
-                            strTmp += string.Format("0x{0:X2}, ", yDataFromChip[i]);
-                        }
-                        record[CommunicationLog.strColHeader[6]] = strTmp;
-                        CommunicationDBLog.WriteDatatoDBLog(record);
-                    }
-                }
-            }
-            catch (Exception ioe)
-            {
-                bReturn = false;
-            }
-            #endregion
-
-            #region support DBManager2
+            #region support DBManager
             strdbg = "DayTime|" + strTmp + ", ";
             strdbg += "CID|" + string.Format("0x{0:X8}, ", u32RandId);
             strdbg += "ErrCode|" + string.Format("0x{0:X8}, ", ErrorCode);
@@ -704,7 +524,7 @@ namespace Cobra.Communication
                     strdbg += "ErrComments|";
                     try
                     {
-                        DBManager2.BeginNewRow(session_id, strdbg);
+						m_busopDev.db_Manager.BeginNewRow(session_id, strdbg);
                     }
                     catch (Exception ex)
                     {
@@ -732,7 +552,7 @@ namespace Cobra.Communication
             }
             try
             {
-                DBManager2.BeginNewRow(session_id, strdbg);
+				m_busopDev.db_Manager.BeginNewRow(session_id, strdbg);
             }
             catch (Exception ex)
             {
@@ -741,23 +561,6 @@ namespace Cobra.Communication
             #endregion
             return bReturn;
         }
-
-        public void SaveLog()
-        {
-            //(A170119)Francis, saving log to database
-			if (DBManager.supportdb == true)
-			{
-				CommunicationDBLog.CompleteComDBLogFile();
-			}
-			else
-			{
-				CommunicationLog.CompleteComLogFile();
-			}
-            //(E170119)
-        }
-
-        //#endregion
-
         #endregion
 
 	}

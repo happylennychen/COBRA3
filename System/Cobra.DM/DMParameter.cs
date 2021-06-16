@@ -20,7 +20,9 @@ namespace Cobra.DM
         /// <param name="node"></param>
         public DMParameter(XElement node)
         {
-            string tmp  = string.Empty;
+            string tmp = string.Empty;
+            UInt16 u16data = 0;
+            UInt32 u32data = 0;
 
             if (GetXElementValueByAttribute(node, "Guid") != null)
                 guid = Convert.ToUInt32(GetXElementValueByAttribute(node, "Guid"), 16);
@@ -91,7 +93,12 @@ namespace Cobra.DM
                     Reg register = new Reg();
 
                     if (GetXElementValueByName(ssnode, "Address") != null)
-                        register.address = Convert.ToUInt16(GetXElementValueByName(ssnode, "Address"), 16);
+                    {
+                        if(UInt16.TryParse(GetXElementValueByName(ssnode, "Address"),NumberStyles.HexNumber, null,out u16data))  
+                            register.address = u16data;
+                        else if(UInt32.TryParse(GetXElementValueByName(ssnode, "Address"), NumberStyles.HexNumber, null, out u32data))
+                            register.u32Address = u32data;
+                    }
 
                     if (GetXElementValueByName(ssnode, "StartBit") != null)
                         register.startbit = Convert.ToUInt16(GetXElementValueByName(ssnode, "StartBit"),10);

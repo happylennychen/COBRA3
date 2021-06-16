@@ -17,7 +17,7 @@ namespace Cobra.ExperPanel
 		
 		//(M191220)Francis, modify for 16bit index display
 		//public byte yIndex { get; set; }
-		public UInt16 u16Index { get; set; }
+		public UInt32 u32Index { get; set; }
 		public byte yBitStart { get; set; }
 		public byte yLength { get; set; }
 		public byte yValue { get; set; }
@@ -38,7 +38,7 @@ namespace Cobra.ExperPanel
 			yTotal = 8;
 			//(M191220)Francis, modify for 16bit index display
 			//yIndex = 0xFF;
-			u16Index = 0xFFFF;
+			u32Index = 0xFFFFFFFF;
 			yBitStart = 0xFF;
 			yLength = 0xFF;
 			yValue = 0xFF;
@@ -58,7 +58,7 @@ namespace Cobra.ExperPanel
 	//Data structure of each bit
 	public class ExperBitComponent : INotifyPropertyChanged
 	{
-		static public string BitDescrpDefault = "Reserved";
+		static public string BitDescrpDefault = "--";
 		static public string RegDescrpDefault = "-- --";
 
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -231,13 +231,13 @@ namespace Cobra.ExperPanel
 			set { m_strRegName = value; OnPropertyChanged("strRegName"); }
 		}		//save string of Register name
 
-		private UInt16 m_u16RegVal;
-		public UInt16 u16RegVal
+		private UInt32 m_u32RegVal;
+		public UInt32 u32RegVal
 		{
-			get { return m_u16RegVal; }
+			get { return m_u32RegVal; }
 			set
 			{
-				if (m_u16RegVal != value)
+				if (m_u32RegVal != value)
 				{
 					bValueChange = true;
 				}
@@ -245,34 +245,39 @@ namespace Cobra.ExperPanel
 				{
 					bValueChange = false;
 				}
-				m_u16RegVal = value;
+				m_u32RegVal = value;
 				//(M131226)if length = 16 bit length, force it display 4 digit value
 				if (yRegLength == 0x10)
 				{
 					//m_u16RegVal &= 0xFFFF;
-					strRegVal = string.Format("0x{0:X4}", m_u16RegVal);
+					strRegVal = string.Format("0x{0:X4}", m_u32RegVal);
+				}
+				else if(yRegLength == 0x20)
+				{
+					//m_u16RegVal &= 0xFFFF;
+					strRegVal = string.Format("0x{0:X8}", m_u32RegVal);
 				}
 				else //otherwise, default is 2 digit value
 				{
 					//m_u16RegVal &= 0xFFFF;
 					foreach (KeyValuePair<string, Reg> inreg in m_pmrExpMdlParent.reglist)
 					{
-						if (inreg.Value.address == u16RegNum)
+						if (inreg.Value.address == u32RegNum)
 						{
 							if (inreg.Key.Equals("Low"))
 							{
-								m_u16RegVal &= 0x00FF;
+								m_u32RegVal &= 0x00FF;
 								break;
 							}
 							else if (inreg.Key.Equals("High"))
 							{
-								m_u16RegVal &= 0xFF00;
-								m_u16RegVal >>= 8;
+								m_u32RegVal &= 0xFF00;
+								m_u32RegVal >>= 8;
 								break;
 							}
 						}
 					}
-					strRegVal = string.Format("0x{0:X2}", m_u16RegVal);
+					strRegVal = string.Format("0x{0:X2}", m_u32RegVal);
 				}
 				ArrangeBitPhyValue();
 			}
@@ -287,7 +292,7 @@ namespace Cobra.ExperPanel
 			{ 
 				string strtmp;
 				int	itmp;
-				UInt16 utmp;
+				UInt32 utmp;
 				m_strRegVal = value; 
 				OnPropertyChanged("strRegVal"); 
 				itmp = m_strRegVal.IndexOf("0x");
@@ -299,13 +304,13 @@ namespace Cobra.ExperPanel
 				{
 					strtmp = m_strRegVal;
 				}
-				if (!UInt16.TryParse(strtmp, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out utmp))
+				if (!UInt32.TryParse(strtmp, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out utmp))
 				{
 					utmp = 0;
 				}
-				if (m_u16RegVal != utmp)
+				if (m_u32RegVal != utmp)
 				{
-					m_u16RegVal = utmp;
+					m_u32RegVal = utmp;
 					SeperateRegValueToBit();
 					ArrangeBitPhyValue();
 					bValueChange = true;
@@ -352,7 +357,7 @@ namespace Cobra.ExperPanel
 			set { m_bXprRegShow = value; OnPropertyChanged("bXprRegShow"); }
 		}
 
-		public UInt16 u16RegNum { get; set; }	//save index value, as Tag parameter in button_click action
+		public UInt32 u32RegNum { get; set; }	//save index value, as Tag parameter in button_click action
 		public string strRegNum { get; set; }		//save index string value, simply display on UI
 		public byte yRegLength { get; set; }		//8 or 16 bit length
 		public string strTestXpr { get; set; }		// save TestMode string in ExperModel
@@ -366,7 +371,7 @@ namespace Cobra.ExperPanel
 		}
 
 		#region Public Property declaration of each bit component,ebcBit0~F, and ArrRegComponet[16] array 
-		public ExperBitComponent[] ArrRegComponet = new ExperBitComponent[16];
+		public ExperBitComponent[] ArrRegComponet = new ExperBitComponent[32];
 		private ExperBitComponent m_ebcBit0 = new ExperBitComponent();
 		public ExperBitComponent ebcBit0 { get { return m_ebcBit0; } set { m_ebcBit0 = value; } }
 		private ExperBitComponent m_ebcBit1 = new ExperBitComponent();
@@ -399,6 +404,38 @@ namespace Cobra.ExperPanel
 		public ExperBitComponent ebcBitE { get { return m_ebcBitE; } }
 		private ExperBitComponent m_ebcBitF = new ExperBitComponent();
 		public ExperBitComponent ebcBitF { get { return m_ebcBitF; } }
+		private ExperBitComponent m_ebcBit10 = new ExperBitComponent();
+		public ExperBitComponent ebcBit10 { get { return m_ebcBit10; }}
+		private ExperBitComponent m_ebcBit11 = new ExperBitComponent();
+		public ExperBitComponent ebcBit11 { get { return m_ebcBit11; } }
+		private ExperBitComponent m_ebcBit12 = new ExperBitComponent();
+		public ExperBitComponent ebcBit12 { get { return m_ebcBit12; } }
+		private ExperBitComponent m_ebcBit13 = new ExperBitComponent();
+		public ExperBitComponent ebcBit13 { get { return m_ebcBit13; } }
+		private ExperBitComponent m_ebcBit14 = new ExperBitComponent();
+		public ExperBitComponent ebcBit14 { get { return m_ebcBit14; } }
+		private ExperBitComponent m_ebcBit15 = new ExperBitComponent();
+		public ExperBitComponent ebcBit15 { get { return m_ebcBit15; } }
+		private ExperBitComponent m_ebcBit16 = new ExperBitComponent();
+		public ExperBitComponent ebcBit16 { get { return m_ebcBit16; } }
+		private ExperBitComponent m_ebcBit17 = new ExperBitComponent();
+		public ExperBitComponent ebcBit17 { get { return m_ebcBit17; } }
+		private ExperBitComponent m_ebcBit18 = new ExperBitComponent();
+		public ExperBitComponent ebcBit18 { get { return m_ebcBit18; } }
+		private ExperBitComponent m_ebcBit19 = new ExperBitComponent();
+		public ExperBitComponent ebcBit19 { get { return m_ebcBit19; } }
+		private ExperBitComponent m_ebcBit1A = new ExperBitComponent();
+		public ExperBitComponent ebcBit1A { get { return m_ebcBit1A; } }
+		private ExperBitComponent m_ebcBit1B = new ExperBitComponent();
+		public ExperBitComponent ebcBit1B { get { return m_ebcBit1B; } }
+		private ExperBitComponent m_ebcBit1C = new ExperBitComponent();
+		public ExperBitComponent ebcBit1C { get { return m_ebcBit1C; } }
+		private ExperBitComponent m_ebcBit1D = new ExperBitComponent();
+		public ExperBitComponent ebcBit1D { get { return m_ebcBit1D; } }
+		private ExperBitComponent m_ebcBit1E = new ExperBitComponent();
+		public ExperBitComponent ebcBit1E { get { return m_ebcBit1E; } }
+		private ExperBitComponent m_ebcBit1F = new ExperBitComponent();
+		public ExperBitComponent ebcBit1F { get { return m_ebcBit1F; } }
 		#endregion
 
 		// <summary>
@@ -422,11 +459,27 @@ namespace Cobra.ExperPanel
 			ArrRegComponet[12] = ebcBitC;
 			ArrRegComponet[13] = ebcBitD;
 			ArrRegComponet[14] = ebcBitE;
-			ArrRegComponet[15] = ebcBitF;
+			ArrRegComponet[15] = ebcBitF; 
+			ArrRegComponet[16] = ebcBit10;
+			ArrRegComponet[17] = ebcBit11;
+			ArrRegComponet[18] = ebcBit12;
+			ArrRegComponet[19] = ebcBit13;
+			ArrRegComponet[20] = ebcBit14;
+			ArrRegComponet[21] = ebcBit15;
+			ArrRegComponet[22] = ebcBit16;
+			ArrRegComponet[23] = ebcBit17;
+			ArrRegComponet[24] = ebcBit18;
+			ArrRegComponet[25] = ebcBit19;
+			ArrRegComponet[26] = ebcBit1A;
+			ArrRegComponet[27] = ebcBit1B;
+			ArrRegComponet[28] = ebcBit1C;
+			ArrRegComponet[29] = ebcBit1D;
+			ArrRegComponet[30] = ebcBit1E;
+			ArrRegComponet[31] = ebcBit1F;
 			yRegLength = 0x08;
-			for (int i = 0; i < 16; i++)
+			for (int i = 0; i < 32; i++)
 			{
-				ArrRegComponet[i].strBit = string.Format("bit__{0:X1}", i);
+				ArrRegComponet[i].strBit = string.Format("{0:D}", i);
 			}
 			bXprRegShow = true;
 			strGroupReg = "";
@@ -442,20 +495,20 @@ namespace Cobra.ExperPanel
 		// <param name="bWtIn">if true, also summarize all bWrite propery; default true</param>
 		public void SumRegisterValue(bool bRdIn = true, bool bWtIn = true)
 		{
-			UInt16 u16tmp;
+			UInt32 u32tmp;
 			bool brtmp, bwtmp;
 
-			u16tmp = 0; brtmp = false; bwtmp = false;
+			u32tmp = 0; brtmp = false; bwtmp = false;
 			for (int i = 0; i < yRegLength; i++)
 			{
-				u16tmp += Convert.ToUInt16((UInt16)ArrRegComponet[i].yBitValue << i);
+				u32tmp += Convert.ToUInt32((UInt32)(ArrRegComponet[i].yBitValue << i));
 				brtmp |= ArrRegComponet[i].bRead;
 				bwtmp |= ArrRegComponet[i].bWrite;
 			}
 
 			foreach (KeyValuePair<string, Reg> inreg in m_pmrExpMdlParent.reglist)
 			{
-				if (inreg.Value.address == u16RegNum)
+				if (inreg.Value.address == u32RegNum)
 				{
 					if (inreg.Key.Equals("Low"))
 					{
@@ -464,12 +517,12 @@ namespace Cobra.ExperPanel
 					else
 					{
 						//m_u16RegVal &= 0xFF00;
-						u16tmp <<= 8;
+						u32tmp <<= 8;
 					}
 				}
 			}
 
-			u16RegVal = u16tmp;
+			u32RegVal = u32tmp;
 			if(bRdIn)	 bRead = brtmp;
 			if(bWtIn)	 bWrite = bwtmp;
 		}
@@ -479,11 +532,11 @@ namespace Cobra.ExperPanel
 		// </summary>
 		public void SeperateRegValueToBit()
 		{
-			UInt16 u16tmp = u16RegVal;
+			UInt32 u32tmp = u32RegVal;
 
 			for (int i = 0; i < yRegLength; i++)
 			{
-				ArrRegComponet[i].yBitValue = Convert.ToByte((u16tmp >> i) & 0x01);
+				ArrRegComponet[i].yBitValue = Convert.ToByte((u32tmp >> i) & 0x01);
 			}
 		}
 
@@ -553,6 +606,7 @@ namespace Cobra.ExperPanel
 					//}
 					Reg newReg_low = new Reg();
 					newReg_low.address = tmpreg.Value.address;
+					newReg_low.u32Address = tmpreg.Value.u32Address;
 					newReg_low.bitsnumber = tmpreg.Value.bitsnumber;
 					newReg_low.startbit = tmpreg.Value.startbit;
 					pmrExpMdlParent.reglist.Add("Low", newReg_low);
@@ -561,6 +615,7 @@ namespace Cobra.ExperPanel
 				{
 					Reg newReg_hi = new Reg();
 					newReg_hi.address = tmpreg.Value.address;
+					newReg_hi.u32Address = tmpreg.Value.u32Address;
 					newReg_hi.bitsnumber = tmpreg.Value.bitsnumber;
 					newReg_hi.startbit = tmpreg.Value.startbit;
 					pmrExpMdlParent.reglist.Add("High", newReg_hi);
@@ -578,13 +633,13 @@ namespace Cobra.ExperPanel
 
 		public void ArrangeBitPhyValue(AsyncObservableCollection<ExperModel> expregListIn = null)
 		{
-			UInt16 utmp, uMask;
+			UInt32 utmp, uMask;
 			UInt16 uaddr = 0x00;
 			int i =0;
 
 			foreach (ExperBitComponent expbittmp in ArrRegComponet)
 			{
-				uMask = 0xFFFF;
+				uMask = 0xFFFFFFFF;
 				if ((expbittmp.u32Guid != 0) && (expbittmp.pmrBitParent != null))
 				{
                     if ((expbittmp.u32Guid & ExperViewMode.SectionElementFlag) == ExperViewMode.OperationElement || (expbittmp.u32Guid & ExperViewMode.SectionElementFlag) == ExperViewMode.NonvolatileElement)
@@ -596,7 +651,7 @@ namespace Cobra.ExperPanel
 							{
 								foreach(KeyValuePair<string, Reg> kvptmp in expbittmp.pmrBitParent.reglist)
 								{
-									if(kvptmp.Value.address != u16RegNum)
+									if(kvptmp.Value.address != u32RegNum)
 									{
 										uaddr = kvptmp.Value.address;
 										break;
@@ -604,7 +659,7 @@ namespace Cobra.ExperPanel
 								}
 								foreach (ExperModel epx in expregListIn)
 								{
-									if (epx.u16RegNum == uaddr)
+									if (epx.u32RegNum == uaddr)
 									{
 										foreach (ExperBitComponent ebctmp in epx.ArrRegComponet)
 										{
@@ -622,7 +677,7 @@ namespace Cobra.ExperPanel
 					}
 					else if ((expbittmp.u32Guid & ExperViewMode.SectionElementFlag) == ExperViewMode.TesTOperElement)
 					{
-						utmp = u16RegVal;
+						utmp = u32RegVal;
 						for (int j = 0; j < i; j++)
 						{
 							utmp = (UInt16)(utmp >> 1);
@@ -687,44 +742,5 @@ namespace Cobra.ExperPanel
 			bRegWriteTo = false;
             wSubTask = 0x00;
 		}
-
-		/*
-		public Parameter GetParentParameter()
-		{
-			Parameter pmrtmp = null;
-			//Reg regtmp = null;
-
-			//pmrExpMdlParent = pmrtmp;
-			pmrExpMdlParent.guid = pmrtmp.guid;
-			pmrExpMdlParent.phyref = 1;
-			pmrExpMdlParent.regref = 1;
-			pmrExpMdlParent.subtype = 0;		//COBRA_PARAM_SUBTYPE
-			pmrExpMdlParent.reglist.Clear();
-			//foreach (KeyValuePair<string, Reg> dicreg in pmrExpMdlParent.reglist)
-			foreach (KeyValuePair<string, Reg> tmpreg in pmrtmp.reglist)
-			{
-				Reg newReg = new Reg();
-				newReg.address = tmpreg.Value.address;
-				newReg.bitsnumber = tmpreg.Value.bitsnumber;
-				newReg.startbit = tmpreg.Value.startbit;
-				//regtmp = dicreg.Value;
-				//regtmp.startbit = 0;
-				//regtmp.bitsnumber = yRegLength;	//force 8-bits or 16-bits length
-				//dicreg.Value.address = pmrtmp.reglist
-				//dicreg.Value.startbit = 0;
-				//dicreg.Value.bitsnumber = yRegLength;
-				pmrExpMdlParent.reglist.Add(tmpreg.Key, newReg);
-			}
-			foreach (KeyValuePair<string, Reg> dicreg in pmrExpMdlParent.reglist)
-			{
-				dicreg.Value.startbit = 0;
-				dicreg.Value.bitsnumber = yRegLength;
-			}
-
-			//return pmrtmp;
-			return pmrExpMdlParent;
-		}
-		*/
-
 	}
 }

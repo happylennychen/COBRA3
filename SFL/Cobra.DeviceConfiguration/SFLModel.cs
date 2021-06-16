@@ -355,7 +355,7 @@ namespace Cobra.DeviceConfigurationPanel
                             {
                                 try
                                 {
-                                    dval = (Double)Convert.ToInt32(strval, 16);
+                                    dval = (Double)Convert.ToUInt32(strval, 16);
                                 }
                                 catch (Exception e)
                                 {

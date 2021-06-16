@@ -1,7 +1,7 @@
-//#define debug
+#define debug
 //#define x
 //#define extension
-//#define y
+#define y
 //#define m
 using System;
 using System.Text;
@@ -208,114 +208,13 @@ namespace Cobra.EM
             return true;
         }
 
-        private bool RegisterExt2DB()
-        {
-            string orig_name = "", chip_name = "", orig_version = "", chip_version = "", user_type = "", date = "", bus_type = "";
-            string[] names = new string[2];
-            string[] versions = new string[2];
-            List<string> modulelist = new List<string>();
-
-            XmlElement root = EMExtensionManage.m_extDescrip_xmlDoc.DocumentElement;
-            if (root == null) return false;
-            XmlNode DBConfigNode = root.SelectSingleNode("descendant::Part[@Name = 'DBConfig']");
-            if (DBConfigNode == null)
-                return false;
-            XmlNodeList nodeList = DBConfigNode.ChildNodes;
-            if (nodeList == null)
-                return false;
-            foreach (XmlNode xn in nodeList)
-            {
-                XmlElement xe = (XmlElement)xn;
-                switch (xe.Name)
-                {
-                    case "ChipName":
-                        names = xe.InnerText.Split('|');
-                        orig_name = names[0];
-                        if (names.Length == 2)
-                            chip_name = names[1];
-                        else
-                            chip_name = "";
-                        break;
-                    case "ChipVersion":
-                        versions = xe.InnerText.Split('|');
-                        orig_version = versions[0];
-                        if (versions.Length == 2)
-                            chip_version = versions[1];
-                        else
-                            chip_version = "";
-                        break;
-                    case "UserType":
-                        user_type = xe.InnerText;
-                        break;
-                    case "Date":
-                        date = xe.InnerText;
-                        break;
-                    case "HasCom":
-                        if (xe.InnerText.ToUpper() == "TRUE")
-                            modulelist.Add("Com");
-                        break;
-                    case "HasAMT":
-                        if (xe.InnerText.ToUpper() == "TRUE")
-                            modulelist.Add("AMT");
-                        break;
-                }
-            }
-            nodeList = root.SelectSingleNode("descendant::Part[@Name = 'MainBtnList']").ChildNodes;
-            foreach (XmlNode xn in nodeList)
-            {
-                XmlElement xe = (XmlElement)xn;
-                string modulename = xe.GetAttribute("DBModuleName");
-                if (modulename != "")
-                    modulelist.Add(modulename);
-            }
-            bus_type = root.GetAttribute("bustype");
-            int ret = DBManager.ExtensionRegister(orig_name, chip_name, orig_version, chip_version, user_type, date, bus_type, modulelist);
-            if (ret != 0)
-            {
-                return false;
-            }
-            return true;
-        }
-
         private bool BuildExtension()
         {
             if (OpenExtension() != true)
             {
                 return false;
             }
-
-            if (RegisterExt2DB() == true)
-            {
-                //Do not support DB
-                //return false;
-                DBManager.supportdb = true; //if not set here, it will always be false
-            }
-            else
-            {
-                //MessageBox.Show("Extension Register Failed!");
-                DBManager.supportdb = false;
-            }
-            DBManager2.ExtensionRegister(Registry.GetCurExtensionFileName());	//Issue1465 Leon
-
             if (!m_EM_DevicesManage.Build()) return false;
-
-
-            #region log初始化
-            string logfolder = Path.Combine(FolderMap.m_currentproj_folder, "AutomationTest\\");
-            if (!Directory.Exists(logfolder))
-                Directory.CreateDirectory(logfolder);
-            if (AutomationTestLog.cl == null)
-            {
-                AutomationTestLog.cl = new CobraLog(logfolder, 10);
-            }
-            else
-            {
-                AutomationTestLog.cl.folder = logfolder;
-            }
-            //将目录中已有的可识别的logdata加入testlog.logdatalist中
-            AutomationTestLog.cl.SyncLogData();
-            #endregion
-
             return true;
         }
 
@@ -368,11 +267,10 @@ namespace Cobra.EM
             {
                 m_extDescrip_xmlDoc.Load(extxmlfullname);
                 root = m_extDescrip_xmlDoc.DocumentElement;
-                if (root.GetAttribute("SkipCheck").ToUpper() == "True".ToUpper()) return LibErrorCode.IDS_ERR_SUCCESSFUL;   //Leon: 对于某些OCE（例如Table Maker）,需要绕过下面的检查
                 if (root.GetAttribute("libname") == string.Empty) return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE;
                 if (root.GetAttribute("ProjectCode") == string.Empty) return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE;
                 if (root.GetAttribute("OCEVersion") == string.Empty) return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_FILE_ATTRIBUTE;
-
+                if (root.GetAttribute("libname").ToUpper().Contains("O2MICRO")) return LibErrorCode.IDS_ERR_SECTION_OCE_MISMATCH_20024;
                 if (!File.Exists(Path.Combine(FolderMap.m_extension_monitor_folder, string.Format("{0}{1}", root.GetAttribute("libname"), ".dll")))) return LibErrorCode.IDS_ERR_SECTION_OCE_DIS_DEM;
                 new VersionInfo(name, root.GetAttribute("ProjectCode"), new Version(root.GetAttribute("OCEVersion")), ASSEMBLY_TYPE.OCE, LibErrorCode.IDS_ERR_SUCCESSFUL);
             }

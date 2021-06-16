@@ -129,6 +129,12 @@ namespace Cobra.DeviceConfigurationPanel
             {
                 switch (de.Key.ToString())
                 {
+                    case "bEdit":
+                        if (!Boolean.TryParse(de.Value.ToString(), out bdata))
+                            model.bedit = true;
+                        else
+                            model.bedit = bdata;
+                        break;
                     case "NickName":
                         model.nickname = de.Value.ToString();
                         break;

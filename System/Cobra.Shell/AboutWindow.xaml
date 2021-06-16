@@ -30,8 +30,8 @@
                     <RowDefinition Height="0.2*" />
                 </Grid.RowDefinitions>
                 <Grid x:Name="SoftwareInfoPanel"  Background="#FFFEFEFE" Margin="1,1,1,1" Grid.Row="0">
-                    <TextBlock Height="26" Margin="8,10,148,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="18.667" Text="COBRA VERSION: V 2.00.23"/>
-                    <TextBlock Margin="8,49,148,42.76" TextWrapping="Wrap" Text="Cobra 2020 All rights reserved" FontSize="18.667"/>
+                    <TextBlock Height="26" Margin="8,10,148,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="18.667" Text="VERSION: V2.00.26"/>
+                    <TextBlock Margin="8,49,148,42.76" TextWrapping="Wrap" Text="2021 All rights reserved" FontSize="18.667"/>
                     <TextBlock Margin="8,0,29,7" TextWrapping="Wrap" Text="View The SOFTWARE LICENSE AGREEMENT" Height="26" VerticalAlignment="Bottom" FontSize="16" TextDecorations="Underline" Foreground="#FFB69879" MouseLeftButtonDown="TextBlock_MouseLeftButtonDown" />
                 </Grid>
                 <Grid x:Name="VersionInfoPanel"  Background="#FFFEFEFE" Margin="1,1,1,1" Grid.Row="1">

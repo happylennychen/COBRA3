@@ -12,7 +12,6 @@ using Cobra.EM;
 using Cobra.Common;
 using System.Windows.Threading;
 using System.Threading;
-using System.Security.Cryptography;
 using System.Runtime.InteropServices;
 
 namespace Cobra.ProductionPanel
@@ -31,34 +30,8 @@ namespace Cobra.ProductionPanel
     public partial class MainControl
     {
         #region 变量定义
+        public static int session_id = -1;
         private string ProductionSFLName = "";//Issue1426 Leon
-        private static class ProductionRecord
-        {
-            public static Dictionary<string, string> DBRecord = new Dictionary<string, string>();
-            public static void Init(Dictionary<string, DBManager.DataType> columns)
-            {
-                foreach (string key in columns.Keys)
-                {
-                    DBRecord[key] = "";
-                }
-            }
-            public static void Reset()
-            {
-                string[] keys = DBRecord.Keys.ToArray();
-                foreach (string key in keys)
-                {
-                    DBRecord[key] = "";
-                }
-            }
-            public static void Save(string module_name)
-            {
-                int ret = DBManager.NewRow(module_name, DBRecord);
-                if (ret == -1)
-                {
-                    System.Windows.MessageBox.Show("New Row Failed!");
-                }
-            }
-        }
 
         private Device m_parent;
         public Device parent
@@ -88,6 +61,7 @@ namespace Cobra.ProductionPanel
         private string BinFileName = string.Empty;
         private string MPTFileName = string.Empty;
 
+        public Dictionary<string, string> DBRecord = new Dictionary<string, string>();
         private AsyncObservableCollection<TestGroup> m_TestGroups = new AsyncObservableCollection<TestGroup>();
         public AsyncObservableCollection<TestGroup> TestGroups
         {
@@ -127,7 +101,6 @@ namespace Cobra.ProductionPanel
         public int TotalCount { get; set; } = 0;
         public int PassedCount { get; set; } = 0;
         public int FailedCount { get; set; } = 0;
-        private string StrHexValue = string.Empty;
         #endregion
 
         #region 函数定义
@@ -140,6 +113,15 @@ namespace Cobra.ProductionPanel
             {
                 Beep(800, 300);
                 Beep(500, 300);
+            }
+        }
+
+        public void Reset()
+        {
+            string[] keys = DBRecord.Keys.ToArray();
+            foreach (string key in keys)
+            {
+                DBRecord[key] = "";
             }
         }
 
@@ -181,26 +163,8 @@ namespace Cobra.ProductionPanel
             TestUI.DataContext = TestItems;
             ProcessUI.DataContext = ProcessItems;
             RecordsDataGrid.DataContext = Records;
-
-            #region CreateTableN
-
-            if (DBManager.supportdb == true)
-            {
-                Dictionary<string, DBManager.DataType> columns = new Dictionary<string, DBManager.DataType>();
-                columns.Add("ProcessResult", DBManager.DataType.TEXT);
-                columns.Add("TestResult", DBManager.DataType.TEXT);
-                columns.Add("Time", DBManager.DataType.TEXT);
-                ProductionRecord.Init(columns);
-                int ret = DBManager.CreateTableN(ProductionSFLDBName, columns);//Issue1426 Leon
-                if (ret != 0)
-                    System.Windows.MessageBox.Show("Create Production Table Failed!");
-            }
-            #endregion
-
             InitialUI();
-
             UpdateUIWithXML();
-
             PreloadPackFile();      //Issue1828
         }
 
@@ -273,6 +237,7 @@ namespace Cobra.ProductionPanel
 
         private void InitialUI()
         {
+            parent.db_Manager.NewSession(ProductionSFLName, ref session_id, DateTime.Now.ToString());
             UpdateStatus("Ready", Brushes.GreenYellow, "Please click the load button to proceed.", Brushes.White);
             StatusInitText.Visibility = System.Windows.Visibility.Visible;
             TestInitText.Visibility = System.Windows.Visibility.Visible;
@@ -391,7 +356,6 @@ namespace Cobra.ProductionPanel
 
 
             #region load files
-
             ret = LoadMPTFile(MPTFileName, ref needTest);
             if (ret != ErrorCode.Success)
             {
@@ -407,8 +371,6 @@ namespace Cobra.ProductionPanel
                     ShowWarning("Load Failed!", ErrorMessage[ret]);
                     return;
                 }
-                StrHexValue = GetHexStringFromBin(msg.sm.efusebindata);
-                NewLog();
             }
             #endregion
 
@@ -463,13 +425,6 @@ namespace Cobra.ProductionPanel
                 col.Unique = false;
                 Records.Columns.Add(col);
             }
-            col = new DataColumn();
-            col.DataType = System.Type.GetType("System.String");
-            col.ColumnName = "Hex Value";
-            col.AutoIncrement = false;
-            col.ReadOnly = true;
-            col.Unique = false;
-            Records.Columns.Add(col);
             foreach (var ti in TestItems)
             {
                 col = new DataColumn();
@@ -484,16 +439,6 @@ namespace Cobra.ProductionPanel
             #endregion
 
             ShowMessage("Package file loaded.", "Please click " + OperationButtonName.Text + " button to proceed.");
-        }
-
-        private string GetHexStringFromBin(List<byte> efusebindata)
-        {
-            string output = string.Empty;
-            foreach (var bin in efusebindata)
-            {
-                output += $"0x{bin.ToString("X2")} ";
-            }
-            return output;
         }
 
         private ErrorCode LoadMPTFile(string fullpath, ref bool needTest)
@@ -645,24 +590,6 @@ namespace Cobra.ProductionPanel
             if(msg.sm.efusebindata.Count == 0)
                 ret = ErrorCode.FileParsingError;
             return ret;
-        }
-        private UInt32 NewLog()
-        {
-            UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
-            #region Database New Log
-            if (DBManager.supportdb == true)
-            {
-                string timestamp = DateTime.Now.ToString();
-                int log_id = -1;
-                int r = DBManager.NewLog(ProductionSFLDBName, "Production Log", timestamp, ref log_id);
-                if (r != 0)
-                {
-                    System.Windows.MessageBox.Show("New Production Log Failed!");
-                    return ret;
-                }
-            }
-            return ret;
-            #endregion
         }
         private UInt32 Mapping(ushort sub_task)
         {
@@ -1022,7 +949,6 @@ namespace Cobra.ProductionPanel
                         processresult = pi.FailedDetail;
                     row[pi.Name] = processresult;
                 }
-                row["Hex Value"] = StrHexValue;          //将Hex放入这里
                 foreach (var ti in TestItems)
                 {
                     string testresult = string.Empty;
@@ -1051,7 +977,6 @@ namespace Cobra.ProductionPanel
                     prstring += ";";
                     prLstring += prstring;
                 }
-                prLstring += $"Hex Value:{StrHexValue};";      //填入Hex值
                 string trLstring = string.Empty;
                 foreach (var ti in TestItems)
                 {
@@ -1066,23 +991,11 @@ namespace Cobra.ProductionPanel
                     trstring += ";";
                     trLstring += trstring;
                 }
-
-                #region Database New Log
-                if (DBManager.supportdb == true)
-                {
-                    string timestamp = DateTime.Now.ToString();
-                    int log_id = -1;
-                    int r = DBManager.NewLog(ProductionSFLDBName, "Production Log", timestamp, ref log_id);//Issue1426 Leon
-                    if (r != 0)
-                        System.Windows.MessageBox.Show("New Production Log Failed!");
-                }
-                #endregion
-
-                ProductionRecord.Reset();
-                ProductionRecord.DBRecord["ProcessResult"] = prLstring;
-                ProductionRecord.DBRecord["TestResult"] = trLstring;
-                ProductionRecord.DBRecord["Time"] = DateTime.Now.ToString("yyyy-MM-dd:hh-mm-ss");
-                ProductionRecord.Save(ProductionSFLDBName);//Issue1426 Leon
+                Reset();
+                DBRecord["ProcessResult"] = prLstring;
+                DBRecord["TestResult"] = trLstring;
+                DBRecord["Time"] = DateTime.Now.ToString("yyyy-MM-dd:hh-mm-ss");
+                parent.db_Manager.BeginNewRow(session_id, ProductionSFLDBName);
                 #endregion
                 #endregion
                 #region Show Success Message and update count

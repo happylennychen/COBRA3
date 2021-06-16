@@ -1,16 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Reflection;
-using System.Xml.Linq;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
-using System.Runtime.CompilerServices;
-using System.Collections.ObjectModel;
-using System.Windows;
-using System.Threading;
 using System.Xml;
 using System.Windows.Data;
 using Cobra.DM;
@@ -121,6 +114,16 @@ namespace Cobra.EM
         #endregion
 
         #region 部件定义
+        public DBManage db_Manager
+        {
+            get {
+                if (m_busoptions != null)
+                    return m_busoptions.db_Manager;
+                else
+                    return null;
+            }
+        }
+
         private DeviceInfor m_Device_Infor = new DeviceInfor();
         public DeviceInfor device_infor
         {
@@ -178,6 +181,7 @@ namespace Cobra.EM
 
             #region 构建DDM数据结构
             m_busoptions = Registry.GetBusOptionsByindexInListView(index);
+            m_busoptions.db_Manager.Init();
             m_busoptions.optionsList.Clear();
             m_device_dm.Init(ref m_busoptions);
 
@@ -460,17 +464,7 @@ namespace Cobra.EM
 
         public bool CreateInterface()
         {
-            bool ret = m_device_dm.CreateInterface();
-
-            //Leon add for bug 16036
-            if (DBManager.supportdb == true)
-            {
-                if (ret == true)
-                    SharedAPI.SaveBusOptionsToDB(m_busoptions);
-            }
-            //Leon add for bug 16036
-
-            return ret;
+            return m_device_dm.CreateInterface();
         }
 
         public void UpdataDEMParameterList(Parameter p)

@@ -950,16 +950,6 @@ namespace Cobra.Communication
             if (hwndSource != null)  //Attaching to window procedure
                 hwndSource.AddHook(new HwndSourceHook(this.hwndSourceHook));
             //(E170206)
-
-
-            #region Database New Log
-            if (DBManager.supportdb == true)
-            {
-                string timestamp = DateTime.Now.ToString();
-
-                CommunicationDBLog.NewLog(timestamp);
-            }
-            #endregion
 		}
 
 		/// <summary>
@@ -973,7 +963,6 @@ namespace Cobra.Communication
 			}
 			if (m_InfDev != null)
 			{
-				m_InfDev.SaveLog();
 				m_InfDev.CloseDevice();
 				m_InfDev = null;
 			}
@@ -1179,17 +1168,11 @@ namespace Cobra.Communication
 				m_dwErrCode = LibErrorCode.IDS_ERR_MGR_INVALID_INTERFACE_TYPE ;
 				bReturn = false;
 			}
-
-            if (bReturn)
-            {
-                if (m_InfDev != null)
-                    m_InfDev.m_busopDev = opBus;
-            }
-            else
-            {
-                bReturn = InitializeLogFile();
-            }
-
+			if (m_InfDev != null)
+			{
+				m_InfDev.m_busopDev = opBus;
+				m_InfDev.m_busopDev.db_Manager.NewSession("COM", ref m_InfDev.session_id, DateTime.Now.ToString());
+			}
 			return bReturn;
 		}
 
@@ -1289,7 +1272,6 @@ namespace Cobra.Communication
 			m_dwErrCode = LibErrorCode.IDS_ERR_SUCCESSFUL;
 			if (m_InfDev != null)
 			{
-                m_InfDev.SaveLog();
 				bReturn = m_InfDev.CloseDevice();
 				m_InfDev = null;
 				//m_myHWType = HWInterfaceType.HW_Disconnected;
@@ -2354,42 +2336,7 @@ namespace Cobra.Communication
 
             return bRet;
         }
-
 		#endregion
-
-        private bool InitializeLogFile()
-        {
-
-            //#region Create Com Table    //added by leon
-            //if (DBManager.supportdb == true)
-            //{
-                //string colname;
-                //string[] strColHeader = { "DayTime", "CID", "ErrCode", "R/W", "I2CAddr", "RegIndex", "Data1", "Data2", "Data3", "ErrComments" };
-                //Dictionary<string, DBManager.DataType> columns = new Dictionary<string, DBManager.DataType>();
-                //foreach (string colname in strColHeader)
-                //{
-                    //columns.Add(colname, DBManager.DataType.TEXT);
-                //}
-                ////columns.Add("Time", DBManager.DataType.TEXT);
-                //DBManager.CreateTableN("Com", columns);
-            //}
-
-            //#endregion
-            bool bReturn = false;
-
-            CommunicationLog.Init();
-            bReturn = CommunicationLog.CreateComLogFile();
-
-            //(A170119)Francis, saving log to database
-            if (DBManager.supportdb == true)
-            {
-                CommunicationDBLog.ComDBInit();
-                //bReturn = CommunicationDBLog.CreateComLogFile();
-            }
-            //(E170119)
-
-            return bReturn;
-        }
 
         #region System function and handler
 

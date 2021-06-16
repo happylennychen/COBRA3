@@ -1464,24 +1464,6 @@ namespace Cobra.ScanPanel
             #endregion
 
             LibInfor.AssemblyRegister(Assembly.GetExecutingAssembly(), ASSEMBLY_TYPE.SFL);
-
-            #region CreateTableN
-
-            if (DBManager.supportdb == true)
-            {
-                string colname;
-                Dictionary<string, DBManager.DataType> columns = new Dictionary<string, DBManager.DataType>();
-                foreach (Parameter param in dynamicdatalist.parameterlist)
-                {
-                    colname = GetHashTableValueByKey("LogName", param.sfllist[sflname].nodetable);
-                    columns.Add(colname, DBManager.DataType.TEXT);
-                }
-                columns.Add("Time", DBManager.DataType.TEXT);
-                int ret = DBManager.CreateTableN(sflname, columns);
-                if (ret != 0)
-                    MessageBox.Show("Create Scan Table Failed!");
-            }
-            #endregion
         }
 
 
@@ -1661,35 +1643,18 @@ namespace Cobra.ScanPanel
         }
 
 
-        private delegate void EnterStopStateDelegate(UInt32 errorcode);
-        private void EnterStopState(UInt32 errorcode)
+        private delegate void EnterStopStateDelegate(UInt32 errorcode, int session_id, ulong session_row_number);
+        private void EnterStopState(UInt32 errorcode, int session_id, ulong session_row_number)
         {
-            t.Stop();
+            t.Stop(); 
+            UpdateLogDataList(session_id, session_row_number);
 
             gm.controls = "Stop button";
             gm.message = LibErrorCode.GetErrorDescription(errorcode);
             gm.bupdate = true;
 
             ResetContext();
-            //runBtn.Content = "Run";
-            //runBtn.IsChecked = false;
-            //ScanInterval.IsEnabled = true;
-            //SubTask.IsEnabled = true;
-            //loglist.IsEnabled = true;
-
-
-            #region 储存剩余数据到db com log
-            if (DBManager.supportdb == true)
-            {
-                CommunicationDBLog.CompleteComDBLogFile();
-            }
-            #endregion
-
-
             RemoveRestriction();
-            //XNavi.IsEnabled = true;
-            //YNavi.IsEnabled = true;
-            //MNavi.OnPlotterAttached(Vplotter);
 
             ThreadMonitor.Reset();
 #if SupportThreadMonitor
@@ -1740,17 +1705,7 @@ namespace Cobra.ScanPanel
         private void UpdateLogDataList(int session_id = 0, ulong session_row_number = 0)
         {
             List<List<String>> records = new List<List<string>>();
-            //if (DBManager.GetLogsInforV2(sflname, ref records) != -1)//Issue1428 Leon
-            try
-            {
-                if (session_id != 0 && session_row_number != 0)
-                    DBManager2.ScanSFLUpdateSessionSize(session_id, session_row_number);
-                DBManager2.ScanSFLGetSessionsInfor(sflname, ref records);
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show(ex.Message + ex.InnerException.Message);
-            }
+            parent.db_Manager.GetSessionsInfor(sflname, ref records);
             logdatalist.Clear();
             foreach (var record in records)
             {
@@ -1804,53 +1759,10 @@ namespace Cobra.ScanPanel
                         ResetContext();
                         return;
                     }
-                    //Thread newThread = new Thread(PreRead);
-                    //newThread.Start(errorcode);
-                    //newThread.Join();
                     UpdateMonitorStaticUI();
                     UpdateMonitorDynamicUI();
-                    #region Database New Log
-                    if (DBManager.supportdb == true)
-                    {
-                        string timestamp = DateTime.Now.ToString();
-                        int log_id = -1;
-                        int ret = DBManager.NewLog(sflname, "Scan Log", timestamp, parent.name, ref log_id);//Issue1428 Leon
-                        if (ret != 0)
-                            MessageBox.Show("Create Scan Log Failed!");
-
-                        //CommunicationDBLog.NewLog(timestamp);
-                    }
-                    string session_establish_time = DateTime.Now.ToString();
-                    try
-                    {
-                        DBManager2.NewSession(sflname, ref session_id, parent.name, session_establish_time);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Windows.MessageBox.Show(ex.Message + ex.InnerException.Message);
-                    }
-                    #endregion
-                    /*
-                    #region new logdata
-                    string str = DateTime.Now.Year.ToString("D4");
-                    str += DateTime.Now.Month.ToString("D2");
-                    str += DateTime.Now.Day.ToString("D2");
-                    str += DateTime.Now.Hour.ToString("D2");
-                    str += DateTime.Now.Minute.ToString("D2");
-                    str += DateTime.Now.Second.ToString("D2");
-                    LogData ld = new LogData(str + "Log" + ".csv.tmp", scanlog);
-                    //根据dynamicdatalist中的数据来初始化DataTable的column
-                    List<string> strlist = new List<string>();
-                    foreach (Parameter param in dynamicdatalist.parameterlist)
-                    {
-                        str = GetHashTableValueByKey("LogName", param.sfllist[sflname].nodetable);
-                        strlist.Add(str);
-                    }
-                    ld.BuildColumn(strlist, true);
-                    scanlog.logdatalist.Add(ld);
-                    loglist.ScrollIntoView(loglist.Items[loglist.Items.Count - 1]); //scroll to the last item
-                    #endregion
-                    */
+                    session_row_number = 0;
+                    parent.db_Manager.NewSession(sflname, ref session_id, DateTime.Now.ToString());
                     RebuildUISourceFromList();
                     loguidatagrid.DataContext = null;
                     loguidatagrid.DataContext = logUIdata.logbuf;
@@ -1903,9 +1815,9 @@ namespace Cobra.ScanPanel
                 }
                 else    //点了stop
                 {
-                    EnterStopState(errorcode);
+                    EnterStopState(errorcode, session_id, session_row_number);
                     //ResetContext();
-                    UpdateLogDataList(session_id, session_row_number);
+                    //UpdateLogDataList(session_id, session_row_number);
                 }
 
                 isReentrant_Run = false;
@@ -1987,7 +1899,8 @@ namespace Cobra.ScanPanel
                     }
                     if (errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
                     {
-                        this.Dispatcher.Invoke(new EnterStopStateDelegate(EnterStopState), errorcode);
+                        //this.Dispatcher.Invoke(new EnterStopStateDelegate(EnterStopState), errorcode);
+                        this.Dispatcher.Invoke(new EnterStopStateDelegate(EnterStopState), errorcode, session_id, session_row_number);
                     }
                 }
             }
@@ -2006,17 +1919,11 @@ namespace Cobra.ScanPanel
             lock (DB_Lock)
             {
                 Dictionary<string, string> records = SnapShot.TimerCallbackPool[(long)TimerCounter].LogRow;   //取出快照
-                //DBManager.NewRow(sflname, records);
-                int ret = DBManager.BeginNewRow(sflname, parent.name, records);//Issue1428 Leon
-                if (ret == -1)
-                {
-                    MessageBox.Show("Begin New Row Failed!");
-                    return;
-                }
                 try
                 {
-                    DBManager2.BeginNewRow(session_id, records);
+                    parent.db_Manager.BeginNewRow(session_id, records);
                     session_row_number += 1;
+                    parent.db_Manager.UpdateSessionSize(session_id, session_row_number);
                 }
                 catch (Exception ex)
                 {
@@ -2027,16 +1934,6 @@ namespace Cobra.ScanPanel
                     SnapShot.TimerCallbackPool.Remove((long)TimerCounter);
             }
         }
-
-        /*private void Log_Callback(object TimerCounter)
-        {
-            lock (Log_Lock)
-            {
-                Thread.CurrentThread.Name = "Timer " + TimerCounter.ToString() + "Log Callback";
-                Dictionary<string, string> record = SnapShot.TimerCallbackPool[(int)TimerCounter].LogRow;   //取出快照
-                scanlog.NewRow(record);
-            }
-        }*/
 
         private static long TimerCounter = 0;
         private static int EnteringTimerCallback = 0;
@@ -2225,7 +2122,7 @@ namespace Cobra.ScanPanel
             LogData ld = (LogData)loglist.SelectedItem;
             try
             {
-                DBManager2.ScanSFLDeleteOneSession(sflname, ld.Timestamp);
+                parent.db_Manager.DeleteOneSession(sflname, ld.Timestamp);
             }
             catch (Exception ex)
             {
@@ -2258,10 +2155,10 @@ namespace Cobra.ScanPanel
             if (saveFileDialog.ShowDialog() == true)
             {
                 DataTable dt = new DataTable();
-                //DBManager.GetLog(sflname, ld.Timestamp, ref dt);
+                //DBManager2.GetLog(sflname, ld.Timestamp, ref dt);
                 try
                 {
-                    DBManager2.ScanSFLGetOneSession(sflname, ld.Timestamp, ref dt);
+                    parent.db_Manager.GetOneSession(sflname, ld.Timestamp, ref dt);
                 }
                 catch (Exception ex)
                 {

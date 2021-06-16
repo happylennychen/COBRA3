@@ -56,16 +56,6 @@ namespace Cobra.ExperPanel
             set { SetValue(ButtonExperProperty, value); }
         }
 
-        /* bBtnTestMode, use to en/disable TestButton; use bBtnExper instead
-                public static readonly DependencyProperty BtnTestModeProperty = DependencyProperty.Register(
-                    "bBtnTestMode", typeof(bool), typeof(ExperControl));
-                public bool bBtnTestMode
-                {
-                    get { return (bool)GetValue(BtnTestModeProperty); }
-                    set { SetValue(BtnTestModeProperty, value); }
-                }
-            */
-
         public bool bSharedPublic { get; set; }     //true, parse public property to get Addrss, BitStart, BitlLength, id=547
         public bool bForceHidePro { get; set; }     //true, force to hide "Pro" button, otherwise, show it
         public byte yBitTotal { get; set; }         //0x08 or 0x10, it indicates bit length of chip register
@@ -93,7 +83,7 @@ namespace Cobra.ExperPanel
             sflname = name;
             if (string.IsNullOrEmpty(sflname)) return;
 
-            //			gnlmsgProduct.PropertyChanged += new PropertyChangedEventHandler(m_gm_PropertyChanged);
+            //gnlmsgProduct.PropertyChanged += new PropertyChangedEventHandler(m_gm_PropertyChanged);
             m_tskmsgExper.PropertyChanged += new PropertyChangedEventHandler(tskmsg_PropertyChanged);
             m_tskmsgExper.gm.sflname = name;
             m_tskmsgExper.gm.level = 2;
@@ -123,13 +113,6 @@ namespace Cobra.ExperPanel
                 btnExperPro.Visibility = Visibility.Collapsed;
             }
             LibInfor.AssemblyRegister(Assembly.GetExecutingAssembly(), ASSEMBLY_TYPE.SFL);
-            //MessageBox.Show("Expert Initialized!");
-            //ICollectionView view = CollectionViewSource.GetDefaultView(myViewMode.ExpRegisterList);
-            //view.GroupDescriptions.Add(new PropertyGroupDescription("strGroupReg"));
-            //view.SortDescriptions.Add(new SortDescription("strGroupReg", ListSortDirection.Ascending));
-            //dtgRegistersPresent.ItemsSource = view;
-            //FolderMap.WriteFile(string.Format("Finished Expert Initialization! "));
-            //(E140310)
         }
 
         // <summary>
@@ -186,7 +169,7 @@ namespace Cobra.ExperPanel
         private void btnWrite_Click(object sender, RoutedEventArgs e)
         {
             Button btntmp = sender as Button;
-            UInt16 u16tmp = (UInt16)btntmp.Tag;
+            UInt32 u32tmp = (UInt32)btntmp.Tag;
             ExperModel expmtmp = btntmp.DataContext as ExperModel;
 
             if (!bRepeatBtn)
@@ -228,7 +211,7 @@ namespace Cobra.ExperPanel
         private void btnRead_Click(object sender, RoutedEventArgs e)
         {
             Button btntmp = sender as Button;
-            UInt16 u16tmp = (UInt16)btntmp.Tag;
+            UInt32 u32tmp = (UInt32)btntmp.Tag;
             ExperModel expmtmp = btntmp.DataContext as ExperModel;
 
             if (!bRepeatBtn)
@@ -573,9 +556,9 @@ namespace Cobra.ExperPanel
         {
             int iIndex = 0;
             //ExperModel expTmp = null;
-            UInt16 yTmp;
+            UInt32 yTmp;
 
-            if (!UInt16.TryParse(txtGoto.Text, NumberStyles.HexNumber, null, out yTmp))
+            if (!UInt32.TryParse(txtGoto.Text, NumberStyles.HexNumber, null, out yTmp))
                 return;
 
             ICollectionView lstt = dtgRegistersPresent.ItemsSource as ICollectionView;
@@ -585,7 +568,7 @@ namespace Cobra.ExperPanel
             //foreach (ExperModel expd in myViewMode.ExpRegisterList)
             foreach (ExperModel expd in list)
             {
-                if (expd.u16RegNum == yTmp)
+                if (expd.u32RegNum == yTmp)
                 {
                     //expd.bMarkReg = true;
                     if ((expd.strGroupReg.Equals(expd.strTestXpr)) || (expd.strTestXpr.IndexOf("Normal") != -1))

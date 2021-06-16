@@ -28,6 +28,34 @@ namespace Cobra.ExperPanel
         }
     }
 
+	public class Multi32Bits2Width : IMultiValueConverter
+	{
+		public Object Convert(Object[] value, Type targetType, Object parameter, CultureInfo culture)
+		{
+			byte yVal = (byte)value[0];
+			double dbActual = (double)value[1] / 32;
+			double dbWidth = 0;
+			if (dbActual == 0)
+			{
+			}
+			else
+			{
+				if (yVal == 0)
+				{
+				}
+				else
+				{
+					dbWidth = dbActual * yVal;
+				}
+			}
+			return dbWidth;
+		}
+
+		public object[] ConvertBack(object value, Type[] targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+	}
 	//[ValueConversion(typeof(byte), typeof(UInt16))]
 	public class Multi16Bits2Width : IMultiValueConverter
 	{
@@ -96,7 +124,11 @@ namespace Cobra.ExperPanel
 			if ((fwelement != null) && (item != null) && (item is ExperModel))
 			{
 				ExperModel myExp = item as ExperModel;
-				if (myExp.yRegLength == 0x10)
+				if (myExp.yRegLength == 0x20)
+				{
+					return fwelement.FindResource("DtTmpltReg32Bits") as DataTemplate;
+				}
+				else if (myExp.yRegLength == 0x10)
 				{
 					return fwelement.FindResource("DtTmpltReg16Bits") as DataTemplate;
 				}

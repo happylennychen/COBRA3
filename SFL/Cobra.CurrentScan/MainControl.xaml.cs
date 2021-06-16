@@ -71,6 +71,8 @@ namespace Cobra.CurrentScan
             }
         }
 
+        public int session_id = -1;
+        public ulong session_row_number = 0;
         #endregion
 
         #region Internal Function
@@ -162,25 +164,7 @@ namespace Cobra.CurrentScan
                     break;
                 }
             }
-
             LibInfor.AssemblyRegister(Assembly.GetExecutingAssembly(), ASSEMBLY_TYPE.SFL);
-
-
-            #region CreateTableN
-
-            if (DBManager.supportdb == true)
-            {
-                Dictionary<string, DBManager.DataType> columns = new Dictionary<string, DBManager.DataType>();
-                columns.Add("PackC", DBManager.DataType.TEXT);
-                columns.Add("CADC", DBManager.DataType.TEXT);
-                columns.Add("Time", DBManager.DataType.TEXT);
-                int ret = DBManager.CreateTableN(sflname, columns);
-                if (ret != 0)
-                    MessageBox.Show("Create Scan Table Failed!");
-            }
-            #endregion
-
-
             UpdateLogDataList();
         }
         #region event handler
@@ -269,19 +253,18 @@ namespace Cobra.CurrentScan
         private void UpdateLogDataList()
         {
             List<List<String>> records = new List<List<string>>();
-            if (DBManager.GetLogsInfor(sflname, ref records) != -1)
+            if (session_id != 0 && session_row_number != 0)
+                parent.db_Manager.UpdateSessionSize(session_id, session_row_number);
+            parent.db_Manager.GetSessionsInfor(sflname, ref records);
+
+            logdatalist.Clear();
+            foreach (var record in records)
             {
-                logdatalist.Clear();
-                foreach (var record in records)
-                {
-                    LogData ld = new LogData();
-                    ld.Timestamp = record[0];
-                    ld.RecordNumber = Convert.ToInt64(record[1]);
-                    logdatalist.Add(ld);
-                }
+                LogData ld = new LogData();
+                ld.Timestamp = record[0];
+                ld.RecordNumber = Convert.ToInt64(record[1]);
+                logdatalist.Add(ld);
             }
-            else
-                MessageBox.Show("Get Logs Infor Failed!");
         }
 
         private void runBtn_Click(object sender, RoutedEventArgs e)
@@ -320,20 +303,7 @@ namespace Cobra.CurrentScan
                         return;
                     }
 
-
-                    #region Database New Log
-                    if (DBManager.supportdb == true)
-                    {
-                        string timestamp = DateTime.Now.ToString();
-                        int log_id = -1;
-                        int ret = DBManager.NewLog(sflname, "CurrentScan Log", timestamp, ref log_id);
-                        if (ret != 0)
-                            MessageBox.Show("Create CurrentScan log Failed!");
-
-                        //CommunicationDBLog.NewLog(timestamp);
-                    }
-                    #endregion
-
+                    parent.db_Manager.NewSession(sflname, ref session_id, DateTime.Now.ToString());
                     dt.Clear();
                     EnterStartState();
                 }
@@ -386,14 +356,7 @@ namespace Cobra.CurrentScan
                         records.Add("PackC", PackC.phydata.ToString());
                         records.Add("CADC", CADC.phydata.ToString());
                         records.Add("Time", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss-fff"));
-                        //DBManager.NewRow(sflname, records);
-                        int ret = DBManager.BeginNewRow(sflname, records);
-                        if (ret == -1)
-                        {
-                            MessageBox.Show("Begin New Row Failed!");
-                            return;
-                        }
-
+                        parent.db_Manager.BeginNewRow(session_id, records);
                         this.Dispatcher.Invoke(new UpdateLogUIDelegate(UpdateLogUI));
                     }
                 }
@@ -424,7 +387,7 @@ namespace Cobra.CurrentScan
             if (saveFileDialog.ShowDialog() == true)
             {
                 DataTable dt = new DataTable();
-                DBManager.GetLog(sflname, ld.Timestamp, ref dt);
+                parent.db_Manager.GetOneSession(sflname, ld.Timestamp, ref dt);
                 fullpath = saveFileDialog.FileName;
                 ExportDB(fullpath, dt);
             }

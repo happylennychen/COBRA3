@@ -77,22 +77,18 @@
     <Compile Include="AsyncObservableCollection.cs" />
     <Compile Include="COBRA_GLOBAL.cs" />
     <Compile Include="Compress.cs" />
-    <Compile Include="SQLiteDriver2.cs" />
-    <Compile Include="DBManager2.cs" />
-    <Compile Include="DBManager.cs" />
     <Compile Include="GasGaugeInterface.cs" />
     <Compile Include="IDEMLib.cs" />
     <Compile Include="FolderMap.cs" />
     <Compile Include="IServices.cs" />
     <Compile Include="LibErrorCode.cs" />
-    <Compile Include="Log.cs" />
-    <Compile Include="Project.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SharedAPI.cs" />
     <Compile Include="SharedDataType.cs" />
     <Compile Include="SharedFormula.cs" />
+    <Compile Include="Sqlite\DBManager.cs" />
+    <Compile Include="Sqlite\SQLiteDriver.cs" />
     <Compile Include="WebClient.cs" />
-    <Compile Include="SQLiteDriver.cs" />
     <Compile Include="ZipHelper.cs" />
   </ItemGroup>
   <ItemGroup>

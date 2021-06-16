@@ -27,7 +27,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\output\COBRA\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;Q;O2MICRO</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;Q;O2MICRO1</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>

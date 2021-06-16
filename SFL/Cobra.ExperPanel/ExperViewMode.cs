@@ -23,7 +23,13 @@ namespace Cobra.ExperPanel
 		static public  UInt32 TesTOperElement = 0x00050000;
         static public UInt16 uUISmoothMax = 0x0032;
         static private string strTemp = string.Empty;
-
+		
+		private bool m_canGroup = false;
+		public bool CanGroup
+		{
+			get { return m_canGroup; }
+			set { m_canGroup = value;}
+		}
 		public Device devParent { get; set; }
 		public ExperControl ctrParent { get; set; }
 		public string strSFLName { get; set; }
@@ -122,8 +128,11 @@ namespace Cobra.ExperPanel
 			BackExpertUI();
 
 			lstclRegisterList = new ListCollectionView(ExpRegisterList);
-            if (m_ExpRegisterList.Count <= uUISmoothMax)
-			    lstclRegisterList.GroupDescriptions.Add(new PropertyGroupDescription("strGroupReg"));
+			if (m_ExpRegisterList.Count <= uUISmoothMax)
+			{
+				if(CanGroup)	lstclRegisterList.GroupDescriptions.Add(new PropertyGroupDescription("strGroupReg"));
+			}
+
 			lstclTestRegList = new ListCollectionView(ExpTestRegList);
 			lstclTestRegList.GroupDescriptions.Add(new PropertyGroupDescription("strGroupReg"));
 		}
@@ -179,7 +188,7 @@ namespace Cobra.ExperPanel
 						{
 							//(M191220)Francis, modify for 16bit index display
 							//xmlData.yIndex = Convert.ToByte(de.Value.ToString(), 16);
-							xmlData.u16Index = Convert.ToUInt16(de.Value.ToString(), 16);
+							xmlData.u32Index = Convert.ToUInt32(de.Value.ToString(), 16);
 							yValid++;
 							break;
 						}
@@ -283,6 +292,8 @@ namespace Cobra.ExperPanel
 
 			xmlData.pmrXDParent = paramIn;
 			xmlData.u32Guid = paramIn.guid;
+			if (xmlData.strGroup == string.Empty) CanGroup |= false;
+			else CanGroup = true;
 
 			if ((yValid < 3) || (ctrParent.bSharedPublic))
             {
@@ -304,12 +315,12 @@ namespace Cobra.ExperPanel
 			bool bAdd = false;
 			byte yBitStartLoc = xmldataIn.yBitStart;
 			byte yBitLength = 0;
-			byte yTotalLeng = (byte)(xmldataIn.yTotal & 0x18);
+			byte yTotalLeng = (byte)(xmldataIn.yTotal & 0x38);
 			byte yLoHi = (byte)(xmldataIn.yTotal & 0xE0);
 			int iLoopParse = 0;
 			//(M191220)Francis, modify for 16bit index display
 			//byte yTargetIndex = 0;
-			UInt16 u16TargetIndex = 0;
+			UInt32 u32TargetIndex = 0;
 			byte i, j;
 			AsyncObservableCollection<ExperModel> Listtmp = null;
 
@@ -325,7 +336,7 @@ namespace Cobra.ExperPanel
 			}
 
 			//if bit_length in xml is not 8-bits or 16-bits long, force it as 8-bits
-			if ((yTotalLeng != 0x08) && (yTotalLeng != 0x10))
+			if ((yTotalLeng != 0x08) && (yTotalLeng != 0x10) && (yTotalLeng != 0x20))
 			{
 				yTotalLeng = 0x08;
 			}
@@ -349,26 +360,26 @@ namespace Cobra.ExperPanel
 				{
 					//(M191220)Francis, modify for 16bit index display
 					//yTargetIndex = (byte)(xmldataIn.yIndex + j);
-					u16TargetIndex = (UInt16)(xmldataIn.u16Index + j);
+					u32TargetIndex = (UInt32)(xmldataIn.u32Index + j);
 				}
 				else
 				{   //if bit 7 of BitTotal == 1; high part of threshold are decreasing
 					//(M191220)Francis, modify for 16bit index display
 					//yTargetIndex = (byte)(xmldataIn.yIndex - j);
-					u16TargetIndex = (UInt16)(xmldataIn.u16Index - j);
+					u32TargetIndex = (UInt32)(xmldataIn.u32Index - j);
 				}
 
 				//mdltemp = SearchExpModelByIndex((UInt16)(yTargetIndex), Listtmp);
 				//(M191220)Francis, modify for 16bit index display
 				//mdltemp = SearchExpModelByIndex((UInt16)(yTargetIndex), xmldataIn, Listtmp);
-				mdltemp = SearchExpModelByIndex((UInt16)(u16TargetIndex), xmldataIn, Listtmp);
+				mdltemp = SearchExpModelByIndex(u32TargetIndex, xmldataIn, Listtmp);
 
 				//test
 				//(M191220)Francis, modify for 16bit index display
-				if ((u16TargetIndex >= 0x30) && (u16TargetIndex <= 0x3f))
+				if ((u32TargetIndex >= 0x30) && (u32TargetIndex <= 0x3f))
 				{
-					u16TargetIndex -= 1;
-					u16TargetIndex += 1;
+					u32TargetIndex -= 1;
+					u32TargetIndex += 1;
 				}
 
 				if (mdltemp == null)
@@ -448,8 +459,8 @@ namespace Cobra.ExperPanel
 				{
 					//(M191220)Francis, modify for 16bit index display
 					//mdltemp.u16RegNum = yTargetIndex;
-					mdltemp.u16RegNum = u16TargetIndex;
-					mdltemp.strRegNum = string.Format("Index__{0:X4}", mdltemp.u16RegNum);
+					mdltemp.u32RegNum = u32TargetIndex;
+					mdltemp.strRegNum = string.Format("0x{0:X8}", mdltemp.u32RegNum);
 					mdltemp.yRegLength = yTotalLeng;
 					mdltemp.strTestXpr = xmldataIn.strTestMode;
 					mdltemp.strGroupReg = xmldataIn.strGroup;
@@ -500,7 +511,7 @@ namespace Cobra.ExperPanel
 			int iNonReserved;
 			ExperBitComponent ebcRecord = null;
 
-			ExpRegisterList.Sort(x => x.u16RegNum);
+			ExpRegisterList.Sort(x => x.u32RegNum);
 			foreach (ExperModel expm in ExpRegisterList)
 			{
 				iNonReserved = 0;
@@ -535,7 +546,7 @@ namespace Cobra.ExperPanel
 			//ExpTestBtnList.Sort(x => x.u32Guid);
 			ExpTestBtnList.Sort(x => x.yOrder);
 
-			ExpTestRegList.Sort(x => x.u16RegNum);
+			ExpTestRegList.Sort(x => x.u32RegNum);
 			foreach (ExperModel expm in ExpTestRegList)
 			{
 				expm.SumRegisterValue();
@@ -571,11 +582,11 @@ namespace Cobra.ExperPanel
 		/// <summary>
 		/// Find ExperModel data structure according to Index value
 		/// </summary>
-		/// <param name="u16Tag">input, Index value of target parameter</param>
+		/// <param name="u32Tag">input, Index value of target parameter</param>
 		/// <param name="xmlDataIn">input, ExperXMLData that try to find</param>
 		/// <param name="tagList">input, AsyncObservalbeColletion list that will be searched for 1st input object</param>
 		/// <returns></returns>
-		public ExperModel SearchExpModelByIndex(UInt16 u16Tag, ExperXMLData xmlDataIn, AsyncObservableCollection<ExperModel> tagList)
+		public ExperModel SearchExpModelByIndex(UInt32 u32Tag, ExperXMLData xmlDataIn, AsyncObservableCollection<ExperModel> tagList)
 		{
 			ExperModel expmdltmp = null;
 
@@ -584,7 +595,7 @@ namespace Cobra.ExperPanel
 			//foreach (ExperModel expm in ExpRegisterList)
 			foreach (ExperModel expm in tagList)
 			{
-				if (expm.u16RegNum == u16Tag)
+				if (expm.u32RegNum == u32Tag)
 				{
 					if ((expm.strTestXpr.Equals(xmlDataIn.strTestMode)) &&
 						(expm.strGroupReg.Equals(xmlDataIn.strGroup)))
@@ -769,7 +780,10 @@ namespace Cobra.ExperPanel
 				foreach (ExperModel expmeach in explisttmp)
 				{
 					//expmeach.u16RegVal = (UInt16)Convert.ToInt32(expmeach.pmrExpMdlParent.phydata.ToString(), 10);
-					expmeach.u16RegVal = expmeach.pmrExpMdlParent.hexdata;
+					if(expmeach.yRegLength == 0x20)
+						expmeach.u32RegVal = expmeach.pmrExpMdlParent.u32hexdata;
+					else
+						expmeach.u32RegVal = expmeach.pmrExpMdlParent.hexdata;
 					expmeach.SeperateRegValueToBit();
 					/*
 					foreach (ExperXMLData xmld in m_XMLDataOpRegList)
@@ -855,7 +869,7 @@ namespace Cobra.ExperPanel
 					bReadAnother = true;
 					foreach (KeyValuePair<string, Reg> kwri in pmrtmp.reglist)
 					{
-						if (expmIn.u16RegNum == kwri.Value.address)
+						if (expmIn.u32RegNum == kwri.Value.address)
 						{
 							if (kwri.Key.Equals("Low"))
 							{
@@ -900,21 +914,21 @@ namespace Cobra.ExperPanel
 					pmrtmp.phydata = (float)((ushort)pmrtmp.phydata & uReadValueFlag);
 					if (uReadValueFlag == 0xFF00)
 					{
-						pmrtmp.phydata += (expmIn.u16RegVal);
+						pmrtmp.phydata += (expmIn.u32RegVal);
 					}
 					else if (uReadValueFlag == 0x00FF)
 					{
-						pmrtmp.phydata += (expmIn.u16RegVal << 8);
+						pmrtmp.phydata += (expmIn.u32RegVal << 8);
 					}
 					else
 					{
-						pmrtmp.phydata += (expmIn.u16RegVal);	//should never go here
+						pmrtmp.phydata += (expmIn.u32RegVal);	//should never go here
 					}
 				}
 				//(E140411)
 				else
 				{
-					pmrtmp.phydata = expmIn.u16RegVal;
+					pmrtmp.phydata = expmIn.u32RegVal;
 				}
 //				explisttmp.Add(expmIn);
 			}
@@ -957,7 +971,7 @@ namespace Cobra.ExperPanel
 					}
 					if (expmeach.bXprRegShow)
 					{
-						pmrtmp.phydata = expmeach.u16RegVal;
+						pmrtmp.phydata = expmeach.u32RegVal;
 						pmCtntmp.parameterlist.Add(pmrtmp);
 						//explisttmp.Add(expmeach);
 					}
@@ -1204,7 +1218,7 @@ namespace Cobra.ExperPanel
 
 			foreach (ExperModel expm in ExpTestRegList)
 			{
-				if (expm.u16RegNum == yIndexIn)
+				if (expm.u32RegNum == yIndexIn)
 				{
 					expmdltmp = expm;
 					break;
@@ -1509,7 +1523,7 @@ namespace Cobra.ExperPanel
 			{
 				mdlPro = new ExperModel();
 
-				mdlPro.u16RegNum = XExpUI.u16RegNum;
+				mdlPro.u32RegNum = XExpUI.u32RegNum;
 				mdlPro.bRead = XExpUI.bRead;
 				mdlPro.bWrite = XExpUI.bWrite;
 				for(int i = 0; i < XExpUI.ArrRegComponet.Length; i++)
@@ -1548,7 +1562,7 @@ namespace Cobra.ExperPanel
 			{
 				foreach (ExperModel XProUI in ExpProList)
 				{
-					if (XExpUI.u16RegNum == XProUI.u16RegNum)
+					if (XExpUI.u32RegNum == XProUI.u32RegNum)
 					{
 						XExpUI.bRead = XProUI.bRead;
 						XExpUI.bWrite = XProUI.bWrite;
@@ -1616,7 +1630,7 @@ namespace Cobra.ExperPanel
                 }
                 expmIn.u16RegVal &= uMask;
                 expmIn.SeperateRegValueToBit();*/
-				pmrtmp.phydata = (double)expmIn.u16RegVal;	//assign phydata as Summerized value
+				pmrtmp.phydata = (double)expmIn.u32RegVal;	//assign phydata as Summerized value
 				pmCtntmp.parameterlist.Add(pmrtmp);
 				explisttmp.Add(expmIn);
 //				foreach (ExperXMLData xmda in m_XMLDataOpRegList)
@@ -1684,7 +1698,7 @@ namespace Cobra.ExperPanel
                     //}
 					//(M191220)Francis, modify for 16bit index display
                     //xmlDatatg.yIndex = SharedFormula.LoByte(inreg.Value.address);
-					xmlDatatg.u16Index = (UInt16)SharedFormula.LoByte(inreg.Value.address);
+					xmlDatatg.u32Index = (UInt32)SharedFormula.LoByte(inreg.Value.address);
                     xmlDatatg.yBitStart = SharedFormula.LoByte(inreg.Value.startbit);
                     xmlDatatg.yLength = SharedFormula.LoByte(inreg.Value.bitsnumber);
                     yValid = 3;
@@ -1700,4 +1714,23 @@ namespace Cobra.ExperPanel
             //return bReturn;
         }
 	}
+
+	public class MaterialDescriptionGroupConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			string repository = value as string;
+
+			return repository;
+
+		}
+
+		public object ConvertBack(object value, Type targetType,
+			   object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
+
+		}
+	}
+
 }

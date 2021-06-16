@@ -256,10 +256,12 @@ namespace Cobra.Common
             set { m_Owner = value; }
         }
 
-        #region Simulation
-        public string funName;
-        public object[] pi = new object[2];
-        #endregion
+        public string m_funName;
+        public string funName
+        {
+            get { return m_funName; }
+            set { m_funName = value; }
+        }
 
         //操作任务信息
         private TM m_Task;
@@ -306,6 +308,13 @@ namespace Cobra.Common
         {
             get { return m_FlashData; }
             set { m_FlashData = value; }
+        }
+
+        private List<MemoryControl> m_BufferList;
+        public List<MemoryControl> bufferList
+        {
+            get { return m_BufferList; }
+            set { m_BufferList = value; }
         }
 
         //任务进度
@@ -746,6 +755,13 @@ namespace Cobra.Common
         public const UInt32 SVIDParity_GUID = SVIDBusOptionsElement + 0x0006;
         #endregion
 
+        private DBManage m_DB_Manager = null;
+        public DBManage db_Manager
+        {
+            get { return m_DB_Manager; }
+            set { m_DB_Manager = value; }
+        }
+
         private ObservableCollection<Options> m_OptionsList = new ObservableCollection<Options>();
         public ObservableCollection<Options> optionsList
         {
@@ -807,36 +823,6 @@ namespace Cobra.Common
 
         public string Name { get; set; }
 
-        private AsyncObservableCollection<AutomationElement> m_AtMationSettingList = new AsyncObservableCollection<AutomationElement>();
-        public AsyncObservableCollection<AutomationElement> AtMationSettingList
-        {
-            get { return m_AtMationSettingList; }
-            set { m_AtMationSettingList = value; }
-        }
-
-        public AutomationElement GetATMElementbyGuid(UInt32 inGuid)
-        {
-            AutomationElement atTemp = null;
-
-            foreach (AutomationElement atme in m_AtMationSettingList)
-            {
-                if (atme.u32Guid.Equals(inGuid))
-                    atTemp = atme;
-            }
-            return atTemp;
-        }
-
-        private bool m_bAutoTestBtnShow;
-        public bool bAutoTestBtnShow
-        {
-            get { return m_bAutoTestBtnShow; }
-            set
-            {
-                m_bAutoTestBtnShow = value;
-                OnPropertyChanged("bAutoTestBtnShow");
-            }
-        }       //to hide Automation buttion in UI, TBD
-
         public BusOptions()
         {
             DeviceIsCheck = true;
@@ -844,199 +830,8 @@ namespace Cobra.Common
             DeviceIndex = 0;
             DeviceName = null;
             Name = null;
-            bAutoTestBtnShow = false;
+            m_DB_Manager = new DBManage(this);
         }
-    }
-
-    public class AutomationElement : INotifyPropertyChanged
-    {
-        #region GUID definition, use to identify what kind of setting and its value
-        public const UInt32 GUIDAutomationTestSeciton = 0x00200000;
-        public const UInt32 GUIDAutomationSimuSection = GUIDAutomationTestSeciton + 0x0100;
-        public const UInt32 GUIDAutomationErrorSection = GUIDAutomationTestSeciton + 0x0200;
-        public const UInt32 GUIDATMTestStart = GUIDAutomationTestSeciton + 0x0001;
-        public const UInt32 GUIDATMTestRepeatTimes = GUIDAutomationTestSeciton + 0x0002;
-
-        public const UInt32 GUIDATMTestSimulation = GUIDAutomationSimuSection + 0x0001;
-        public const UInt32 GUIDATMTestSensitive = GUIDAutomationSimuSection + 0x0002;
-        public const UInt32 GUIDATMTestRandomError = GUIDAutomationSimuSection + 0x0003;
-        public const UInt32 GUIDATMTestOutofMaxError = GUIDAutomationErrorSection + 0x0001;
-        public const UInt32 GUIDATMTestOutofMinError = GUIDAutomationErrorSection + 0x0002;
-        public const UInt32 GUIDATMTestPECError = GUIDAutomationErrorSection + 0x0003;
-        public const UInt32 GUIDATMTestCRCError = GUIDAutomationErrorSection + 0x0004;
-        #endregion
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged(string strName)
-        {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(strName));
-        }
-
-        private Parameter m_pmrParent;
-        public Parameter pmrParent
-        {
-            get { return m_pmrParent; }
-            set { m_pmrParent = value; }
-        }
-
-        private UInt32 m_u32Guid;
-        public UInt32 u32Guid
-        {
-            get { return m_u32Guid; }
-            set { m_u32Guid = value; }
-        }
-
-        private UInt16 m_u16Order;
-        public UInt16 u16Order
-        {
-            get { return m_u16Order; }
-            set { m_u16Order = value; }
-        }
-
-        private string m_strNickName;
-        public string strNickname
-        {
-            get { return m_strNickName; }
-            set
-            {
-                m_strNickName = value;
-                OnPropertyChanged("strNickname");
-            }
-        }
-
-        private string m_strCatalog;
-        public string strCatalog
-        {
-            get { return m_strCatalog; }
-            set
-            {
-                m_strCatalog = value;
-                OnPropertyChanged("strCatalog");
-            }
-        }
-
-        private double m_dbValue;
-        public double dbValue
-        {
-            get { return m_dbValue; }
-            set
-            {
-                if (m_dbValue != value)
-                {
-                    m_dbValue = value;
-                }
-            }
-        }
-
-        private UInt16 m_u16EditType;
-        public UInt16 u16EditType
-        {
-            get { return m_u16EditType; }
-            set
-            {
-                m_u16EditType = value;
-            }
-        }
-
-        private UInt16 m_u16Format;
-        public UInt16 u16Format
-        {
-            get { return m_u16Format; }
-            set { m_u16Format = value; }
-        }
-
-        private double m_dbMinValue;
-        public double dbMinvalue
-        {
-            get { return m_dbMinValue; }
-            set { m_dbMinValue = value; }
-        }
-
-        private double m_dbMaxValue;
-        public double dbMaxvalue
-        {
-            get { return m_dbMaxValue; }
-            set { m_dbMaxValue = value; }
-        }
-
-        private string m_strDisplayValue;
-        public string strDisplayValue
-        {
-            get
-            {
-                return m_strDisplayValue;
-            }
-            set
-            {
-                m_strDisplayValue = value;
-                OnPropertyChanged("strDisplayValue");
-            }
-        }   //used to binding to UI when TextBox_type
-
-        private int m_iCbxIndex;
-        public int iCbxIndex
-        {
-            get { return m_iCbxIndex; }
-            set
-            {
-                m_iCbxIndex = value;
-                if (this.PropertyChanged != null)
-                    PropertyChanged(this, new PropertyChangedEventArgs("iCbxIndex"));
-            }
-        }      //used to binding to UI when ComboBox_Type and CheckBox_Type
-
-        private ObservableCollection<string> m_strCbxSelection = new ObservableCollection<string>();
-        public ObservableCollection<string> strCbxSelection
-        {
-            get { return m_strCbxSelection; }
-            set
-            {
-                m_strCbxSelection = value;
-                OnPropertyChanged("strCbxSelection");
-            }
-        }   //used to binding to UI when ComboBox_Type
-
-        public void SynchdbValueToDisplay(Parameter param = null)
-        {
-            if (m_u16EditType == (int)UI_TYPE.TextBox_Type)
-            {
-                m_strDisplayValue = string.Format("{0:F0}", m_dbValue);
-            }
-            else if (m_u16EditType == (int)UI_TYPE.ComboBox_Type)
-            {
-                if (param != null)
-                {
-                    m_strCbxSelection.Clear();
-                    foreach (string streach in param.itemlist)
-                    {
-                        m_strCbxSelection.Add(streach);
-                    }
-                    if (m_dbValue >= m_strCbxSelection.Count)
-                    {
-                        m_dbValue = 0;
-                    }
-                }
-                m_iCbxIndex = (int)m_dbValue;
-            }
-            else if (m_u16EditType == (int)UI_TYPE.CheckBox_Type)
-            {
-                if (m_dbValue != 0)
-                {
-                    m_iCbxIndex = 1;
-                }
-                else
-                {
-                    m_iCbxIndex = 0;
-                }
-            }
-            else
-            {   //for case
-                m_strDisplayValue = string.Format("0");
-            }
-
-        }
-
     }
     #endregion
 
@@ -1248,12 +1043,28 @@ namespace Cobra.Common
     public class COBRA_HWMode_Reg
     {
         public UInt16 val;
+        public UInt32 wval;
         public UInt32 err;
         public UInt32 cid;
     }
     #endregion
 
     #region 软件模式数据存储结构定义
+    public class MemoryControl
+    {
+        public UInt32 startAddress;
+        public UInt32 endAddress;
+        public UInt32 totalSize;
+        public byte[] buffer;
+
+        public MemoryControl()
+        {
+        }
+        public void Update()
+        {
+            buffer = new byte[totalSize];
+        }
+    }
     public class TSMBbuffer
     {
         public ushort length;
@@ -1274,6 +1085,12 @@ namespace Cobra.Common
         {
             get { return m_Address; }
             set { m_Address = value; }
+        }
+        private UInt32 m_U32Address;
+        public UInt32 u32Address
+        {
+            get { return m_U32Address; }
+            set { m_U32Address = value; }
         }
 
         private UInt16 m_StartBit;
@@ -1474,6 +1291,13 @@ namespace Cobra.Common
         {
             get { return m_HexData; }
             set { m_HexData = value; }
+        }
+
+        private UInt32 m_U32HexData;
+        public UInt32 u32hexdata
+        {
+            get { return m_U32HexData; }
+            set { m_U32HexData = value; }
         }
 
         private string m_sPhyData;

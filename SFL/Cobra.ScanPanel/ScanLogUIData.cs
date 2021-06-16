@@ -47,8 +47,14 @@ namespace Cobra.ScanPanel
         }
     }
 
-    public class ScanLogUIData : LogUIData
+    public class ScanLogUIData
     {
+        private DataTable m_logbuf = new DataTable();
+        public DataTable logbuf
+        {
+            get { return m_logbuf; }
+            set { m_logbuf = value; }
+        }
         public void BuildColumn(List<LogParam> paramlist, bool isWithTime)  //从param list创建Column,Caption中包含Group信息
         {
             DataColumn col;
@@ -114,67 +120,6 @@ namespace Cobra.ScanPanel
                 logbuf.Columns.Add(col);
             }
         }*/
-        public void LoadFromFile(string filename, List<LogParam> paramlist)   //Load cvs file to data table
-        {
-            logbuf.Clear();
-            logbuf.Columns.Clear();
-
-            FileStream file = new FileStream(filename, FileMode.Open);
-            if (file.Length < 1000)
-            {
-                StreamReader sr = new StreamReader(file);
-                List<string> strlist = new List<string>();
-                strlist = GetCSVStrList(sr.ReadLine());
-                //BuildColumn(strlist, false);
-                BuildColumn(paramlist, true);
-                string strlin;
-                while ((strlin = sr.ReadLine()) != null)
-                {
-                    strlist = GetCSVStrList(strlin);
-                    AddRow(strlist);
-                }
-                sr.Close();
-                file.Close();
-            }
-            else if (file.Length < 2000)
-            {
-                StreamReader sr = new StreamReader(file);
-                List<string> strlist = new List<string>();
-                strlist = GetCSVStrList(sr.ReadLine());
-                //BuildColumn(strlist, false);
-                BuildColumn(paramlist, true);
-                string buffer = sr.ReadToEnd();
-                string[] linelist = buffer.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                foreach (string line in linelist)
-                {
-                    if (line == "")
-                        continue;
-                    strlist = GetCSVStrList(line);
-                    AddRow(strlist);
-                }
-                sr.Close();
-                file.Close();
-            }
-            else
-            {
-                file.Close();
-                List<string> strlist = new List<string>();
-                IEnumerable<string> linelist = File.ReadAllLines(filename);
-                bool isFirst = true;
-                foreach (string line in linelist)
-                {
-                    strlist = GetCSVStrList(line);
-                    if (isFirst)
-                    {
-                        //BuildColumn(strlist, false);
-                        BuildColumn(paramlist, true);
-                        isFirst = false;
-                        continue;
-                    }
-                    AddRow(strlist);
-                }
-            }
-        }
         ObservableCollection<KV> m_isDisplay = new ObservableCollection<KV>();
         public ObservableCollection<KV> isDisplay = new ObservableCollection<KV>();
 

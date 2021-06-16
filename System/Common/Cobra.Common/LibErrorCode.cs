@@ -183,6 +183,14 @@ namespace Cobra.Common
 
         private const UInt32 IDS_ERR_SECTION_FOLDERMAP = 0x00040000;
         public const UInt32 IDS_ERR_SECTION_CANNOT_CREATE_FOLDER_COM    = IDS_ERR_SECTION_FOLDERMAP + 0x01;
+        public const UInt32 IDS_ERR_SECTION_FOLDERS_LOST                = IDS_ERR_SECTION_FOLDERMAP + 0x02;
+        public const UInt32 IDS_ERR_SECTION_CANNOT_ACCESS_COBRA_FOLDER  = IDS_ERR_SECTION_FOLDERMAP + 0x03;
+        public const UInt32 IDS_ERR_SECTION_CANNOT_ACCESS_ExtRT_FOLDER  = IDS_ERR_SECTION_FOLDERMAP + 0x04;
+        public const UInt32 IDS_ERR_SECTION_CANNOT_ACCESS_ExtMT_FOLDER  = IDS_ERR_SECTION_FOLDERMAP + 0x05;
+        public const UInt32 IDS_ERR_SECTION_CANNOT_ACCESS_COBRA_DOC     = IDS_ERR_SECTION_FOLDERMAP + 0x06;
+        public const UInt32 IDS_ERR_SECTION_CANNOT_ACCESS_LOG           = IDS_ERR_SECTION_FOLDERMAP + 0x07;
+        public const UInt32 IDS_ERR_SECTION_CANNOT_ACCESS_SET_FOLDER    = IDS_ERR_SECTION_FOLDERMAP + 0x08;
+        public const UInt32 IDS_ERR_SECTION_LOST_SET_FILES              = IDS_ERR_SECTION_FOLDERMAP + 0x09;
 
         private const UInt32 IDS_ERR_SECTION_EM                         = 0x00200000;
         public const UInt32 IDS_ERR_EM_THREAD_BKWORKER_BUSY             = IDS_ERR_SECTION_EM + 0x01;
@@ -195,6 +203,7 @@ namespace Cobra.Common
         public const UInt32 IDS_ERR_SECTION_OCE_UNZIP                   = IDS_ERR_SECTION_OCE + 04;
         public const UInt32 IDS_ERR_SECTION_OCE_NOT_EXIST               = IDS_ERR_SECTION_OCE + 05;
         public const UInt32 IDS_ERR_SECTION_OCE_NOT_LOWER               = IDS_ERR_SECTION_OCE + 06; //Issue1289 Leon
+        public const UInt32 IDS_ERR_SECTION_OCE_MISMATCH_20024          = IDS_ERR_SECTION_OCE + 07;
         #endregion
 
         #region Cobra Center SFL Error code definition, IDS_ERR_SECTION_COBRACENTER = 0x00050000;
@@ -924,6 +933,9 @@ namespace Cobra.Common
                 case IDS_ERR_SECTION_OCE_NOT_LOWER:
                     strErr = "The file extension is not lower case.";
                     break;
+                case IDS_ERR_SECTION_OCE_MISMATCH_20024:
+                    strErr = "The current OCE can only be used in COBRA v2.00.23 or before.";
+                    break;
                 #endregion
 
                 #region Device Configuration SFL error description
@@ -1003,10 +1015,10 @@ namespace Cobra.Common
 
                 #region Expert SFL error description
                 case IDS_ERR_EXPSFL_XML:
-                    strErr = "Parsing information of xml has error, file maybe damage, please contact Cobra";
+                    strErr = "Parsing information of xml has error, file maybe damage, please contact COBRA";
                     break;
                 case IDS_ERR_EXPSFL_DATABINDING:
-                    strErr = "Cannot find information of register, file maybe damage, please contact Cobra";
+                    strErr = "Cannot find information of register, file maybe damage, please contact COBRA";
                     break;
                 #endregion
 
@@ -1902,7 +1914,7 @@ namespace Cobra.Common
                 #region Simulation error description
                 case IDS_ERR_SECTION_SIMULATION_START:
 					{
-                        strErr = "Warning:Cobra will enter into automation mode.";
+                        strErr = "Warning:COBRA will enter into automation mode.";
                         break;
 					}
                 case IDS_ERR_SECTION_SIMULATION_COMPLETE:
@@ -1940,7 +1952,42 @@ namespace Cobra.Common
                 #region Folder Operation error description
                 case IDS_ERR_SECTION_CANNOT_CREATE_FOLDER_COM:
                     {
-                        strErr = "Error: Cannot create folder, please make sure you have privilege or make sure Cobra running on correct Drive.";
+                        strErr = "Error: Cannot create folder, please make sure you have privilege or make sure COBRA running on correct Drive.";
+                        break;
+                    }
+                case IDS_ERR_SECTION_FOLDERS_LOST:
+                    {
+                        strErr = "Error: Some important folder lost,please contact with developers.";
+                        break;
+                    }
+                case IDS_ERR_SECTION_CANNOT_ACCESS_COBRA_FOLDER:
+                    {
+                        strErr = "Error: Cannot access COBRA folder, please make sure you have privilege or make sure COBRA running on correct Drive.";
+                        break;
+                    }
+                case IDS_ERR_SECTION_CANNOT_ACCESS_ExtRT_FOLDER:
+                    {
+                        strErr = "Error: Cannot access Extension Runtime folder, please make sure you have privilege or make sure COBRA running on correct Drive.";
+                        break;
+                    }
+                case IDS_ERR_SECTION_CANNOT_ACCESS_ExtMT_FOLDER:
+                    {
+                        strErr = "Error: Cannot access Extension Monitor folder, please make sure you have privilege or make sure COBRA running on correct Drive.";
+                        break;
+                    }
+                case IDS_ERR_SECTION_CANNOT_ACCESS_COBRA_DOC:
+                    {
+                        strErr = "Error: Cannot access COBRA Document folder, please make sure you have privilege or make sure COBRA running on correct Drive.";
+                        break;
+                    }
+                case IDS_ERR_SECTION_CANNOT_ACCESS_LOG:
+                    {
+                        strErr = "Error: Cannot access log folder, please make sure you have privilege or make sure COBRA running on correct Drive.";
+                        break;
+                    }
+                case IDS_ERR_SECTION_CANNOT_ACCESS_SET_FOLDER:
+                    {
+                        strErr = "Error: Cannot access settings folder, please make sure you have privilege or make sure COBRA running on correct Drive.";
                         break;
                     }
                 #endregion

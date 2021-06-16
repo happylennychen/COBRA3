@@ -68,6 +68,8 @@ namespace Cobra.SCSPanel
                 m_DataBaseRecords = value;
             }
         }
+        public int session_id = -1;
+        public ulong session_row_number = 0;
 
         public MainControl(object pParent, string name)
         {
@@ -80,32 +82,14 @@ namespace Cobra.SCSPanel
             if (String.IsNullOrEmpty(sflname)) return;
             #endregion
             bsubTask = false;
-            viewmode = new ViewMode(pParent, this);
+            viewmode = new ViewMode(pParent, this); 
             InitUI();
             InitBWork();
-
-            #region CreateTableN
-            if (DBManager.supportdb == true)
-            {
-                string colname;
-                Dictionary<string, DBManager.DataType> columns = new Dictionary<string, DBManager.DataType>();
-                foreach (Parameter param in viewmode.dm_parameterlist.parameterlist)
-                {
-                    if (viewmode.GetParameterByGuid(param.guid) == null) continue;
-
-                    colname = viewmode.GetParameterByGuid(param.guid).nickname;
-                    columns.Add(colname, DBManager.DataType.TEXT);
-                }
-                columns.Add("Time", DBManager.DataType.TEXT);
-                int ret = DBManager.CreateTableN(sflname, columns);
-                if (ret != 0)
-                    MessageBox.Show("Create SCS Table Failed!");
-            }
-            #endregion
         }
 
         public void InitUI()
         {
+            parent.db_Manager.NewSession(sflname, ref session_id, DateTime.Now.ToString());
             XmlNodeList nodelist = parent.GetUINodeList(sflname);
             foreach (XmlNode node in nodelist)
             {
@@ -192,14 +176,7 @@ namespace Cobra.SCSPanel
             m_bgWorker.CancelAsync();
             while (m_bgWorker.IsBusy)
                 System.Windows.Forms.Application.DoEvents();
-
-            #region 储存剩余数据到db com log
-            if (DBManager.supportdb == true)
-            {
-                UpdateDBRecordList();
-                CommunicationDBLog.CompleteComDBLogFile();
-            }
-            #endregion
+            UpdateDBRecordList();
         }
 
         #region 通用控件消息响应
@@ -221,16 +198,6 @@ namespace Cobra.SCSPanel
             if (runBtn.IsChecked == true)
             {
                 runBtn.Content = "Stop";
-                #region Database New Log
-                if (DBManager.supportdb == true)
-                {
-                    string timestamp = DateTime.Now.ToString();
-                    int log_id = -1;
-                    int ret = DBManager.NewLog(sflname, "SCS Log", timestamp, ref log_id);
-                    if (ret != 0)
-                        MessageBox.Show("Create SCS Log Failed!");
-                }
-                #endregion
                 m_bgWorker.RunWorkerAsync();
             }
             else
@@ -288,7 +255,7 @@ namespace Cobra.SCSPanel
                     return ret;
                 }
             }
-            
+
 
             Dictionary<string, string> records = new Dictionary<string, string>();
             foreach (Parameter param in viewmode.scan_parameterlist.parameterlist)
@@ -297,7 +264,7 @@ namespace Cobra.SCSPanel
                 records[mo.nickname] = string.Format("{0:D}", param.hexdata);
             }
             records.Add("Time", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss-fff"));
-            DBManager.BeginNewRow(sflname, records);
+            parent.db_Manager.BeginNewRow(session_id, records);
             return ret;
         }
 
@@ -351,19 +318,17 @@ namespace Cobra.SCSPanel
         public void UpdateDBRecordList()
         {
             List<List<String>> records = new List<List<string>>();
-            if (DBManager.GetLogsInfor(sflname, ref records) != -1)
+            if (session_id != 0 && session_row_number != 0)
+                parent.db_Manager.UpdateSessionSize(session_id, session_row_number);
+            parent.db_Manager.GetSessionsInfor(sflname, ref records);
+            dataBaseRecords.Clear();
+            foreach (var record in records)
             {
-                dataBaseRecords.Clear();
-                foreach (var record in records)
-                {
-                    DataBaseRecord ld = new DataBaseRecord();
-                    ld.Timestamp = record[0];
-                    ld.RecordNumber = Convert.ToInt64(record[1]);
-                    dataBaseRecords.Add(ld);
-                }
+                DataBaseRecord ld = new DataBaseRecord();
+                ld.Timestamp = record[0];
+                ld.RecordNumber = Convert.ToInt64(record[1]);
+                dataBaseRecords.Add(ld);
             }
-            else
-                MessageBox.Show("Get Logs Infor Failed!");
         }
 
         private void ExportBtn_Click(object sender, RoutedEventArgs e)
@@ -388,7 +353,7 @@ namespace Cobra.SCSPanel
             if (saveFileDialog.ShowDialog() == true)
             {
                 DataTable dt = new DataTable();
-                DBManager.GetLog(sflname, dbRecord.Timestamp, ref dt);
+                parent.db_Manager.GetOneSession(sflname, dbRecord.Timestamp, ref dt);
                 fullpath = saveFileDialog.FileName;
                 ExportDB(fullpath, dt);
             }
@@ -429,7 +394,7 @@ namespace Cobra.SCSPanel
             DataBaseRecord dbRecord = (sender as Button).DataContext as DataBaseRecord;
 
             DataTable dt = new DataTable();
-            DBManager.ClearLog(sflname, dbRecord.Timestamp);
+            parent.db_Manager.DeleteOneSession(sflname, dbRecord.Timestamp);
             UpdateDBRecordList();
         }
         #endregion

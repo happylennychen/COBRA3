@@ -56,9 +56,10 @@ namespace Cobra.Shell
         private AsyncObservableCollection<GeneralMessage> m_generalmessage_list = new AsyncObservableCollection<GeneralMessage>();
 
         private BackgroundWorker m_Upgrade_BackgroundWorker;// 申明后台对象
+        public UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
         public MainWindow()
         {
-            //try
+            try
             {
                 InitializeComponent();
                 #region startup Dialog
@@ -66,39 +67,21 @@ namespace Cobra.Shell
                 Thread newWindowThread = new Thread(new ThreadStart(CreateCounterWindowThread));
                 newWindowThread.SetApartmentState(ApartmentState.STA);
                 newWindowThread.Start();
-                #endregion
 
-                #region 公共消息
                 gm.PropertyChanged += new PropertyChangedEventHandler(User_DoSomeOperations);
-                gm.controls = "COBRA Shell";
-                gm.message = "COBRA start up";
+                gm.controls = "Shell";
+                gm.message = "start up";
                 gm.bupdate = true;
                 InformList.ItemsSource = m_generalmessage_list;
 
-                if (!FolderMap.InitFolders())
+                ret = FolderMap.InitFolders();
+                if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
                 {
-                    CatchSystemException("Some folders or files had been lost,Quit or Continue?");
+                    CatchSystemException(LibErrorCode.GetErrorDescription(ret));
                     return;
                 }
-                /*LibErrorCode.InitLibErrorCode();*/
                 LibInfor.Init();
                 LibInfor.AssemblyRegister(Assembly.GetExecutingAssembly(), ASSEMBLY_TYPE.SHELL);
-                #endregion
-
-                #region Database Init
-
-                //DB Design by Leon
-                int ret = DBManager.CobraDBInit(FolderMap.m_projects_folder);
-                if (ret != 0)
-                    MessageBox.Show("DB Init Failed!");
-                try
-                {
-                    DBManager2.CobraDBInit(FolderMap.m_projects_folder);
-                }
-                catch(Exception ex)
-                {
-                    MessageBox.Show(ex.Message + ex.InnerException.Message);
-                }
                 #endregion
 
                 #region EM初始化操作
@@ -110,31 +93,33 @@ namespace Cobra.Shell
                 }
                 if (Registry.GetCurExtensionFileName() != "")
                 {
-                    Title = "COBRA" + " (" + Registry.GetCurExtensionFileName() + ")";
+                    Title = Registry.GetCurExtensionFileName();
                     COBRA_GLOBAL.CurrentOCEName = Registry.GetCurExtensionFileName();   //Issue 1577 Leon
                     m_EM_Lib.GetExtensionToken();
                 }
                 m_EM_Lib.Init();
                 m_EM_Lib.gm.PropertyChanged += new PropertyChangedEventHandler(User_DoSomeOperations);
-                #endregion
 
-                #region 初始化UI
-                //BuildExtensionManagerControlsGroup();
                 BuildDeviceConnectSettingControlsGroup();
                 UpdateWorkSpacePanel();
                 UpdateDeviceInformation();
                 InitBWork();
                 #endregion
-
-                createShortCut(); 
+#if O2MICRO
+                createShortCut();
+#endif
+                do
+                {
+                    Thread.Sleep(10);
+                } while (startup == null);
                 startup.Dispatcher.BeginInvoke(new Action(() =>
                 {
                     startup.Close();
                 }));
             }
-            //catch (System.Exception ex)
+            catch (System.Exception ex)
             {
-                //CatchSystemException(ex.Message);
+                CatchSystemException(ex.Message);
             }
         }
 
@@ -152,6 +137,10 @@ namespace Cobra.Shell
 
         private void CatchSystemException(string str)
         {
+            do
+            {
+                Thread.Sleep(10);
+            } while (startup == null);
             startup.Dispatcher.Invoke(new Action(() =>
             {
                 startup.Close();
@@ -226,37 +215,7 @@ namespace Cobra.Shell
                     }
                 }
             }
-            //BtnStatusPanel.RowDefinitions[1].Height = new GridLength(Registry.busoptionslistview.Count * 100 + 20);
         }
-
-        /*private void BuildExtensionManagerControlsGroup()
-        {
-            DirectoryInfo directory = new DirectoryInfo(FolderMap.m_extensions_folder);
-            if (!directory.Exists) return;
-            else
-            {
-                string fullname = FolderMap.m_extension_common_name + FolderMap.m_extension_ext;
-                foreach (FileInfo file in directory.GetFiles(fullname))
-                {
-                    string filename = file.Name;
-                    filename = filename.Substring(0, file.Name.Length - file.Extension.Length);
-
-                    RibbonRadioButton extradbtn = new RibbonRadioButton();
-                    extradbtn.Margin = new Thickness(5, 8, 5, 7);
-                    extradbtn.FontSize = 12;
-                    extradbtn.FontFamily = new FontFamily("Arial");
-                    extradbtn.Label = filename;
-                    extradbtn.GroupName = ExtensionManagerGroup.Name;
-
-                    if (extradbtn.Label.Equals(Registry.GetCurExtensionFileName()))
-                        extradbtn.IsChecked = true;
-                    else
-                        extradbtn.IsChecked = false;
-
-                    ExtensionManagerGroup.Items.Add(extradbtn);
-                }
-            }
-        }*/
 
         private void BuildDeviceConnectSettingControlsGroup()
         {
@@ -280,7 +239,7 @@ namespace Cobra.Shell
 
                 DeviceRibbonControlGroup.Children.Add(devicecheckbox);
             }
-            
+
             RibbonButton devicebtn = new RibbonButton();
             /*devicebtn.Margin = new Thickness(10, 10, 5, 10);
             devicebtn.FontSize = 12;
@@ -378,188 +337,7 @@ namespace Cobra.Shell
             gm.controls = tb.Name;
             gm.message = "Ribbon Tab Switch";
         }
-/*
-        private void btnDelete_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            ControlMessage cmg = new ControlMessage();
-            cmg.message = "Please waiting....";
-            cmg.percent = 0;
-            cmg.bshow = true;
-            CallWaitControl(cmg);
 
-            // 在此处添加事件处理程序实现。
-            RibbonButton btn = (RibbonButton)sender;
-            for (int i = 0; i < ExtensionManagerGroup.Items.Count; i++)
-            {
-                RibbonRadioButton rbtn = (RibbonRadioButton)(ExtensionManagerGroup.Items[i]);
-                if (rbtn.IsChecked == false) continue;
-                else
-                {
-                    string filename = rbtn.Label;
-                    string fullname = filename + FolderMap.m_extension_ext;
-
-                    //检查当前工程是否正在运行，如果正在运行报警
-                    if (m_EM_Lib.CheckDevicesRun())
-                    {
-                        cmg.bshow = false;
-                        CallWaitControl(cmg);
-
-                        gm.message = "Some devices is running,Please stop firstly before deleting project!";
-                        gm.level = 1;
-                        gm.bupdate = true;
-                        CallWarningControl(gm);
-                        return;
-                    }
-
-                    if (MessageBox.Show("Do you want to delete the item?", "Warning!", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
-                    {
-                        ClearContainer();
-                        EMExtensionManage.m_EM_DevicesManage.Destroy();
-                        DirectoryInfo directory = new DirectoryInfo(FolderMap.m_extensions_folder);
-                        foreach (FileInfo file in directory.GetFiles(fullname))
-                        {
-                            if (file.Name.Equals(fullname))
-                                file.Delete();
-                        }
-
-                        ExtensionManagerGroup.Items.Remove(rbtn);
-
-                        cmg.bshow = false;
-                        CallWaitControl(cmg);
-
-                        gm.controls = btn.Name;
-                        gm.controls = "Delete " + filename + " project";
-                        return;
-                    }
-                    else
-                    {
-                        cmg.bshow = false;
-                        CallWaitControl(cmg);
-                        return;
-                    }
-                }
-            }
-
-            cmg.bshow = false;
-            CallWaitControl(cmg);
-
-            gm.message = "No item selected!";
-            CallWarningControl(gm);
-            return;
-        }
-        
-        private void btnSelect_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            string newprojname = String.Empty;
-            string oldprojname = String.Empty;
-            UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
-
-            ControlMessage cmg = new ControlMessage();
-            cmg.message = "Please wait....";
-            cmg.percent = 0;
-            cmg.bshow = true;
-            CallWaitControl(cmg);
-
-            // 在此处添加事件处理程序实现。
-            RibbonButton btn = (RibbonButton)sender;
-            gm.controls = btn.Name;
-            oldprojname = Registry.GetCurExtensionFileName();
-
-            int num = 0;
-            RibbonRadioButton rnbtn = new RibbonRadioButton();
-
-            for (; num < ExtensionManagerGroup.Items.Count; num++)
-            {
-                rnbtn = (RibbonRadioButton)(ExtensionManagerGroup.Items[num]);
-                if (rnbtn.IsChecked == true) break;
-            }
-            
-
-            if (num == ExtensionManagerGroup.Items.Count)
-            {
-                cmg.bshow = false;
-                CallWaitControl(cmg);
-                gm.message = "No item selected!";
-                gm.level = 1;
-                gm.bupdate = true;
-                CallWarningControl(gm);
-                return;
-            }
-
-            //检查当前工程是否正在运行，如果正在运行报警
-            if (m_EM_Lib.CheckDevicesRun())
-            {
-                for (int i = 0; i < ExtensionManagerGroup.Items.Count; i++)
-                {
-                    RibbonRadioButton rbtn = (RibbonRadioButton)(ExtensionManagerGroup.Items[i]);
-                    if (rbtn == null) continue;
-                    if (rbtn.Label.Equals(oldprojname))
-                    {
-                        rbtn.IsChecked = true;
-                        rnbtn.IsChecked = false;
-                    }
-                }
-
-                cmg.bshow = false;
-                CallWaitControl(cmg);
-                gm.message = "Some devices is running,Please stop firstly before switching project!";
-                gm.level = 1;
-                gm.bupdate = true;
-                CallWarningControl(gm);
-
-                return;
-            }
-
-            ret = m_EM_Lib.MonitorExtension(rnbtn.Label); //Add ID:592
-            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
-            {
-                for (int i = 0; i < ExtensionManagerGroup.Items.Count; i++)
-                {
-                    RibbonRadioButton rbtn = (RibbonRadioButton)(ExtensionManagerGroup.Items[i]);
-                    if (rbtn == null) continue;
-                    if (rbtn.Label.Equals(oldprojname))
-                    {
-                        rbtn.IsChecked = true;
-                        rnbtn.IsChecked = false;
-                    }
-                }
-
-                cmg.bshow = false;
-                CallWaitControl(cmg);
-                gm.message = LibErrorCode.GetErrorDescription(ret);
-                gm.level = 2;
-                gm.bupdate = true;
-                CallWarningControl(gm);
-                return;
-            }
-
-            ClearContainer();
-            newprojname = rnbtn.Label;
-            Registry.SaveCurExtensionFileName(newprojname);
-            FolderMap.m_curextensionfile_name = newprojname;
-
-            if (!m_EM_Lib.Init())
-            {
-                cmg.bshow = false;
-                CallWaitControl(cmg);
-                gm.message = "Version number does not match between COBRA and OCE, please load the correct OCE!";
-                gm.level = 1;
-                gm.bupdate = true;
-                CallWarningControl(gm);
-                return;
-            }
-            BuildDeviceConnectSettingControlsGroup();
-            UpdateWorkSpacePanel();
-            UpdateAMTPanel();
-
-            cmg.bshow = false;
-            CallWaitControl(cmg);
-            gm.message = "Selecte " + newprojname + " project";
-            gm.bupdate = true;
-            return;
-
-        }
-        */
         private void btnExtensionManager_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             ExtensionManager em = new ExtensionManager();
@@ -583,41 +361,9 @@ namespace Cobra.Shell
                     gm.controls = btn.Name;
                     oldprojname = Registry.GetCurExtensionFileName();
 
-                    /*int num = 0;
-                    RibbonRadioButton rnbtn = new RibbonRadioButton();
-
-                    for (; num < ExtensionManagerGroup.Items.Count; num++)
-                    {
-                        rnbtn = (RibbonRadioButton)(ExtensionManagerGroup.Items[num]);
-                        if (rnbtn.IsChecked == true) break;
-                    }
-
-
-                    if (num == ExtensionManagerGroup.Items.Count)
-                    {
-                        cmg.bshow = false;
-                        CallWaitControl(cmg);
-                        gm.message = "No item selected!";
-                        gm.level = 1;
-                        gm.bupdate = true;
-                        CallWarningControl(gm);
-                        return;
-                    }*/
-
                     //检查当前工程是否正在运行，如果正在运行报警
                     if (m_EM_Lib.CheckDevicesRun())
                     {
-                        /*for (int i = 0; i < ExtensionManagerGroup.Items.Count; i++)
-                        {
-                            RibbonRadioButton rbtn = (RibbonRadioButton)(ExtensionManagerGroup.Items[i]);
-                            if (rbtn == null) continue;
-                            if (rbtn.Label.Equals(oldprojname))
-                            {
-                                rbtn.IsChecked = true;
-                                rnbtn.IsChecked = false;
-                            }
-                        }*/
-
                         cmg.bshow = false;
                         CallWaitControl(cmg);
                         gm.message = "Some devices is running,Please stop firstly before switching project!";
@@ -631,17 +377,6 @@ namespace Cobra.Shell
                     ret = m_EM_Lib.MonitorExtension(em.SelectedFileName); //Add ID:592
                     if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
                     {
-                        /*for (int i = 0; i < ExtensionManagerGroup.Items.Count; i++)
-                        {
-                            RibbonRadioButton rbtn = (RibbonRadioButton)(ExtensionManagerGroup.Items[i]);
-                            if (rbtn == null) continue;
-                            if (rbtn.Label.Equals(oldprojname))
-                            {
-                                rbtn.IsChecked = true;
-                                rnbtn.IsChecked = false;
-                            }
-                        }*/
-
                         cmg.bshow = false;
                         CallWaitControl(cmg);
                         gm.message = LibErrorCode.GetErrorDescription(ret);
@@ -660,7 +395,7 @@ namespace Cobra.Shell
                     {
                         cmg.bshow = false;
                         CallWaitControl(cmg);
-                        gm.message = "Version number does not match between COBRA and OCE, please load the correct OCE!";
+                        gm.message = "Version number does not match between Shell and OCE, please load the correct OCE!";
                         gm.level = 1;
                         gm.bupdate = true;
                         CallWarningControl(gm);
@@ -668,7 +403,7 @@ namespace Cobra.Shell
                     }
                     BuildDeviceConnectSettingControlsGroup();
                     UpdateWorkSpacePanel();
-                    Title = "COBRA" + " (" + newprojname + ")";
+                    Title = newprojname;
                     COBRA_GLOBAL.CurrentOCEName = newprojname;   //Issue 1577 Leon
                     m_EM_Lib.GetExtensionToken();
 
@@ -794,35 +529,13 @@ namespace Cobra.Shell
             }));
         }
         #endregion
-
-        private void ResizePanel(bool bsize)
-        {/*
-            if (bsize)
-            {
-                Mainwindow.ColumnDefinitions[0].Width = new GridLength(20, GridUnitType.Star);
-                Mainwindow.ColumnDefinitions[1].Width = new GridLength(80, GridUnitType.Star);
-            }
-            else
-            {
-                Mainwindow.ColumnDefinitions[0].Width = new GridLength(0, GridUnitType.Star);
-                Mainwindow.ColumnDefinitions[1].Width = new GridLength(100, GridUnitType.Star);
-            }*/
-        }
-
         private void SystemBar_MenuItem_Click(object sender, RoutedEventArgs e)
         {
             MenuItem item = sender as MenuItem;
-
             if (item.IsChecked)
-            {
                 BtnStatusPanel.Visibility = Visibility.Collapsed;
-                ResizePanel(false);
-            }
             else
-            {
                 BtnStatusPanel.Visibility = Visibility.Visible;
-                ResizePanel(true);
-            }
         }
 
         private void MiniRibbonBar_MenuItem_Click(object sender, RoutedEventArgs e)
@@ -860,7 +573,7 @@ namespace Cobra.Shell
             RibbonButton btn = (RibbonButton)sender;
             if (LibInfor.m_bUpgrade)
             {
-                gm.message = "Cobra upgrade process is running!";
+                gm.message = "Upgrade process is running!";
                 gm.level = 2;
                 gm.bupdate = true;
                 CallWarningControl(gm);
@@ -885,12 +598,6 @@ namespace Cobra.Shell
                 SharedFormula.DeleteFolder(FolderMap.m_upgrade_folder);
                 SharedFormula.DirectoryCopy(dir.FullName, FolderMap.m_upgrade_folder, true);
             }
-
-            /*if (!MonitorExtension()) //Move to main thread ID:592
-            {
-                e.Cancel = true;
-                return;
-            }*/
             m_upgrade = Process.Start(FolderMap.m_upgrade_folder + FolderMap.m_upgrade_file + FolderMap.m_upgrade_ext);
             RemotingConfiguration.RegisterWellKnownServiceType(typeof(LibInfor), "LibInfor", WellKnownObjectMode.SingleCall);
             e.Cancel = true;
@@ -905,7 +612,7 @@ namespace Cobra.Shell
         private void RibbonWindow_Closed(object sender, EventArgs e) //ID:592
         {
             if (!Directory.Exists(FolderMap.m_dem_library_folder)) return;
-            Directory.Delete(FolderMap.m_dem_library_folder,true);
+            Directory.Delete(FolderMap.m_dem_library_folder, true);
         }
     }
 }

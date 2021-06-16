@@ -6,7 +6,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using System.Reflection;
-using System.ComponentModel;
+using System.Collections;
 using System.IO;
 using Cobra.Common;
 
@@ -57,7 +57,7 @@ namespace Cobra.DM
 
             //初始化HWModeDataManage数据结构
             if (!LoadDeviceDescriptionXML()) return false;
-
+            ReBuildBusOptions(ref busoptions);
             //实例化方法
             InitDEM(ref busoptions);
             return true;
@@ -74,10 +74,10 @@ namespace Cobra.DM
         }
 
         public void UpdataDEMParameterList(Parameter p)
-        { 
+        {
             m_dem_lib.UpdataDEMParameterList(p);
         }
-        
+
         /// <summary>
         /// 加载Device Strucutre XML
         /// 实例化参数并建立链表
@@ -93,7 +93,7 @@ namespace Cobra.DM
                 foreach (XElement node in targetNodes)
                 {
                     list = new DMParameterList(this, node);
-                               
+
                     m_SectionParamList_Container.AddParameterList(list);
                 }
                 BuildSFLsParamListContainer();
@@ -116,7 +116,7 @@ namespace Cobra.DM
             {
                 foreach (Parameter p in list.parameterlist)
                 {
-                    ICollection<string> key= p.sfllist.Keys;
+                    ICollection<string> key = p.sfllist.Keys;
                     foreach (string sfl in key)
                     {
                         foreach (string name in m_SFLNames_list)
@@ -148,7 +148,6 @@ namespace Cobra.DM
                 }
             }
         }
-
 
         /// <summary>
         /// 实例化
@@ -214,7 +213,6 @@ namespace Cobra.DM
         {
             return m_SFLsParamList_Container.GetParameterListByName(sType);
         }
-
         public void Destory()
         {
             //m_local_loader.Unload();
@@ -224,7 +222,7 @@ namespace Cobra.DM
             }
             catch (System.Exception ex)
             {
-            	
+
             }
             m_SFLsParamList_Container.deviceparameterlistcontainer.Clear();
             m_SectionParamList_Container.deviceparameterlistcontainer.Clear();
@@ -235,21 +233,157 @@ namespace Cobra.DM
             GC.WaitForPendingFinalizers();
         }
 
+        public void ReBuildBusOptions(ref BusOptions busOptions)
+        {
+            foreach (Parameter param in m_SectionParamList_Container.GetParameterListByGuid(BusOptions.BusOptionsElement).parameterlist)
+            {
+                if (param == null) continue;
+                InitSFLParameter(ref busOptions, param);
+            }
+        }
+
+        private void InitSFLParameter(ref BusOptions busOptions, Parameter param)
+        {
+            UInt16 index = 0;
+            UInt16 udata = 0;
+            Double ddata = 0.0;
+            bool bdata = false;
+            Options model = new Options();
+
+            model.guid = param.guid;
+            model.bedit = true;
+            model.berror = false;
+            model.brange = true;
+            model.sdevicename = busOptions.DeviceName;
+
+            foreach (DictionaryEntry de in param.sfllist["BusOptions"].nodetable)
+            {
+                switch (de.Key.ToString())
+                {
+                    case "NickName":
+                        model.nickname = de.Value.ToString();
+                        break;
+                    case "Order":
+                        {
+                            if (!UInt16.TryParse(de.Value.ToString(), out udata))
+                                model.order = 0;
+                            else
+                                model.order = udata;
+                            break;
+                        }
+                    case "EditType":
+                        {
+                            if (!UInt16.TryParse(de.Value.ToString(), out udata))
+                                model.editortype = 0;
+                            else
+                                model.editortype = udata;
+                            break;
+                        }
+                    case "Format":
+                        {
+                            if (!UInt16.TryParse(de.Value.ToString(), out udata))
+                                model.format = 0;
+                            else
+                                model.format = udata;
+                            break;
+                        }
+                    case "MinValue":
+                        {
+                            if (!Double.TryParse(de.Value.ToString(), out ddata))
+                                model.minvalue = 0.0;
+                            else
+                                model.minvalue = Convert.ToDouble(de.Value.ToString());
+                            break;
+                        }
+                    case "MaxValue":
+                        {
+                            if (!Double.TryParse(de.Value.ToString(), out ddata))
+                                model.maxvalue = 0.0;
+                            else
+                                model.maxvalue = Convert.ToDouble(de.Value.ToString());
+                            break;
+                        }
+                    case "Catalog":
+                        model.catalog = de.Value.ToString();
+                        break;
+                    case "DefValue":
+                        {
+                            if (!Double.TryParse(de.Value.ToString(), out ddata))
+                                model.data = 0.0;
+                            else
+                                model.data = Convert.ToDouble(de.Value.ToString());
+                            break;
+                        }
+                    case "BRange":
+                        {
+                            if (!Boolean.TryParse(de.Value.ToString(), out bdata))
+                                model.brange = true;
+                            else
+                                model.brange = bdata;
+                            break;
+                        }
+                    default:
+                        break;
+                }
+            }
+
+            switch ((UI_TYPE)model.editortype)
+            {
+                case UI_TYPE.TextBox_Type:
+                    model.sphydata = string.Format("{0:F0}", param.phydata);
+                    break;
+                case UI_TYPE.CheckBox_Type:
+                    model.sphydata = (param.phydata > 0) ? "1" : "0";
+                    break;
+                case UI_TYPE.ComboBox_Type:
+                    {
+                        index = 0;
+                        if (model.guid == BusOptions.ConnectPort_GUID) break;
+                        foreach (string str in param.itemlist)
+                        {
+                            ComboboxRoad cRoad = new ComboboxRoad();
+                            cRoad.ID = index;
+                            cRoad.Info = str;
+                            try
+                            {
+                                if ((str.ToLower().IndexOf("true") != -1) || (str.ToLower().IndexOf("false") != -1))
+                                {
+                                    cRoad.Code = (UInt16)((Convert.ToBoolean(cRoad.Info) == true) ? 1 : 0);
+                                }
+                                else
+                                {
+                                    cRoad.Code = Convert.ToUInt16(cRoad.Info, 16);
+                                }
+                            }
+                            catch
+                            {
+                                cRoad.Code = 0;
+                            }
+                            model.LocationSource.Add(cRoad);
+                            index++;
+                        }
+                        if (model.LocationSource.Count != 0)
+                        {
+                            UInt16 inx = (UInt16)model.data;
+                            if ((inx > model.maxvalue) || (inx < model.minvalue)) inx = 0;
+                            model.SelectLocation = model.LocationSource[inx];
+                            model.sphydata = model.SelectLocation.Info;
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+            if ((model.data > model.maxvalue) || (model.data < model.minvalue))
+                model.berror = true;
+            else
+                model.berror = false;
+            busOptions.optionsList.Add(model);
+        }
         #region 设备操作
         public UInt32 GetDeviceInfor(ref DeviceInfor deviceinfor)
         {
-            AutomationElement el = null;
-            try
-            {
-                el = m_busoption.GetATMElementbyGuid(AutomationElement.GUIDATMTestStart);
-                if ((el != null) && (el.dbValue != 0)) //AutoMationTest Mode
-                    return LibErrorCode.IDS_ERR_SUCCESSFUL;
-            }
-            catch (System.Exception ex)
-            {
-                return LibErrorCode.IDS_ERR_SUCCESSFUL;
-            }
-           return m_dem_lib.GetDeviceInfor(ref deviceinfor);
+            return m_dem_lib.GetDeviceInfor(ref deviceinfor);
         }
 
         public UInt32 Erase(ref TASKMessage bgworker)
