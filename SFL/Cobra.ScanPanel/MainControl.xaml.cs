@@ -1897,12 +1897,23 @@ namespace Cobra.ScanPanel
                         //if (errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
                         //EnterStopState(errorcode);
                     }
-                    if (errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                    //if (errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                    //{
+                    //    this.Dispatcher.Invoke(new EnterStopStateDelegate(EnterStopState), errorcode, session_id, session_row_number);
+                    //}
+                    else
                     {
-                        //this.Dispatcher.Invoke(new EnterStopStateDelegate(EnterStopState), errorcode);
-                        this.Dispatcher.Invoke(new EnterStopStateDelegate(EnterStopState), errorcode, session_id, session_row_number);
+                        MarkError(dynamicdatalist.parameterlist);
                     }
                 }
+            }
+        }
+
+        private void MarkError(AsyncObservableCollection<Parameter> parameterlist)
+        {
+            foreach (var param in parameterlist)
+            {
+                param.phydata = -999999;
             }
         }
 

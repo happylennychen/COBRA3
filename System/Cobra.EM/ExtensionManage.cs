@@ -1,7 +1,7 @@
-#define debug
+//#define debug
 //#define x
 //#define extension
-#define y
+//#define y
 //#define m
 using System;
 using System.Text;
@@ -125,7 +125,7 @@ namespace Cobra.EM
             //string projectname = "KALL8";
             //string projectname = "OZ2610";
             //string projectname = "Woodpecker10";
-            //string projectname = "Woodpecker8";
+            string projectname = "Woodpecker8";
             //string projectname = "Pikachu5";
             //string extension = " 3717";
             //string projectname = "KALL17";
@@ -133,7 +133,7 @@ namespace Cobra.EM
             //string projectname = "SP8G2";
             //string projectname = "KALL";
             //string extension = " 7703";
-            string projectname = "Azalea14";
+            //string projectname = "Azalea14";
 #endif
 #if x
             string xmlxpath = FolderMap.m_main_folder.Remove(FolderMap.m_main_folder.LastIndexOf("output\\"));

@@ -631,7 +631,8 @@ namespace Cobra.ProductionPanel
             //{
             //    return ret;
             //}
-            MessageBox.Show("Please make sure Board Config are set properly.");
+            //MessageBox.Show("Please make sure Board Config are set properly.");
+            PromptMessage("Please make sure Board Config are set properly.");       //Issue 2631
 
             for (byte i = 0; i < 8; i++)
             {
