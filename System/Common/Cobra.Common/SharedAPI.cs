@@ -8,6 +8,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Xml;
+using System.Security.Cryptography;
 
 namespace Cobra.Common
 {
@@ -204,6 +205,34 @@ namespace Cobra.Common
                     }
                     return blist;
                 }
+            }
+        }
+
+        public static string GetMD5(string content)
+        {
+            return GetMD5(Encoding.UTF8.GetBytes(content));
+        }
+
+        public static string GetMD5(byte[] content)
+        {
+            using (MD5 md5Hash = MD5.Create())
+            {
+                // Convert the input string to a byte array and compute the hash.
+                byte[] data = md5Hash.ComputeHash(content);
+
+                // Create a new Stringbuilder to collect the bytes
+                // and create a string.
+                StringBuilder sBuilder = new StringBuilder();
+
+                // Loop through each byte of the hashed data 
+                // and format each one as a hexadecimal string.
+                for (int i = 0; i < data.Length; i++)
+                {
+                    sBuilder.Append(data[i].ToString("x2"));
+                }
+
+                // Return the hexadecimal string.
+                return sBuilder.ToString();
             }
         }
     }

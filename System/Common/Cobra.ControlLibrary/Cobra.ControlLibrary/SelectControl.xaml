@@ -23,7 +23,7 @@
             </Border.Background>
         </Border>
         <Border>
-            <Grid x:Name="LayoutRoot" Background="#F03A3A3A" Width="320" Height="150">
+            <Grid x:Name="LayoutRoot" Background="#F03A3A3A" Width="320" Height="350">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="0.3*" />
                     <RowDefinition Height="0.4*" />

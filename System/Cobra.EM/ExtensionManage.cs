@@ -286,6 +286,9 @@ namespace Cobra.EM
         public void GetExtensionToken()		//Issue1741 Leon
         {
             Dictionary<string, string> TokenContent = new Dictionary<string, string>(); //存放token的数据结构
+            Dictionary<string, string> DLLTokenContent = new Dictionary<string, string>(); //存放dll token的数据结构
+            Dictionary<string, string> ParamTokenContent = new Dictionary<string, string>(); //存放parameter token的数据结构
+            Dictionary<string, string> BoardTokenContent = new Dictionary<string, string>(); //存放board token的数据结构
 
 
             XmlDocument m_extDescrip_xmlDoc = new XmlDocument();
@@ -297,21 +300,8 @@ namespace Cobra.EM
             FileInfo fi = new FileInfo(dllfilefullpath);
             string dllfilename = string.Format("{0}{1}", root.GetAttribute("libname"), ".dll");
 
-
-            /*XDocument doc = XDocument.Load(extxmlfullname);
-
-            var SFLLabels = (from button in doc.Descendants("Button")       //获得SFL名称
-                             where (button.Attribute("PanelName") != null && button.Attribute("PanelName").Value.Equals("Cobra.DeviceConfigurationPanel"))
-                             select button.Attribute("Label").Value
-                                 ).ToList();*/
             string devxmlfullname = FolderMap.m_extension_monitor_folder + FolderMap.m_dev_descrip_xml_name + FolderMap.m_extension_work_ext;
             XDocument doc = XDocument.Load(devxmlfullname);
-            /*var strpair = (from sflnode in doc.Descendants("SFL")
-                           where sflnode.Attribute("Name").Value == "EFUSE Config"
-                           select new string[] {
-                               sflnode.Element("NickName").Value,
-                               sflnode.Ancestors(""
-                           }).ToList();*/
 
             var strpair = (from ele in doc.Descendants("Element")
                            where ele.Element("Private") != null && ele.Element("Private").Element("SFL") != null && ele.Element("Private").Element("SFL").Attribute("Name").Value == COBRA_GLOBAL.Constant.NewEFUSEConfigName
@@ -323,6 +313,7 @@ namespace Cobra.EM
             foreach (var i in strpair)
             {
                 TokenContent.Add(i[0], i[1]);
+                ParamTokenContent.Add(i[0], i[1]);
             }
             strpair = (from ele in doc.Descendants("Element")
                        where ele.Element("Private") != null && ele.Element("Private").Element("SFL") != null && ele.Element("Private").Element("SFL").Attribute("Name").Value == COBRA_GLOBAL.Constant.NewBoardConfigName
@@ -334,38 +325,42 @@ namespace Cobra.EM
             foreach (var i in strpair)
             {
                 TokenContent.Add(i[0], i[1]);
+                BoardTokenContent.Add(i[0], i[1]);
             }
 
-            //TokenContent = TokenContent.OrderBy(o => o.Key).ToDictionary(o => o.Key, o => o.Value); //排除顺序影响
-            TokenContent.Add(dllfilename, fi.Length.ToString());
+            FileStream fs = new FileStream(dllfilefullpath, FileMode.Open);
+            BinaryReader br = new BinaryReader(fs);
+            COBRA_GLOBAL.CurrentDLLToken = SharedAPI.GetMD5(br.ReadBytes((int)fs.Length));
+            br.Close();
+            fs.Close();
+            DLLTokenContent.Add(dllfilename, COBRA_GLOBAL.CurrentDLLToken);
+            TokenContent.Add(dllfilename, COBRA_GLOBAL.CurrentDLLToken);
 
-            String str = String.Empty;      //以string形式返回Token
-            foreach (var k in TokenContent.Keys)
-            {
-                str += k + ":" + TokenContent[k] + ";";
-            }
             //return str;
-            COBRA_GLOBAL.CurrentOCEToken = str;
+            var CurrentOCEToken = GetStringFromDic(TokenContent);
 
-            using (MD5 md5Hash = MD5.Create())
+            COBRA_GLOBAL.CurrentOCEToken = SharedAPI.GetMD5(CurrentOCEToken);
+
+
+            //COBRA_GLOBAL.CurrentDLLToken = GetStringFromDic(DLLTokenContent);
+
+            var CurrentParamToken = GetStringFromDic(ParamTokenContent);
+
+            COBRA_GLOBAL.CurrentParamToken = SharedAPI.GetMD5(CurrentParamToken);
+
+            var CurrentBoardToken = GetStringFromDic(BoardTokenContent);
+
+            COBRA_GLOBAL.CurrentBoardToken = SharedAPI.GetMD5(CurrentBoardToken);
+        }
+
+        private string GetStringFromDic(Dictionary<string, string> tokenContent)
+        {
+            String str = String.Empty;      //以string形式返回Token
+            foreach (var k in tokenContent.Keys)
             {
-                // Convert the input string to a byte array and compute the hash.
-                byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(str));
-
-                // Create a new Stringbuilder to collect the bytes
-                // and create a string.
-                StringBuilder sBuilder = new StringBuilder();
-
-                // Loop through each byte of the hashed data 
-                // and format each one as a hexadecimal string.
-                for (int i = 0; i < data.Length; i++)
-                {
-                    sBuilder.Append(data[i].ToString("x2"));
-                }
-
-                // Return the hexadecimal string.
-                COBRA_GLOBAL.CurrentOCETokenMD5 = sBuilder.ToString();
+                str += k + ":" + tokenContent[k] + ";";
             }
+            return str;
         }
     }
 }

@@ -30,6 +30,9 @@ namespace Cobra.DeviceConfigurationPanel
     {
         public readonly static string CFG_VERSION_NODE = "CFG_VERSION";
         public readonly static string OCE_TOKEN_NODE = "OCE_TOKEN";
+        public readonly static string DLL_TOKEN_NODE = "DLL_TOKEN";
+        public readonly static string PARAM_TOKEN_NODE = "PARAM_TOKEN";
+        public readonly static string BOARD_TOKEN_NODE = "BOARD_TOKEN";
         public readonly static string MD5_NODE = "MD5";
         public readonly static string PRODUCT_FAMILY_NODE = "PRODUCT_FAMILY";
         public readonly static string BIN_MD5_NODE = "BIN_MD5";
@@ -78,7 +81,7 @@ namespace Cobra.DeviceConfigurationPanel
         public List<SFLModel> TotalList
         {
             get
-           {
+            {
                 var list = cfgViewModel.sfl_parameterlist.ToList();
                 list.AddRange(boardViewModel.sfl_parameterlist.ToList());
                 return list;
@@ -529,11 +532,15 @@ namespace Cobra.DeviceConfigurationPanel
             doc.Load(cfgfullpath);
             XmlElement root = doc.DocumentElement;
 
-            string SOCETokenMD5 = COBRA_GLOBAL.CurrentOCETokenMD5;
-            string SCFGVersion = ConstantSettings.CFG_VERSION_INT.ToString();
-            SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.CFG_VERSION_NODE, SCFGVersion);
+            SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.CFG_VERSION_NODE, ConstantSettings.CFG_VERSION_INT.ToString());
 
-            SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.OCE_TOKEN_NODE, SOCETokenMD5);
+            SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.OCE_TOKEN_NODE, COBRA_GLOBAL.CurrentOCEToken);
+
+            SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.DLL_TOKEN_NODE, COBRA_GLOBAL.CurrentDLLToken);
+
+            SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.PARAM_TOKEN_NODE, COBRA_GLOBAL.CurrentParamToken);
+
+            SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.BOARD_TOKEN_NODE, COBRA_GLOBAL.CurrentBoardToken);
 
             SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.PRODUCT_FAMILY_NODE, ProductFamily);
 
@@ -545,7 +552,8 @@ namespace Cobra.DeviceConfigurationPanel
             CreateSubNodes(doc, root, ConstantSettings.BOARD_NODE, boardList);
 
             string hash;
-            hash = GetUIMD5Code(TotalList, BIN_MD5_STR);
+            //hash = GetUIMD5Code(TotalList, BIN_MD5_STR);
+            hash = GetXMLMD5Code(root);
             SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.MD5_NODE, hash);
 
             doc.Save(cfgfullpath);
@@ -785,7 +793,7 @@ namespace Cobra.DeviceConfigurationPanel
                 openFileDialog.FileName = "default";
                 openFileDialog.FilterIndex = 1;
                 openFileDialog.RestoreDirectory = true;
-                openFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
+                //openFileDialog.InitialDirectory = FolderMap.m_currentproj_folder;
                 if (openFileDialog.ShowDialog() == true)
                 {
                     if (parent == null) return;
@@ -809,6 +817,7 @@ namespace Cobra.DeviceConfigurationPanel
         }
         internal bool LoadFile(string fullpath)
         {
+            string warning = string.Empty;
             #region File format check
             XmlDocument doc = new XmlDocument();
             try
@@ -824,54 +833,123 @@ namespace Cobra.DeviceConfigurationPanel
             #endregion
             XmlElement root = doc.DocumentElement;
 
+            #region MD5 Check
+            string hashofxml = GetXMLMD5Code(root);
+            string hashinxml = GetValueFromXML(root, ConstantSettings.MD5_NODE);
+            if (string.IsNullOrEmpty(hashinxml))
+            {
+                msg.gm.message = "Cannot get MD5 in file!\nProceed?";
+                CallSelectControl(msg.gm);
+                if (!msg.controlmsg.bcancel)
+                    return false;
+                else
+                    warning = string.Empty;
+            }
+            else if (hashofxml != hashinxml)
+            {
+                warning = $"MD5 in file: {hashinxml}\n";
+                warning += $"MD5 of file: {hashofxml}\n";
+                warning += "MD5 Mismatch!\nProceed?";
+                msg.gm.message = warning;
+                CallSelectControl(msg.gm);
+                if (!msg.controlmsg.bcancel) 
+                    return false;
+                else
+                    warning = string.Empty;
+            }
+            #endregion
             #region CFG Version Check
             string CFGVersionInXML = GetValueFromXML(root, ConstantSettings.CFG_VERSION_NODE);
             if (string.IsNullOrEmpty(CFGVersionInXML))
             {
-                gm.message = "No CFG Version in XML!";
-                gm.level = 2;
-                CallWarningControl(gm);
-                return false;
+                msg.gm.message = "No CFG Version in XML!\nProceed?";
+                CallSelectControl(msg.gm);
+                if (!msg.controlmsg.bcancel)
+                    return false;
+                else
+                    warning = string.Empty;
             }
-            if (CFGVersionInXML != ConstantSettings.CFG_VERSION_INT.ToString())
+            else if (CFGVersionInXML != ConstantSettings.CFG_VERSION_INT.ToString())
             {
-                string warning = "CFG Version in file: " + CFGVersionInXML;
-                warning += "\nCFG Version you are using: " + ConstantSettings.CFG_VERSION_INT.ToString();
-                warning += "\nCFG Version Mismatch! Load failed!";
-                gm.message = warning;
-                gm.level = 2;
-                CallWarningControl(gm);
-                return false;
+                warning = $"CFG Version in file: {CFGVersionInXML}\n";
+                warning += $"CFG Version you are using: {ConstantSettings.CFG_VERSION_INT.ToString()}\n";
+                warning += "CFG Version Mismatch!\nProceed?";
+                msg.gm.message = warning;
+                CallSelectControl(msg.gm);
+                if (!msg.controlmsg.bcancel)
+                    return false;
+                else
+                    warning = string.Empty;
             }
 
             #endregion
-            #region OCEToken Check
+            #region Token Check
+            warning = string.Empty;
+            #region OCETokenMD5 Check
             string OCETokenMD5FromRuntime = string.Empty;
-            OCETokenMD5FromRuntime = COBRA_GLOBAL.CurrentOCETokenMD5;
-            if (OCETokenMD5FromRuntime == string.Empty)
-            {
-                gm.message = "Cannot get OCE Token MD5! Load failed!";
-                gm.level = 2;
-                CallWarningControl(gm);
-                return false;
-            }
+            OCETokenMD5FromRuntime = COBRA_GLOBAL.CurrentOCEToken;
             string OCETokenInXML = GetValueFromXML(root, ConstantSettings.OCE_TOKEN_NODE);
             if (string.IsNullOrEmpty(OCETokenInXML))
             {
-                gm.message = "No OCE Token in XML!";
-                gm.level = 2;
-                CallWarningControl(gm);
-                return false;
+                warning += "No OCE Token in XML!\n";
             }
-            if (OCETokenInXML != OCETokenMD5FromRuntime)
+            else if (OCETokenInXML != OCETokenMD5FromRuntime)
             {
-                string warning = "OCE Token in file: " + OCETokenInXML;
-                warning += "\nOCE Token in OCE: " + OCETokenMD5FromRuntime;
-                warning += "\nOCE Mismatch!";
-                gm.message = warning;
-                gm.level = 2;
-                CallWarningControl(gm);
-                return false;
+                warning += $"OCE Token in file: {OCETokenInXML}\n"; 
+                warning += $"OCE Token in OCE: {OCETokenMD5FromRuntime}\n";
+                warning += "OCE Mismatch!\n";
+            }
+            #endregion
+            #region DLLToken Check
+            string DLLTokenFromRuntime = string.Empty;
+            DLLTokenFromRuntime = COBRA_GLOBAL.CurrentDLLToken;
+            string DLLTokenInXML = GetValueFromXML(root, ConstantSettings.DLL_TOKEN_NODE);
+            if (string.IsNullOrEmpty(DLLTokenInXML))
+            {
+                warning += "No DLL Token in XML!\n";
+            }
+            else if (DLLTokenInXML != DLLTokenFromRuntime)
+            {
+                warning += $"DLL in file: {DLLTokenInXML}\n";
+                warning += $"DLL in OCE: {DLLTokenFromRuntime}\n";
+                warning += "DLL Mismatch!\n";
+            }
+            #endregion
+            #region ParamToken Check
+            string ParamTokenFromRuntime = string.Empty;
+            ParamTokenFromRuntime = COBRA_GLOBAL.CurrentParamToken;
+            string ParamTokenInXML = GetValueFromXML(root, ConstantSettings.PARAM_TOKEN_NODE);
+            if (string.IsNullOrEmpty(ParamTokenInXML))
+            {
+                warning += "No Param Token in XML!\n";
+            }
+            else if (ParamTokenInXML != ParamTokenFromRuntime)
+            {
+                warning += $"Param in file: {ParamTokenInXML}\n";
+                warning += $"Param Token in OCE: {ParamTokenFromRuntime}\n";
+                warning += "Param Token Mismatch!\n";
+            }
+            #endregion
+            #region BoardToken Check
+            string BoardTokenFromRuntime = string.Empty;
+            BoardTokenFromRuntime = COBRA_GLOBAL.CurrentBoardToken;
+            string BoardTokenInXML = GetValueFromXML(root, ConstantSettings.BOARD_TOKEN_NODE);
+            if (string.IsNullOrEmpty(BoardTokenInXML))
+            {
+                warning += "No Board Token in XML!\n";
+            }
+            else if (BoardTokenInXML != BoardTokenFromRuntime)
+            {
+                warning += $"Board in file: {BoardTokenInXML}\n";
+                warning += $"Board Token in OCE: {BoardTokenFromRuntime}\n";
+                warning += "Board Token Mismatch!\n";
+            }
+            #endregion
+            if (warning != string.Empty)
+            {
+                msg.gm.message = warning + "Proceed?";
+                CallSelectControl(msg.gm);
+                if (!msg.controlmsg.bcancel) return false;
             }
             #endregion
             #region Product Family Check
@@ -899,34 +977,6 @@ namespace Cobra.DeviceConfigurationPanel
 
             #endregion
             //No need to check BIN_MD5 here
-            #region MD5 Check
-            string hashofxml = GetFileMD5Code(root);
-            if (string.IsNullOrEmpty(hashofxml))
-            {
-                gm.message = "Cannot get MD5! Load failed!";
-                gm.level = 2;
-                CallWarningControl(gm);
-                return false;
-            }
-            string hashinxml = GetValueFromXML(root, ConstantSettings.MD5_NODE);
-            if (string.IsNullOrEmpty(hashinxml))
-            {
-                gm.message = "Cannot get MD5 in file! Load failed!";
-                gm.level = 2;
-                CallWarningControl(gm);
-                return false;
-            }
-            if (hashofxml != hashinxml)
-            {
-                string warning = "MD5 in file: " + hashinxml;
-                warning += "\nMD5 of file: " + hashofxml;
-                warning += "\nMD5 Mismatch! Load failed!";
-                gm.message = warning;
-                gm.level = 2;
-                CallWarningControl(gm);
-                return false;
-            }
-            #endregion
 
             foreach (XmlNode xn in root.ChildNodes)
             {
@@ -971,58 +1021,7 @@ namespace Cobra.DeviceConfigurationPanel
         }
         #endregion
         #region MD5
-
-        private string GetUIMD5Code(List<SFLModel> models, string BIN_MD5_STR)
-        {
-
-            StringBuilder sb = new StringBuilder();
-
-
-            string SOCETokenMD5 = COBRA_GLOBAL.CurrentOCETokenMD5;
-            string SCFGVersion = ConstantSettings.CFG_VERSION_INT.ToString();
-            sb.Append(ConstantSettings.CFG_VERSION_NODE);
-            sb.Append(SCFGVersion);
-            sb.Append(ConstantSettings.OCE_TOKEN_NODE);
-            sb.Append(SOCETokenMD5);
-            sb.Append(ConstantSettings.PRODUCT_FAMILY_NODE);
-            sb.Append(ProductFamily);
-            sb.Append(ConstantSettings.BIN_MD5_NODE);
-            sb.Append(BIN_MD5_STR);
-
-            foreach (SFLModel model in models)
-            {
-                if (model == null) continue;
-                string name = model.nickname;
-                sb.Append(name);
-                string strval;
-                switch (model.editortype)
-                {
-                    case 0:
-                        {
-                            strval = model.sphydata;
-                            break;
-                        }
-                    case 1:
-                        {
-                            strval = model.itemlist[model.listindex];
-                            break;
-                        }
-                    case 2:
-                        {
-                            strval = String.Format("{0:F1}", model.data);
-                            break;
-                        }
-                    default:
-                        strval = model.sphydata;
-                        break; ;
-                }
-                sb.Append(strval);
-            }
-            string hash = GetMd5Hash(sb.ToString());
-            return hash;
-        }
-
-        private string GetFileMD5Code(XmlElement root)
+        private string GetXMLMD5Code(XmlElement root)
         {
             StringBuilder sb = new StringBuilder();
             foreach (XmlNode xn in root.ChildNodes)
@@ -1048,11 +1047,6 @@ namespace Cobra.DeviceConfigurationPanel
             }
             string hash = GetMd5Hash(sb.ToString());
             return hash;
-        }
-
-        private string GetShortCode(string fullcode)
-        {
-            return fullcode.Substring(fullcode.Length - 5);
         }
 
         private string GetMd5Hash(string input)
