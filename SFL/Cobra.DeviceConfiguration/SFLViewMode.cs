@@ -304,7 +304,9 @@ namespace Cobra.DeviceConfigurationPanel
                 p.errorcode = LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL_PARAM_INVALID;
             }
             else
+            {
                 p.berror = false;
+            }
             
             if(p.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
                 p.berror = true;

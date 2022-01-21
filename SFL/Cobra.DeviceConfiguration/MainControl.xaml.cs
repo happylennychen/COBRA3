@@ -28,6 +28,7 @@ namespace Cobra.DeviceConfigurationPanel
 
     public static class ConstantSettings	//Leon: 在DeviceConfig这边用到的一些常量
     {
+        public readonly static string OCE_NAME_NODE = "OCE_NAME";
         public readonly static string CFG_VERSION_NODE = "CFG_VERSION";
         public readonly static string OCE_TOKEN_NODE = "OCE_TOKEN";
         public readonly static string DLL_TOKEN_NODE = "DLL_TOKEN";
@@ -406,6 +407,15 @@ namespace Cobra.DeviceConfigurationPanel
                 CallWarningControl(m);
                 return;
             }
+            string OCEName = GetOCEName();
+            if (OCEName == string.Empty)
+            {
+                msg.gm.message = "The CFG file will not contain OCEName info.\n" +
+                    "Proceed?";
+                CallSelectControl(msg.gm);
+                if (!msg.controlmsg.bcancel)
+                    return;
+            }
 
             string fullpath = "";
             string chipname = GetChipName();    //Issue1373
@@ -439,7 +449,9 @@ namespace Cobra.DeviceConfigurationPanel
         {
             foreach (SFLModel model in cfgViewModel.sfl_parameterlist)
             {
-                if (model.berror && (model.errorcode & LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL) == LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL)
+                if (model.berror
+                    && (model.errorcode & LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL) == LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL       //Leon: 
+                    )
                     return LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL_PARAM_INVALID;
             }
             return LibErrorCode.IDS_ERR_SUCCESSFUL;
@@ -448,6 +460,11 @@ namespace Cobra.DeviceConfigurationPanel
         {
             XmlElement root = EMExtensionManage.m_extDescrip_xmlDoc.DocumentElement;
             return root.GetAttribute("chip");
+        }
+        private string GetOCEName()
+        {
+            XmlElement root = EMExtensionManage.m_extDescrip_xmlDoc.DocumentElement;
+            return root.GetAttribute("OCEName");
         }
         internal void SaveFile(ref string fullpath)
         {
@@ -531,6 +548,10 @@ namespace Cobra.DeviceConfigurationPanel
             XmlDocument doc = new XmlDocument();
             doc.Load(cfgfullpath);
             XmlElement root = doc.DocumentElement;
+
+            var OCEName = GetOCEName();
+            if (!OCEName.Equals(string.Empty))
+                SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.OCE_NAME_NODE, OCEName);
 
             SharedAPI.XmlAddOneNode(doc, root, ConstantSettings.CFG_VERSION_NODE, ConstantSettings.CFG_VERSION_INT.ToString());
 
@@ -847,12 +868,12 @@ namespace Cobra.DeviceConfigurationPanel
             }
             else if (hashofxml != hashinxml)
             {
-                warning = $"MD5 in file: {hashinxml}\n";
-                warning += $"MD5 of file: {hashofxml}\n";
-                warning += "MD5 Mismatch!\nProceed?";
+                //warning = $"MD5 in file: {hashinxml}\n";
+                //warning += $"MD5 of file: {hashofxml}\n";
+                warning += "File has been changed!\nProceed?";
                 msg.gm.message = warning;
                 CallSelectControl(msg.gm);
-                if (!msg.controlmsg.bcancel) 
+                if (!msg.controlmsg.bcancel)
                     return false;
                 else
                     warning = string.Empty;
@@ -871,8 +892,8 @@ namespace Cobra.DeviceConfigurationPanel
             }
             else if (CFGVersionInXML != ConstantSettings.CFG_VERSION_INT.ToString())
             {
-                warning = $"CFG Version in file: {CFGVersionInXML}\n";
-                warning += $"CFG Version you are using: {ConstantSettings.CFG_VERSION_INT.ToString()}\n";
+                //warning = $"CFG Version in file: {CFGVersionInXML}\n";
+                //warning += $"CFG Version you are using: {ConstantSettings.CFG_VERSION_INT.ToString()}\n";
                 warning += "CFG Version Mismatch!\nProceed?";
                 msg.gm.message = warning;
                 CallSelectControl(msg.gm);
@@ -895,9 +916,9 @@ namespace Cobra.DeviceConfigurationPanel
             }
             else if (OCETokenInXML != OCETokenMD5FromRuntime)
             {
-                warning += $"OCE Token in file: {OCETokenInXML}\n"; 
-                warning += $"OCE Token in OCE: {OCETokenMD5FromRuntime}\n";
-                warning += "OCE Mismatch!\n";
+                //warning += $"OCE Token in file: {OCETokenInXML}\n"; 
+                //warning += $"OCE Token in OCE: {OCETokenMD5FromRuntime}\n";
+                warning += "CFG file is not made by current OCE!\n";
             }
             #endregion
             #region DLLToken Check
@@ -910,9 +931,9 @@ namespace Cobra.DeviceConfigurationPanel
             }
             else if (DLLTokenInXML != DLLTokenFromRuntime)
             {
-                warning += $"DLL in file: {DLLTokenInXML}\n";
-                warning += $"DLL in OCE: {DLLTokenFromRuntime}\n";
-                warning += "DLL Mismatch!\n";
+                //warning += $"DLL in file: {DLLTokenInXML}\n";
+                //warning += $"DLL in OCE: {DLLTokenFromRuntime}\n";
+                warning += "Converting algorithm may be different!\n";
             }
             #endregion
             #region ParamToken Check
@@ -925,9 +946,9 @@ namespace Cobra.DeviceConfigurationPanel
             }
             else if (ParamTokenInXML != ParamTokenFromRuntime)
             {
-                warning += $"Param in file: {ParamTokenInXML}\n";
-                warning += $"Param Token in OCE: {ParamTokenFromRuntime}\n";
-                warning += "Param Token Mismatch!\n";
+                //warning += $"Param in file: {ParamTokenInXML}\n";
+                //warning += $"Param Token in OCE: {ParamTokenFromRuntime}\n";
+                warning += "Parameters are different! Paramenters in CFG file may be insufficient, superfluous or invalid.\n";
             }
             #endregion
             #region BoardToken Check
@@ -940,9 +961,9 @@ namespace Cobra.DeviceConfigurationPanel
             }
             else if (BoardTokenInXML != BoardTokenFromRuntime)
             {
-                warning += $"Board in file: {BoardTokenInXML}\n";
-                warning += $"Board Token in OCE: {BoardTokenFromRuntime}\n";
-                warning += "Board Token Mismatch!\n";
+                //warning += $"Board in file: {BoardTokenInXML}\n";
+                //warning += $"Board Token in OCE: {BoardTokenFromRuntime}\n";
+                warning += "Board settings are different! Board settings in CFG file may be insufficient, superfluous or invalid.\n\n";
             }
             #endregion
             if (warning != string.Empty)
@@ -1369,6 +1390,16 @@ namespace Cobra.DeviceConfigurationPanel
         #region Write
         private void WriteBtn_Click(object sender, RoutedEventArgs e)
         {
+            UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
+            ret = ParameterValidityCheck();
+            if (ret != LibErrorCode.IDS_ERR_SUCCESSFUL)
+            {
+                var m = new GeneralMessage();
+                m.message = LibErrorCode.GetErrorDescription(ret);
+                m.level = 2;
+                CallWarningControl(m);
+                return;
+            }
             msg.owner = this;
             msg.gm.sflname = sflname;
             btnControl btn_ctrl = null;

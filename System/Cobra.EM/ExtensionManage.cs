@@ -124,8 +124,8 @@ namespace Cobra.EM
 #if debug
             //string projectname = "KALL8";
             //string projectname = "OZ2610";
-            //string projectname = "Woodpecker10";
-            string projectname = "Woodpecker8";
+            string projectname = "Woodpecker10";
+            //string projectname = "Woodpecker8";
             //string projectname = "Pikachu5";
             //string extension = " 3717";
             //string projectname = "KALL17";

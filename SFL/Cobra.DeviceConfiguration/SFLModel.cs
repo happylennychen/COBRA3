@@ -46,7 +46,7 @@ namespace Cobra.DeviceConfigurationPanel
             get { return m_Data; }
             set
             {
-                if (m_Data != value)
+                if (m_Data != value)        //Leon: 这一句不能去掉,不然会crash
                 {
                     m_Data = value;
                     OnPropertyChanged("data");
