@@ -450,7 +450,7 @@ namespace Cobra.DeviceConfigurationPanel
             foreach (SFLModel model in cfgViewModel.sfl_parameterlist)
             {
                 if (model.berror
-                    && (model.errorcode & LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL) == LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL       //Leon: 
+                    || (model.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)        //Leon: 与改成或，任何一个错了都拦下来
                     )
                     return LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL_PARAM_INVALID;
             }
