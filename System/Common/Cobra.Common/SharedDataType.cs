@@ -473,7 +473,8 @@ namespace Cobra.Common
         TM_SPEICAL_GETDEVICEINFOR,
         TM_SPEICAL_GETREGISTEINFOR,
         TM_SPEICAL_READDEVICE,
-        TM_SPEICAL_WRITEDEVIE
+        TM_SPEICAL_WRITEDEVIE,
+        TM_SPEICAL_VERIFICATION
     };
 
     public enum SUB_TM  //ID:632
@@ -896,6 +897,17 @@ namespace Cobra.Common
             }
         }
 
+        private string m_oce_type;
+        public string oce_type
+        {
+            get { return m_oce_type; }
+            set
+            {
+                m_oce_type = value;
+                OnPropertyChanged("oce_type");
+            }
+        }
+
         private int m_hw_version;
         public int hwversion
         {
@@ -1297,7 +1309,11 @@ namespace Cobra.Common
         public UInt32 u32hexdata
         {
             get { return m_U32HexData; }
-            set { m_U32HexData = value; }
+            set
+            {
+                m_U32HexData = value;
+                OnPropertyChanged("u32hexdata");
+            }
         }
 
         private string m_sPhyData;
@@ -1352,7 +1368,11 @@ namespace Cobra.Common
         public UInt32 errorcode
         {
             get { return m_ErrorCode; }
-            set { m_ErrorCode = value; }
+            set
+            {
+                m_ErrorCode = value;
+                OnPropertyChanged("errorcode");
+            }
         }
 
         /// <summary>

@@ -218,7 +218,8 @@ namespace Cobra.DM
             //m_local_loader.Unload();
             try
             {
-                (dem_lib as IDEMLib2).DestroyInterface();
+                if (typeof(IDEMLib2).IsAssignableFrom(m_dem_lib.GetType()))
+                    (dem_lib as IDEMLib2).DestroyInterface();
             }
             catch (System.Exception ex)
             {
@@ -440,7 +441,8 @@ namespace Cobra.DM
         {
             try
             {
-                return (m_dem_lib as IDEMLib2).ReadDevice(ref msg);
+                if (typeof(IDEMLib2).IsAssignableFrom(m_dem_lib.GetType()))
+                    return (m_dem_lib as IDEMLib2).ReadDevice(ref msg);
             }
             catch (System.Exception ex)
             {
@@ -453,7 +455,22 @@ namespace Cobra.DM
         {
             try
             {
-                return (m_dem_lib as IDEMLib2).WriteDevice(ref msg);
+                if (typeof(IDEMLib2).IsAssignableFrom(m_dem_lib.GetType()))
+                    return (m_dem_lib as IDEMLib2).WriteDevice(ref msg);
+            }
+            catch (System.Exception ex)
+            {
+
+            }
+            return LibErrorCode.IDS_ERR_DEM_LOST_INTERFACE;
+        }
+
+        public UInt32 Verification(ref TASKMessage msg)
+        {
+            try
+            {
+                if (typeof(IDEMLib3).IsAssignableFrom(m_dem_lib.GetType()))
+                    return (m_dem_lib as IDEMLib3).Verification(ref msg);
             }
             catch (System.Exception ex)
             {

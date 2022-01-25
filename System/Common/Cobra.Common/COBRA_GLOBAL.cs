@@ -23,8 +23,8 @@ namespace Cobra.Common
 
         public static string CurrentOCEName = String.Empty;	//Issue1606 Leon
         public static string CurrentOCEToken = String.Empty;    //Issue1741 Leon
-        public static string CurrentDLLToken = String.Empty;    //Issue Leon
-        public static string CurrentParamToken = String.Empty;    //Issue Leon
-        public static string CurrentBoardToken = String.Empty;    //Issue Leon
+        public static string CurrentDLLToken = String.Empty;    //Issue2843 Leon
+        public static string CurrentParamToken = String.Empty;    //Issue2843 Leon
+        public static string CurrentBoardToken = String.Empty;    //Issue2843 Leon
     }
 }

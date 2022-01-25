@@ -415,6 +415,15 @@ namespace Cobra.EM
                         ret = WriteDevice(ref m_Msg);
                         break;
                     }
+                case TM.TM_SPEICAL_VERIFICATION:
+                    {
+                        msg.gm.level = 2;
+                        msg.gm.message = "Verification";
+                        gm = msg.gm;
+                        msg.bgworker.ReportProgress(msg.percent, msg.gm.message);
+                        ret = Verification(ref m_Msg);
+                        break;
+                    }
                 default:
                     break;
             }
@@ -540,6 +549,11 @@ namespace Cobra.EM
         private UInt32 WriteDevice(ref TASKMessage msg)
         {
             return m_device_dm.WriteDevice(ref msg);
+        }
+
+        private UInt32 Verification(ref TASKMessage msg)
+        {
+            return m_device_dm.Verification(ref msg);
         }
         #endregion
     }

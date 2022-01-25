@@ -222,7 +222,8 @@ namespace Cobra.Common
 		public const UInt32 IDS_ERR_SECTION_DEVICECONFSFL = 0x10000000;
         public const UInt32 IDS_ERR_SECTION_DEVICECONFSFL_PARAM_INVALID = IDS_ERR_SECTION_DEVICECONFSFL + 0x00;
         public const UInt32 IDS_ERR_SECTION_DEVICECONFSFL_PARAM_UNENALBE = IDS_ERR_SECTION_DEVICECONFSFL + 0x01;
-        #endregion
+		public const UInt32 IDS_ERR_SECTION_DEVICECONFSFL_PARAM_VERIFY = IDS_ERR_SECTION_DEVICECONFSFL + 0x02;
+		#endregion
 
 		#region Production SFL Error code definition, IDS_ERR_SECTION_PRODUCTIONSFL = 0x10030000;
 		public const UInt32 IDS_ERR_SECTION_PRODUCTIONSFL = 0x10030000;
@@ -945,7 +946,10 @@ namespace Cobra.Common
                 case IDS_ERR_SECTION_DEVICECONFSFL_PARAM_UNENALBE:
                     strErr = "The parameter had been uneable and can't be changed!";
                     break;
-                #endregion
+				case IDS_ERR_SECTION_DEVICECONFSFL_PARAM_VERIFY:
+					strErr = "Failed to verify the parameter written!";
+					break;
+				#endregion
 
                 #region Prodcution SFL error description
                 case IDS_ERR_PROSFL_XML_RELATIONS:

@@ -69,6 +69,13 @@ namespace Cobra.DeviceConfigurationPanel
             set { m_NoMapping = value; }
         }
 
+        private bool m_bVerify = false;
+        public bool bVerify
+        {
+            get { return m_bVerify; }
+            set { m_bVerify = value; }
+        }
+
         private TASKMessage m_Msg = new TASKMessage();
         public TASKMessage msg
         {
@@ -140,11 +147,13 @@ namespace Cobra.DeviceConfigurationPanel
                 handler(this, EventArgs.Empty);
             }
         }
+        private Dictionary<string, string> Verify_Dic = new Dictionary<string, string>();
 
         public MainControl(object pParent, string name)
         {
             this.InitializeComponent();
             #region 相关初始化
+            bool bval = false;
             parent = (Device)pParent;
             if (parent == null) return;
 
@@ -204,9 +213,16 @@ namespace Cobra.DeviceConfigurationPanel
             XmlElement root = EMExtensionManage.m_extDescrip_xmlDoc.DocumentElement;
             XmlNode xn = root.SelectSingleNode("descendant::Button[@Label = '" + sflname + "']");
             XmlElement xe = (XmlElement)xn;
-            string nomapping = xe.GetAttribute("NoMapping").ToUpper();
-            if (nomapping == "TRUE")
-                NoMapping = true;
+
+            if (Boolean.TryParse(xe.GetAttribute("NoMapping").Trim(), out bval))
+                NoMapping = bval;
+            else
+                NoMapping = false;
+            if (Boolean.TryParse(xe.GetAttribute("bVerify").Trim(), out bval))
+                bVerify = bval;
+            else
+                bVerify = false;
+
             #endregion
 
             if (border)
@@ -1482,6 +1498,8 @@ namespace Cobra.DeviceConfigurationPanel
         }
         private void write()
         {
+            UInt32 guid = 0x00;
+            StringBuilder sb = new StringBuilder();
             UInt32 ret = LibErrorCode.IDS_ERR_SUCCESSFUL;
             if (parent.bBusy)
             {
@@ -1567,6 +1585,31 @@ namespace Cobra.DeviceConfigurationPanel
                 CallWarningControl(gm);
                 parent.bBusy = false;
                 return;
+            }
+
+            if (bVerify)
+            {
+                msg.percent = 60;
+                msg.task = TM.TM_SPEICAL_VERIFICATION;
+                parent.AccessDevice(ref m_Msg);
+                while (msg.bgworker.IsBusy)
+                    System.Windows.Forms.Application.DoEvents();
+                if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
+                {
+                    gm.level = 2;
+                    Verify_Dic = SharedAPI.DeserializeStringToDictionary<string, string>(m_Msg.sub_task_json);
+                    foreach (KeyValuePair<string, string> str in Verify_Dic)
+                    {
+                        if (!UInt32.TryParse(str.Key, out guid)) continue;
+                        SFLModel model = cfgViewModel.GetParameterByGuid(guid);
+                        if (model == null) continue;
+                        sb.Append(string.Format("{0} {1}.\n", model.nickname, str.Value));
+                    }
+                    gm.message = sb.ToString();
+                    CallWarningControl(gm);
+                    parent.bBusy = false;
+                    return;
+                }
             }
 
             msg.percent = 70;

@@ -17,7 +17,6 @@ namespace Cobra.EM
         private static XmlElement m_root;
         private static XmlDocument m_register_xmlDoc = new XmlDocument();
 
-        public static bool amtenable = true;
         public static int devicenum = 0;
         public static BUS_TYPE m_BusType = BUS_TYPE.BUS_TYPE_I2C;
         private static AsyncObservableCollection<BusOptions> m_busoptionslist = new AsyncObservableCollection<BusOptions>();

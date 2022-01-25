@@ -104,14 +104,6 @@ namespace Cobra.EM
                 EMExtensionManage.version_ctl = tmp.CompareTo("2.00.00") > 0 ? VERSION_CONTROL.VERSION_CONTROL_02_00_03 : VERSION_CONTROL.VERSION_CONTROL_02_00_00;
             }
 
-            string amtEnable = root.GetAttribute("AMTEnable");
-            if (amtEnable.ToUpper() == "FALSE")
-            {
-                Registry.amtenable = false;
-            }
-            else
-                Registry.amtenable = true;
-
             bustype = root.GetAttribute("bustype");
             Registry.SaveCurExtensionBusType(m_bustype);
             Registry.GetDeviceConnectSetting();
@@ -274,6 +266,7 @@ namespace Cobra.EM
             {
                 Device device = new Device(Registry.busoptionslistview[i].Name);
                 device.device_infor.pretype = idevicetype;
+                device.device_infor.oce_type = m_devicetype;
                 device.gm.PropertyChanged += new PropertyChangedEventHandler(gm_PropertyChanged);
                 device.msg.PropertyChanged += new PropertyChangedEventHandler(msg_PropertyChanged);
                 m_device_list.Add(device);

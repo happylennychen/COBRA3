@@ -55,27 +55,66 @@ namespace Cobra.Common
         }
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
-        {
-            using (BlockReentrancy())
+        {            
+            try
             {
-                var eh = CollectionChanged;
-                if (eh == null) return;
-
-                var dispatcher = (from NotifyCollectionChangedEventHandler nh in eh.GetInvocationList()
-                                  let dpo = nh.Target as DispatcherObject
-                                  where dpo != null
-                                  select dpo.Dispatcher).FirstOrDefault();
-
-                if (dispatcher != null && dispatcher.CheckAccess() == false)
+                using (BlockReentrancy())
                 {
-                    dispatcher.Invoke(DispatcherPriority.DataBind, (Action)(() => OnCollectionChanged(e)));
-                }
-                else
-                {
-                    foreach (NotifyCollectionChangedEventHandler nh in eh.GetInvocationList())
+                    var eh = CollectionChanged;
+                    if (eh == null) return;
+
+                    foreach (NotifyCollectionChangedEventHandler nh in CollectionChanged.GetInvocationList())
+                    {
+                        DispatcherObject dispObj = nh.Target as DispatcherObject;
+                        if (dispObj != null)
+                        {
+                            Dispatcher dispatcher = dispObj.Dispatcher;
+                            if (dispatcher != null && !dispatcher.CheckAccess())
+                            {/*
+                                dispatcher.BeginInvoke(
+                                    (Action)(() => nh.Invoke(this,
+                                        new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset))),
+                                    DispatcherPriority.DataBind);*/
+                                dispatcher.Invoke(DispatcherPriority.DataBind, (Action)(() => OnCollectionChanged(e)));
+                                continue;
+                            }
+                        }
                         nh.Invoke(this, e);
+                    }
                 }
             }
+            catch
+            {
+
+            }
+            /*
+            try
+            {
+                using (BlockReentrancy())
+                {
+                    var eh = CollectionChanged;
+                    if (eh == null) return;
+
+                    var dispatcher = (from NotifyCollectionChangedEventHandler nh in eh.GetInvocationList()
+                                      let dpo = nh.Target as DispatcherObject
+                                      where dpo != null
+                                      select dpo.Dispatcher).FirstOrDefault();
+
+                    if (dispatcher != null && dispatcher.CheckAccess() == false)
+                    {
+                        dispatcher.Invoke(DispatcherPriority.DataBind, (Action)(() => OnCollectionChanged(e)));
+                    }
+                    else
+                    {
+                        foreach (NotifyCollectionChangedEventHandler nh in eh.GetInvocationList())
+                            nh.Invoke(this, e);
+                    }
+                }
+            }
+            catch
+            {
+
+            }*/
         }
 
         private static void enableCollectionSynchronization(IEnumerable collection, object lockObject)

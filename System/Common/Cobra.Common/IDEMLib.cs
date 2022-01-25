@@ -35,4 +35,9 @@ namespace Cobra.Common
         UInt32 ReadDevice(ref TASKMessage msg);
         UInt32 WriteDevice(ref TASKMessage msg);
     }
+
+    public interface IDEMLib3 : IDEMLib2
+    {
+        UInt32 Verification(ref TASKMessage msg);
+    }
 }
