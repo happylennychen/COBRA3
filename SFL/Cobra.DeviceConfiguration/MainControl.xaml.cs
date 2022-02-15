@@ -1487,6 +1487,24 @@ namespace Cobra.DeviceConfigurationPanel
                 System.Windows.Forms.Application.DoEvents();
             if (msg.errorcode != LibErrorCode.IDS_ERR_SUCCESSFUL)
             {
+                if (msg.errorcode == LibErrorCode.IDS_ERR_SECTION_DEVICECONFSFL_PARAM_VERIFY)
+                {
+                    UInt32 guid = 0x00;
+                    StringBuilder sb = new StringBuilder();
+                    var Verify_Dic = SharedAPI.DeserializeStringToDictionary<string, string>(m_Msg.sub_task_json);
+                    foreach (KeyValuePair<string, string> str in Verify_Dic)
+                    {
+                        if (!UInt32.TryParse(str.Key, out guid)) continue;
+                        SFLModel model = cfgViewModel.GetParameterByGuid(guid);
+                        if (model == null) continue;
+                        sb.Append(string.Format("{0} {1}.\n", model.nickname, str.Value));
+                    }
+                    gm.level = 2;
+                    gm.message = sb.ToString();
+                    CallWarningControl(gm);
+                    parent.bBusy = false;
+                    return;
+                }
                 gm.level = 2;
                 gm.message = LibErrorCode.GetErrorDescription(msg.errorcode);
                 CallWarningControl(gm);
@@ -2086,6 +2104,7 @@ namespace Cobra.DeviceConfigurationPanel
             excelApp = null;
             System.Windows.MessageBox.Show("Done!");
         }
+
         private void MenuItem_Click(object sender, EventArgs e)
         {
             UInt16 udata = 0;

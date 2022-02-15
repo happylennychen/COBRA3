@@ -125,12 +125,12 @@ namespace Cobra.EM
             //string projectname = "KALL8";
             //string projectname = "OZ2610";
             //string projectname = "Woodpecker10";
-            string projectname = "Woodpecker8";
+            //string projectname = "Woodpecker8";
             //string projectname = "Pikachu5";
             //string extension = " 3717";
             //string projectname = "KALL17";
             //string projectname = "Wizards";
-            //string projectname = "SP8G2";
+            string projectname = "SP8G2";
             //string projectname = "KALL";
             //string extension = " 7703";
             //string projectname = "Azalea14";
@@ -300,14 +300,46 @@ namespace Cobra.EM
             FileInfo fi = new FileInfo(dllfilefullpath);
             string dllfilename = string.Format("{0}{1}", root.GetAttribute("libname"), ".dll");
 
+            string ParameterSFLName=string.Empty, BoardSettingsSFLName = string.Empty;
+            var extDoc = XDocument.Load(extxmlfullname);
+            var tokenDefine = extDoc.Descendants("Part").SingleOrDefault(o => o.Attribute("Name").Value == "Token Define");
+            if (tokenDefine != null)
+            {
+                if (tokenDefine.Element("Parameters").Attribute("IsValid").Value.ToUpper() == "TRUE")
+                {
+                    ParameterSFLName = tokenDefine.Element("Parameters").Value;
+                }
+                else
+                {
+                    ParameterSFLName = "Invalid";
+                }
+                if (tokenDefine.Element("BoardSettings").Attribute("IsValid").Value.ToUpper() == "TRUE")
+                {
+                    BoardSettingsSFLName = tokenDefine.Element("Parameters").Value;
+                }
+                else
+                {
+                    BoardSettingsSFLName = "Invalid";
+                }
+            }
+            if (ParameterSFLName == string.Empty)
+                ParameterSFLName = COBRA_GLOBAL.Constant.NewEFUSEConfigName;
+            if (BoardSettingsSFLName == string.Empty)
+                BoardSettingsSFLName = COBRA_GLOBAL.Constant.NewBoardConfigName;
+
             string devxmlfullname = FolderMap.m_extension_monitor_folder + FolderMap.m_dev_descrip_xml_name + FolderMap.m_extension_work_ext;
             XDocument doc = XDocument.Load(devxmlfullname);
 
             var strpair = (from ele in doc.Descendants("Element")
-                           where ele.Element("Private") != null && ele.Element("Private").Element("SFL") != null && ele.Element("Private").Element("SFL").Attribute("Name").Value == COBRA_GLOBAL.Constant.NewEFUSEConfigName
+                           where ele.Element("Private") != null && ele.Element("Private").Element("SFL") != null && ele.Element("Private").Element("SFL").Attribute("Name").Value == ParameterSFLName
                            select new string[] {
                                ele.Element("Private").Element("SFL").Element("NickName").Value,
-                               ele.Element("PhyRef").Value + "," + ele.Element("RegRef").Value + "," + ele.Element("SubType").Value + "," + ele.Element("Private").Element("SFL").Element("EditType").Value + ","+ ele.Element("Private").Element("SFL").Element("Format").Value
+                               ele.Element("PhyRef").Value + ","
+                               + ele.Element("RegRef").Value + ","
+                               + ele.Element("SubType").Value + ","
+                               + ele.Element("Private").Element("SFL").Element("EditType").Value + ","
+                               + ele.Element("Private").Element("SFL").Element("Format").Value
+                               + GetLocationInfo(ele)
                            }).ToList();
             strpair.OrderBy(o => o[0]).ToList();
             foreach (var i in strpair)
@@ -316,7 +348,7 @@ namespace Cobra.EM
                 ParamTokenContent.Add(i[0], i[1]);
             }
             strpair = (from ele in doc.Descendants("Element")
-                       where ele.Element("Private") != null && ele.Element("Private").Element("SFL") != null && ele.Element("Private").Element("SFL").Attribute("Name").Value == COBRA_GLOBAL.Constant.NewBoardConfigName
+                       where ele.Element("Private") != null && ele.Element("Private").Element("SFL") != null && ele.Element("Private").Element("SFL").Attribute("Name").Value == BoardSettingsSFLName
                        select new string[] {
                                ele.Element("Private").Element("SFL").Element("NickName").Value,
                                ele.Element("PhyRef").Value + "," + ele.Element("RegRef").Value + "," + ele.Element("SubType").Value + "," + ele.Element("Private").Element("SFL").Element("EditType").Value + ","+ ele.Element("Private").Element("SFL").Element("Format").Value
@@ -351,6 +383,26 @@ namespace Cobra.EM
             var CurrentBoardToken = GetStringFromDic(BoardTokenContent);
 
             COBRA_GLOBAL.CurrentBoardToken = SharedAPI.GetMD5(CurrentBoardToken);
+        }
+
+        private string GetLocationInfo(XElement ele)
+        {
+            string output = string.Empty;
+            var locationList = ele.Elements().SingleOrDefault(node => node.Name == "LocationList");
+            if (locationList == null)
+                return string.Empty;
+            var lowNode = ele.Element("LocationList").Elements().SingleOrDefault(node => node.Attribute("Position").Value.ToUpper() == "LOW");
+            var highNode = ele.Element("LocationList").Elements().SingleOrDefault(node => node.Attribute("Position").Value.ToUpper() == "HIGH");
+            output = "," + lowNode.Element("Address").Value + ","
+                + lowNode.Element("StartBit").Value + ","
+                + lowNode.Element("BitsNumber").Value;
+            if (highNode != null)
+            {
+                output += "," + highNode.Element("Address").Value + ","
+                    + highNode.Element("StartBit").Value + ","
+                    + highNode.Element("BitsNumber").Value;
+            }
+            return output;
         }
 
         private string GetStringFromDic(Dictionary<string, string> tokenContent)

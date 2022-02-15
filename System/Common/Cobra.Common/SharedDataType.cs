@@ -174,7 +174,7 @@ namespace Cobra.Common
             get { return m_TsmbBuffer; }
             set { m_TsmbBuffer = value; }
         }
- 
+
         public SystemMessage()
         {
             for (int i = 0; i < gpios.Length; i++)
@@ -222,7 +222,7 @@ namespace Cobra.Common
             get { return m_hexdata; }
         }
 
-        private List<byte> m_bindata=new List<byte>();	//Issue1336 Leon
+        private List<byte> m_bindata = new List<byte>();	//Issue1336 Leon
         public List<byte> efusebindata
         {
             set { m_bindata = value; }
@@ -302,7 +302,7 @@ namespace Cobra.Common
             get { return m_sub_Task_Json; }
             set { m_sub_Task_Json = value; }
         }
-        
+
         private byte[] m_FlashData;
         public byte[] flashData
         {
@@ -868,7 +868,7 @@ namespace Cobra.Common
         public int index
         {
             get { return m_index; }
-            set 
+            set
             {
                 m_index = value;
                 OnPropertyChanged("index");

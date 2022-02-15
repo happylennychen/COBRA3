@@ -59,7 +59,7 @@ namespace Cobra.EM
             set
             {
                 m_bDestroyed = value;
-                OnPropertyChanged("bDestroyed");                
+                OnPropertyChanged("bDestroyed");
             }
             get { return m_bDestroyed; }
         }
@@ -116,7 +116,8 @@ namespace Cobra.EM
         #region 部件定义
         public DBManage db_Manager
         {
-            get {
+            get
+            {
                 if (m_busoptions != null)
                     return m_busoptions.db_Manager;
                 else
@@ -191,7 +192,7 @@ namespace Cobra.EM
             if (m_Index > Registry.busoptionslist_collectionview.Count)
                 Registry.busoptionslist_collectionview.Add(GroupedCustomers);
             else
-                Registry.busoptionslist_collectionview.Insert(m_Index,GroupedCustomers);
+                Registry.busoptionslist_collectionview.Insert(m_Index, GroupedCustomers);
             #endregion
 
             #region 构建SFL
@@ -204,7 +205,7 @@ namespace Cobra.EM
                 container.ComposeParts(this);
 
                 WorkPanelItem panelitem = new WorkPanelItem();
-                switch(EMExtensionManage.version_ctl)
+                switch (EMExtensionManage.version_ctl)
                 {
                     case VERSION_CONTROL.VERSION_CONTROL_02_00_00:
                         panelitem.item = SFLUserControl.Insert(this, BtnPanelList[i].btnname);
@@ -482,7 +483,7 @@ namespace Cobra.EM
         }
 
         public UInt32 AccessDevice(ref TASKMessage msg)
-        { 
+        {
             this.msg = msg;
             msg.bgworker = bgworker;
             if (bgworker.IsBusy) return LibErrorCode.IDS_ERR_EM_THREAD_BKWORKER_BUSY;

@@ -951,8 +951,8 @@ namespace Cobra.Common
 					break;
 				#endregion
 
-                #region Prodcution SFL error description
-                case IDS_ERR_PROSFL_XML_RELATIONS:
+				#region Prodcution SFL error description
+				case IDS_ERR_PROSFL_XML_RELATIONS:
 					strErr = "<Relations> information in XML has error, please check Engineer to correct Extension";
 					break;
 				case IDS_ERR_PROSFL_XML_SCAN_ADC:

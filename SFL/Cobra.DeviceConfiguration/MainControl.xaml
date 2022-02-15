@@ -97,7 +97,7 @@
                     <GroupStyle ContainerStyle="{StaticResource GroupHeaderStyle}" />
                 </DataGrid.GroupStyle>
                 <DataGrid.Columns>
-                    <DataGridTemplateColumn Header="ID" IsReadOnly="True" CanUserResize="False" Width="32">
+                    <DataGridTemplateColumn Header="ID" IsReadOnly="True" CanUserResize="False" Width="40">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock x:Name="IDTextBlock" Style="{DynamicResource textBlk-deviceConfiguration}"  Text="{Binding Path= order, Mode = OneTime}"/>
