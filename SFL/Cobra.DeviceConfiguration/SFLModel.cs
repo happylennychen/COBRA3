@@ -172,6 +172,17 @@ namespace Cobra.DeviceConfigurationPanel
             }
         }
 
+        private string m_sMessage = string.Empty; //用于传输参数详细信息
+        public string sMessage
+        {
+            get { return m_sMessage; }
+            set
+            {
+                m_sMessage = value;
+                OnPropertyChanged("sMessage");
+            }
+        }
+
         private UInt16 m_EventMode;
         public UInt16 eventmode     //Used only by UpdateParam function
         {

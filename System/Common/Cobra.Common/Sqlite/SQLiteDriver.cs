@@ -13,6 +13,7 @@ namespace Cobra.Common
     /// </summary>
     public static class SQLiteDriver
     {
+        private static object SQL_Lock = new object();
         public static string DB_Name = "Cobra.db3";
         public static string DB_Path = Path.Combine(FolderMap.m_projects_folder, @"Database\");
         private static string connstr
@@ -26,74 +27,84 @@ namespace Cobra.Common
         #region 开关数据库并传递sql命令的基础操作函数
         public static void ExecuteNonQuery(string sql, ref int row)
         {
-            try
+            lock (SQL_Lock)
             {
-                using (SQLiteConnection conn = new SQLiteConnection(connstr))
+                try
                 {
-
-                    conn.Open();
-                    using (SQLiteCommand cmd = conn.CreateCommand())
+                    using (SQLiteConnection conn = new SQLiteConnection(connstr))
                     {
-                        cmd.CommandText = sql;
-                        row = cmd.ExecuteNonQuery();
+
+                        conn.Open();
+                        using (SQLiteCommand cmd = conn.CreateCommand())
+                        {
+                            cmd.CommandText = sql;
+                            row = cmd.ExecuteNonQuery();
+                        }
                     }
                 }
-            }
-            catch
-            {
-                throw;
+                catch(Exception e)
+                {
+                    throw;
+                }
             }
         }
         public static void ExecuteNonQueryTransaction(List<string> sqls)
         {
-            using (SQLiteConnection conn = new SQLiteConnection(connstr))
+            lock (SQL_Lock)
             {
-                conn.Open();
-                using (SQLiteCommand cmd = conn.CreateCommand())
+                using (SQLiteConnection conn = new SQLiteConnection(connstr))
                 {
-                    using (SQLiteTransaction trans = conn.BeginTransaction())
+                    conn.Open();
+                    using (SQLiteCommand cmd = conn.CreateCommand())
                     {
-                        foreach (var sql in sqls)
+                        using (SQLiteTransaction trans = conn.BeginTransaction())
                         {
-                            cmd.CommandText = sql;
-                            cmd.ExecuteNonQuery();
-                        }
-                        try
-                        {
-                            trans.Commit();
-                        }
-                        catch
-                        {
-                            throw;
+                            foreach (var sql in sqls)
+                            {
+                                cmd.CommandText = sql;
+                                cmd.ExecuteNonQuery();
+                            }
+                            try
+                            {
+                                trans.Commit();
+                            }
+                            catch
+                            {
+                                trans.Rollback();
+                                throw;
+                            }
                         }
                     }
                 }
             }
         }
-        public static void ExecuteSelect(string sql, ref DataTable dt, ref int row)
+        private static void ExecuteSelect(string sql, ref DataTable dt, ref int row)
         {
-            try
+            lock (SQL_Lock)
             {
-                using (SQLiteConnection conn = new SQLiteConnection(connstr))
+                try
                 {
-
-                    conn.Open();
-                    using (SQLiteCommand cmd = conn.CreateCommand())
+                    using (SQLiteConnection conn = new SQLiteConnection(connstr))
                     {
-                        cmd.CommandText = sql;
-                        SQLiteDataAdapter da = new SQLiteDataAdapter(cmd);
-                        row = da.Fill(dt);
+
+                        conn.Open();
+                        using (SQLiteCommand cmd = conn.CreateCommand())
+                        {
+                            cmd.CommandText = sql;
+                            SQLiteDataAdapter da = new SQLiteDataAdapter(cmd);
+                            row = da.Fill(dt);
+                        }
                     }
                 }
-            }
-            catch
-            {
-                throw;
+                catch
+                {
+                    throw;
+                }
             }
         }
         #endregion
 
-        public static string PrepareString(string str)
+        private static string PrepareString(string str)
         {
             str = str.Replace('!', '_');
             str = str.Replace('@', '_');
@@ -113,18 +124,24 @@ namespace Cobra.Common
         #region SQL insert
         public static string SQLInsertInto(string tablename, Dictionary<string, string> records)
         {
-            List<string> columns = records.Keys.ToList<string>();
-            List<string> values = records.Values.ToList<string>();
-            return SQLInsertInto(tablename, columns, values);
+            lock (SQL_Lock)
+            {
+                List<string> columns = records.Keys.ToList<string>();
+                List<string> values = records.Values.ToList<string>();
+                return SQLInsertInto(tablename, columns, values);
+            }
         }
         public static void DBInsertInto(string tablename, Dictionary<string, string> records, ref int row)
         {
-            List<string> columns = records.Keys.ToList<string>();
-            List<string> values = records.Values.ToList<string>();
-            string sql = SQLInsertInto(tablename, columns, values);
-            ExecuteNonQuery(sql, ref row);
+            lock (SQL_Lock)
+            {
+                List<string> columns = records.Keys.ToList<string>();
+                List<string> values = records.Values.ToList<string>();
+                string sql = SQLInsertInto(tablename, columns, values);
+                ExecuteNonQuery(sql, ref row);
+            }
         }
-        public static string SQLInsertInto(string tablename, List<string> columns, List<string> values)
+        private static string SQLInsertInto(string tablename, List<string> columns, List<string> values)
         {
             string sql = "INSERT OR IGNORE INTO " + tablename + "(";
             foreach (string str in columns)
@@ -144,111 +161,84 @@ namespace Cobra.Common
         #endregion
 
         #region DB Operation
-        public static void DBUpdateOrInsert(string tablename, Dictionary<string, string> condition, Dictionary<string, string> records, ref int row)
-        {
-            List<string> conditioncolumns = condition.Keys.ToList<string>();
-            List<string> conditionvalues = condition.Values.ToList<string>();
-            List<string> datacolumns = records.Keys.ToList<string>();
-            List<string> values = records.Values.ToList<string>();
-            DBUpdateOrInsert(tablename, conditioncolumns, conditionvalues, datacolumns, values, ref row);
-        }
-        public static void DBUpdateOrInsert(string tablename, List<string> conditioncolumns, List<string> conditionvalues, List<string> datacolumns, List<string> datavalues, ref int row)
-        {
-            string sql = "UPDATE " + tablename + " SET ";
-            for (int i = 0; i < datacolumns.Count; i++)
-            {
-                sql += PrepareString(datacolumns[i]) + "='" + datavalues[i] + "', ";
-            }
-            sql = sql.Remove(sql.Length - 2) + " WHERE ";
-            for (int i = 0; i < conditioncolumns.Count; i++)
-            {
-                sql += PrepareString(conditioncolumns[i]) + "='" + conditionvalues[i] + "' AND ";
-            }
-            sql = sql.Remove(sql.Length - 5) + ";";
-            ExecuteNonQuery(sql, ref row);
-            if (row == 0)    //row doesn't exist
-            {
-                Dictionary<string, string> records = new Dictionary<string, string>();
-                for (int i = 0; i < conditioncolumns.Count; i++)
-                {
-                    records.Add(PrepareString(conditioncolumns[i]), conditionvalues[i]);
-                }
-                for (int i = 0; i < datacolumns.Count; i++)
-                {
-                    records.Add(PrepareString(datacolumns[i]), datavalues[i]);
-                }
-                DBInsertInto(tablename, records, ref row);
-            }
-        }
         public static void DBSelect(string tablename, Dictionary<string, string> conditions, List<string> datacolumns, ref List<List<string>> datavalues, ref int row)
         {
-            DataTable dt = new DataTable();
-            DBSelect(tablename, conditions, datacolumns, ref dt, ref row);
-            List<string> datavalue;
-            foreach (DataRow dr in dt.Rows)
+            lock (SQL_Lock)
             {
-                datavalue = new List<string>();
-                foreach (DataColumn column in dt.Columns)
+                DataTable dt = new DataTable();
+                DBSelect(tablename, conditions, datacolumns, ref dt, ref row);
+                List<string> datavalue;
+                foreach (DataRow dr in dt.Rows)
                 {
-                    datavalue.Add(dr[column].ToString());
+                    datavalue = new List<string>();
+                    foreach (DataColumn column in dt.Columns)
+                    {
+                        datavalue.Add(dr[column].ToString());
+                    }
+                    datavalues.Add(datavalue);
                 }
-                datavalues.Add(datavalue);
             }
         }
         public static void DBSelect(string tablename, Dictionary<string, string> conditions, List<string> datacolumns, ref DataTable dt, ref int row)
         {
-            string sql = "SELECT ";
-            if (datacolumns == null)
+            lock (SQL_Lock)
             {
-                sql += "*";
-            }
-            else
-            {
-                for (int i = 0; i < datacolumns.Count; i++)
+                string sql = "SELECT ";
+                if (datacolumns == null)
                 {
-                    sql += PrepareString(datacolumns[i]) + ", ";
+                    sql += "*";
                 }
-                sql = sql.Remove(sql.Length - 2);
-            }
-            sql = sql + " FROM " + tablename;
-            if (conditions != null)
-            {
-                sql += " WHERE ";
-                List<string> conditioncolumns = conditions.Keys.ToList<string>();
-                List<string> conditionvalues = conditions.Values.ToList<string>();
-                for (int i = 0; i < conditioncolumns.Count; i++)
+                else
                 {
-                    sql += PrepareString(conditioncolumns[i]) + "='" + conditionvalues[i] + "' AND ";
+                    for (int i = 0; i < datacolumns.Count; i++)
+                    {
+                        sql += PrepareString(datacolumns[i]) + ", ";
+                    }
+                    sql = sql.Remove(sql.Length - 2);
                 }
-                sql = sql.Remove(sql.Length - 5) + ";";
+                sql = sql + " FROM " + tablename;
+                if (conditions != null)
+                {
+                    sql += " WHERE ";
+                    List<string> conditioncolumns = conditions.Keys.ToList<string>();
+                    List<string> conditionvalues = conditions.Values.ToList<string>();
+                    for (int i = 0; i < conditioncolumns.Count; i++)
+                    {
+                        sql += PrepareString(conditioncolumns[i]) + "='" + conditionvalues[i] + "' AND ";
+                    }
+                    sql = sql.Remove(sql.Length - 5) + ";";
+                }
+                else
+                {
+                    sql += ";";
+                }
+                //DataTable dt = new DataTable();
+                ExecuteSelect(sql, ref dt, ref row);
             }
-            else
-            {
-                sql += ";";
-            }
-            //DataTable dt = new DataTable();
-            ExecuteSelect(sql, ref dt, ref row);
         }
         public static void DBDelete(string tablename, Dictionary<string, string> conditions, ref int row)
         {
-            string sql = "DELETE FROM " + tablename;
-            if (conditions != null)
+            lock (SQL_Lock)
             {
-                sql += " WHERE ";
-                List<string> conditioncolumns = conditions.Keys.ToList<string>();
-                List<string> conditionvalues = conditions.Values.ToList<string>();
-                for (int i = 0; i < conditioncolumns.Count; i++)
+                string sql = "DELETE FROM " + tablename;
+                if (conditions != null)
                 {
-                    sql += PrepareString(conditioncolumns[i]) + "='" + conditionvalues[i] + "' AND ";
+                    sql += " WHERE ";
+                    List<string> conditioncolumns = conditions.Keys.ToList<string>();
+                    List<string> conditionvalues = conditions.Values.ToList<string>();
+                    for (int i = 0; i < conditioncolumns.Count; i++)
+                    {
+                        sql += PrepareString(conditioncolumns[i]) + "='" + conditionvalues[i] + "' AND ";
+                    }
+                    sql = sql.Remove(sql.Length - 5) + ";";
                 }
-                sql = sql.Remove(sql.Length - 5) + ";";
+                else
+                {
+                    sql += ";";
+                }
+                //DataTable dt = new DataTable();
+                ExecuteNonQuery(sql, ref row);
             }
-            else
-            {
-                sql += ";";
-            }
-            //DataTable dt = new DataTable();
-            ExecuteNonQuery(sql, ref row);
         }
         #endregion
     }

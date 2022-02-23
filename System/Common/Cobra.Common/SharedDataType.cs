@@ -1339,6 +1339,18 @@ namespace Cobra.Common
             }
         }
 
+        //Add 20220126
+        private string m_sMessage = string.Empty; //用于传输参数详细信息
+        public string sMessage
+        {
+            get { return m_sMessage; }
+            set
+            {
+                m_sMessage = value;
+                OnPropertyChanged("sMessage");
+            }
+        }
+
         private TSMBbuffer m_TsmbBuffer = new TSMBbuffer();
         public TSMBbuffer tsmbBuffer
         {

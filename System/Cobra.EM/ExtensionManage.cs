@@ -1,7 +1,7 @@
 #define debug
-#define x
+//#define x
 //#define extension
-//#define y
+#define y
 //#define m
 using System;
 using System.Text;
@@ -125,12 +125,12 @@ namespace Cobra.EM
             //string projectname = "KALL8";
             //string projectname = "OZ2610";
             //string projectname = "Woodpecker10";
-            //string projectname = "Woodpecker8";
+            string projectname = "Woodpecker8";
             //string projectname = "Pikachu5";
             //string extension = " 3717";
             //string projectname = "KALL17";
             //string projectname = "Wizards";
-            string projectname = "SP8G2";
+            //string projectname = "SP8G2";
             //string projectname = "KALL";
             //string extension = " 7703";
             //string projectname = "Azalea14";
@@ -322,6 +322,7 @@ namespace Cobra.EM
                     BoardSettingsSFLName = "Invalid";
                 }
             }
+            //¼æÈÝÃ»ÓÐtoken defineµÄoce
             if (ParameterSFLName == string.Empty)
                 ParameterSFLName = COBRA_GLOBAL.Constant.NewEFUSEConfigName;
             if (BoardSettingsSFLName == string.Empty)

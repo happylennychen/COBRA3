@@ -52,7 +52,7 @@
             <MenuItem Header="Read One Parameter"   Click="ReadBtn_Click"  FontFamily="Arial" FontSize="12" Visibility="{Binding brone,Converter={StaticResource Bool2VisibilityConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}"/>
             <MenuItem Header="Write One Parameter"  Click="WriteBtn_Click" FontFamily="Arial" FontSize="12" Visibility="{Binding bwone,Converter={StaticResource Bool2VisibilityConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}"/>
         </ContextMenu>
-        
+
         <DataTemplate x:Key="textBox" >
             <StackPanel Orientation="Vertical" IsEnabled="{Binding bedit,Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource Disabled}">
                 <TextBox x:Name="textBox" BorderThickness="0" TextAlignment="Center"
@@ -61,21 +61,24 @@
                 </TextBox>
                 <Grid Style="{StaticResource Disabled}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="50*"></ColumnDefinition>
-                        <ColumnDefinition Width="50*"></ColumnDefinition>
+                        <ColumnDefinition Width="0.3*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="0.3*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0" HorizontalContentAlignment="Left" FontSize="11"
                            Content="{Binding minvalue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource SliderDigitConverter}}"
                         >
                     </Label>
-                    <Label Grid.Column="1" FontSize="11" HorizontalContentAlignment="Right"
+                    <TextBlock Grid.Column="1" HorizontalAlignment="Left" FontSize="11" TextWrapping="WrapWithOverflow" TextAlignment="Left" VerticalAlignment="Center" 
+                           Text="{Binding sMessage, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <Label Grid.Column="2" FontSize="11" HorizontalContentAlignment="Right"
                            Content="{Binding maxvalue, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource SliderDigitConverter}}">
                     </Label>
                 </Grid>
             </StackPanel>
         </DataTemplate>
         <DataTemplate x:Key="comboBox">
-            <ComboBox x:Name="comboBox" SelectedIndex="{Binding listindex,Mode=TwoWay, UpdateSourceTrigger = PropertyChanged}" 
+            <ComboBox x:Name="comboBox" SelectedIndex="{Binding listindex,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                 IsEnabled="{Binding bedit,Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding itemlist,Mode= OneWay}"
 				Foreground="{Binding berror, Converter={StaticResource Error2BrushConverter},Mode=OneWay,UpdateSourceTrigger=PropertyChanged}"
 				BorderThickness="0" HorizontalContentAlignment="Right" ContextMenu="{StaticResource ConfigConteMenuKey}" Uid="{Binding guid}">
@@ -113,11 +116,11 @@
                     </DataGridTemplateColumn>
                     <DataGridTemplateColumn Header="Value" CanUserResize="False" Width="0.22*">
                         <DataGridTemplateColumn.CellTemplateSelector>
-            				<local:DataTypeTemplateSelector TextBoxTemplate="{StaticResource textBox}"
+                            <local:DataTypeTemplateSelector TextBoxTemplate="{StaticResource textBox}"
                                             	ComboBoxTemplate="{StaticResource comboBox}"
-                                            	CheckBoxTemplate="{StaticResource checkBox}">	
-							</local:DataTypeTemplateSelector>
-        				</DataGridTemplateColumn.CellTemplateSelector>
+                                            	CheckBoxTemplate="{StaticResource checkBox}">
+                            </local:DataTypeTemplateSelector>
+                        </DataGridTemplateColumn.CellTemplateSelector>
                     </DataGridTemplateColumn>
                     <DataGridTemplateColumn Header="Description" CanUserResize="False" Width="0.50*">
                         <DataGridTemplateColumn.CellTemplate>
@@ -128,8 +131,8 @@
                     </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
-		</Grid>
-		<Grid Height="40" VerticalAlignment="Bottom">
+        </Grid>
+        <Grid Height="40" VerticalAlignment="Bottom">
             <DockPanel LastChildFill="True">
                 <Button DockPanel.Dock="Right" x:Name="VerifyBtn" Content="{Binding btn_content}" Style="{DynamicResource btn-deviceConfiguration}" Click="VerifyBtn_Click"
                     IsEnabled="{Binding benable}" Visibility="{Binding visi}"/>
@@ -154,13 +157,13 @@
                 </Grid>
             </DockPanel>
         </Grid>
-		<Grid x:Name="MiddlePanel" Height="32" Margin="0,0,0,40" VerticalAlignment="Bottom">
+        <Grid x:Name="MiddlePanel" Height="32" Margin="0,0,0,40" VerticalAlignment="Bottom">
             <Label x:Name="StatusLabel" Content="Default" Style="{DynamicResource label-deviceConfiguration}"/>
-		</Grid>
+        </Grid>
 
         <controls:WaitControl x:Name="WaitPopControl"/>
         <controls:WarningControl x:Name="WarningPopControl"/>
         <controls:PasswordControl x:Name="PasswordPopControl"/>
         <controls:SelectControl x:Name="SelectPopControl"/>
-	</Grid>
+    </Grid>
 </UserControl>

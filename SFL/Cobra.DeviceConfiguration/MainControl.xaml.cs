@@ -964,7 +964,7 @@ namespace Cobra.DeviceConfigurationPanel
             {
                 //warning += $"Param in file: {ParamTokenInXML}\n";
                 //warning += $"Param Token in OCE: {ParamTokenFromRuntime}\n";
-                warning += "Parameters are different! Paramenters in CFG file may be insufficient, superfluous or invalid.\n";
+                warning += "Parameters are different! Parameters in CFG file may be insufficient, superfluous or invalid.\n";
             }
             #endregion
             #region BoardToken Check

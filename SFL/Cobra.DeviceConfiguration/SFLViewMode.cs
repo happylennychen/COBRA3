@@ -176,6 +176,9 @@ namespace Cobra.DeviceConfigurationPanel
                     case "Description":
                         model.description = de.Value.ToString();
                         break;
+                    case "sMessage":
+                        model.sMessage = de.Value.ToString();
+                        break;
                     case "MinValue":
                         {
                             if (!Double.TryParse(de.Value.ToString(), out ddata))
@@ -793,7 +796,6 @@ namespace Cobra.DeviceConfigurationPanel
             if (model == null) return;
 
             model.IsUpdateParamCalled = false;
-
             switch (e.PropertyName.ToString())
             {
                 case "phydata":
@@ -854,6 +856,11 @@ namespace Cobra.DeviceConfigurationPanel
 
                         model.maxvalue = p.dbPhyMax;
                         model.errorcode = p.errorcode;
+                        break;
+                    }
+                case "sMessage":
+                    {
+                        model.sMessage = p.sMessage;
                         break;
                     }
                 default:

@@ -26,9 +26,13 @@ namespace Cobra.Common
 
         private int device_index = 0;
         private object DB_Lock = new object();
+        private const string DeviceTableName = "DEVICE_TABLE";
         private const string DataTableName = "DATA_TABLE";
         private const string SessionTableName = "SESSION_TABLE";
-        private string Project_Name = "";
+        private string Project_Name
+        {
+            get { return COBRA_GLOBAL.CurrentOCEName; }
+        }
         private byte idle_cnt = 0;
         private const int FlushInterval = 15000;
         private const int FlushIdleCount = 3;
@@ -44,15 +48,15 @@ namespace Cobra.Common
             lock (DB_Lock)
             {
                 device_index = m_parent.DeviceIndex;
-                Project_Name = COBRA_GLOBAL.CurrentOCEName;
                 sqls_buffer.Clear();
                 if (!Directory.Exists(SQLiteDriver.DB_Path))
                     Directory.CreateDirectory(SQLiteDriver.DB_Path);
                 flush_timer.Elapsed += new ElapsedEventHandler(tFlushDB_Elapsed);
 
-                if (!File.Exists(Path.Combine(SQLiteDriver.DB_Path,SQLiteDriver.DB_Name)))
+                if (!File.Exists(Path.Combine(SQLiteDriver.DB_Path, SQLiteDriver.DB_Name)))
                 {
-                    sqls_buffer.Add("CREATE TABLE IF NOT EXISTS " + SessionTableName + " (session_id INTEGER PRIMARY KEY,device_index VARCHAR(10),project_name VARCHAR(30) NOT NULL, module_name VARCHAR(30) NOT NULL,row_number VARCHAR(10) DEFAULT 0,session_establish_time VARCHAR(17) NOT NULL, UNIQUE(project_name, module_name, session_establish_time));");//Issue1406 Leon
+                    sqls_buffer.Add("CREATE TABLE IF NOT EXISTS " + DeviceTableName + " (project_id INTEGER PRIMARY KEY,device_index VARCHAR(10),project_name VARCHAR(30) NOT NULL,UNIQUE(device_index,project_name));");//Issue1406 Leon
+                    sqls_buffer.Add("CREATE TABLE IF NOT EXISTS " + SessionTableName + " (session_id INTEGER PRIMARY KEY,project_id INTEGER NOT NULL, module_name VARCHAR(30) NOT NULL,row_number VARCHAR(10) DEFAULT 0,session_establish_time VARCHAR(17) NOT NULL, UNIQUE(project_id,module_name,session_establish_time));");//Issue1406 Leon
                     sqls_buffer.Add("CREATE TABLE IF NOT EXISTS " + DataTableName + " (data_id INTEGER PRIMARY KEY, session_id INTEGER NOT NULL, data_set VARCHAR(500) NOT NULL);");
                     SQLiteDriver.ExecuteNonQueryTransaction(sqls_buffer);
                     sqls_buffer.Clear();
@@ -88,17 +92,36 @@ namespace Cobra.Common
                 throw new Exception("Flush DB failed\n", ex);
             }
         }
-        private void GetSessionIDFromSessionTable(string module_name, ref int session_id, string session_establish_time = "")
+        private void GetProjectIDFromDeviceTable(string project_name, ref int project_id)
+        {
+            List<string> datacolumns = new List<string>();
+            datacolumns.Add("project_id");
+
+            Dictionary<string, string> conditions = new Dictionary<string, string>();
+            conditions.Add("project_name", Project_Name);
+            conditions.Add("device_index", device_index.ToString());
+            DataTable dt = new DataTable();
+            int row = -1;
+            SQLiteDriver.DBSelect(DeviceTableName, conditions, datacolumns, ref dt, ref row);
+            if (dt.Rows.Count == 0)
+            {
+                project_id = -1;
+            }
+            else
+            {
+                project_id = Convert.ToInt32(dt.Rows[0]["project_id"]);
+            }
+        }
+        private void GetSessionIDFromSessionTable(int project_id, string module_name, ref int session_id, string session_establish_time = "")
         {
             List<string> datacolumns = new List<string>();
             datacolumns.Add("session_id");
 
             Dictionary<string, string> conditions = new Dictionary<string, string>();
-            conditions.Add("project_name", Project_Name);
+            conditions.Add("project_id", project_id.ToString());
             conditions.Add("module_name", module_name);
             if (session_establish_time != "")
                 conditions.Add("session_establish_time", session_establish_time);
-            conditions.Add("device_index", device_index.ToString());
             DataTable dt = new DataTable();
             int row = -1;
             SQLiteDriver.DBSelect(SessionTableName, conditions, datacolumns, ref dt, ref row);
@@ -122,12 +145,18 @@ namespace Cobra.Common
             {
                 lock (DB_Lock)
                 {
+                    int project_id = -1;
                     record.Add("device_index", device_index.ToString());
                     record.Add("project_name", Project_Name);
+                    SQLiteDriver.DBInsertInto(DeviceTableName, record, ref row);
+                    GetProjectIDFromDeviceTable(Project_Name, ref project_id);
+                    if (project_id == -1) return;
+                    record.Clear();
+                    record.Add("project_id", project_id.ToString());
                     record.Add("module_name", module_name);
                     record.Add("session_establish_time", session_establish_time);
                     SQLiteDriver.DBInsertInto(SessionTableName, record, ref row);
-                    GetSessionIDFromSessionTable(module_name, ref session_id, session_establish_time);
+                    GetSessionIDFromSessionTable(project_id, module_name, ref session_id, session_establish_time);
                 }
             }
             catch (Exception ex)
@@ -214,18 +243,21 @@ namespace Cobra.Common
             {
                 lock (DB_Lock)
                 {
+                    int project_id = -1;
                     if (sqls_buffer.Count != 0)
                     {
                         SQLiteDriver.ExecuteNonQueryTransaction(sqls_buffer);
                         sqls_buffer.Clear();
                     }
+
+                    GetProjectIDFromDeviceTable(Project_Name, ref project_id);
+                    if (project_id == -1) return;
                     Dictionary<string, string> conditions = new Dictionary<string, string>();
-                    conditions.Add("project_name", Project_Name);
+                    conditions.Add("project_id", project_id.ToString());
                     conditions.Add("module_name", module_name);
                     List<string> datacolumns = new List<string>();
                     datacolumns.Add("session_id");
                     datacolumns.Add("session_establish_time");
-                    datacolumns.Add("device_index");
                     datacolumns.Add("row_number");
 
                     int row = -1;
@@ -235,14 +267,11 @@ namespace Cobra.Common
                     {
                         int session_id = Convert.ToInt32(datavalue[0]);
                         string timestamp = datavalue[1];
-                        string device_num = datavalue[2];
-                        string session_size = datavalue[3];
-                        //int session_size = -1;
-                        //GetSessionSize(session_id, ref session_size);
+                        string session_size = datavalue[2];
                         List<string> item = new List<string>();
                         item.Add(timestamp);
                         item.Add(session_size);
-                        item.Add(device_num);
+                        item.Add(device_index.ToString());
                         records.Add(item);
                     }
                 }
@@ -257,10 +286,14 @@ namespace Cobra.Common
         {
             try
             {
+                Dictionary<string, string> record = new Dictionary<string, string>();
                 lock (DB_Lock)
                 {
                     int session_id = -1;
-                    GetSessionIDFromSessionTable(module_name, ref session_id, session_establish_time);
+                    int project_id = -1;
+                    GetProjectIDFromDeviceTable(Project_Name, ref project_id);
+                    if (project_id == -1) return;
+                    GetSessionIDFromSessionTable(project_id, module_name, ref session_id, session_establish_time);
 
                     Dictionary<string, string> conditions = new Dictionary<string, string>();
                     conditions.Add("session_id", session_id.ToString());
@@ -279,10 +312,14 @@ namespace Cobra.Common
         {
             try
             {
+                Dictionary<string, string> record = new Dictionary<string, string>();
                 lock (DB_Lock)
                 {
                     int session_id = -1;
-                    GetSessionIDFromSessionTable(module_name, ref session_id,session_establish_time);
+                    int project_id = -1;
+                    GetProjectIDFromDeviceTable(Project_Name, ref project_id);
+                    if (project_id == -1) return;
+                    GetSessionIDFromSessionTable(project_id, module_name, ref session_id, session_establish_time);
 
                     Dictionary<string, string> conditions = new Dictionary<string, string>();
                     conditions.Add("session_id", session_id.ToString());
