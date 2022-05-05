@@ -43,3 +43,9 @@
 [submodule "System/DEM/O2Micro.Cobra.KALL"]
 	path = System/DEM/O2Micro.Cobra.KALL
 	url = https://github.com/happylennychen/O2Micro.Cobra.KALL
+[submodule "System/DEM/O2Micro.Cobra.Azalea5"]
+	path = System/DEM/O2Micro.Cobra.Azalea5
+	url = https://github.com/happylennychen/O2Micro.Cobra.Azalea5
+[submodule "System/DEM/O2Micro.Cobra.KALL6"]
+	path = System/DEM/O2Micro.Cobra.KALL6
+	url = https://github.com/happylennychen/O2Micro.Cobra.KALL6
